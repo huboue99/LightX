@@ -1,0 +1,14 @@
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.csprojResolveAssemblyReference.cache
+G:\LightX\LightX_01\LightX_01\obj\Debug\App.g.cs
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01_MarkupCompile.cache
+G:\LightX\LightX_01\LightX_01\bin\Debug\LightX_01.exe.config
+G:\LightX\LightX_01\LightX_01\bin\Debug\LightX_01.exe
+G:\LightX\LightX_01\LightX_01\bin\Debug\LightX_01.pdb
+G:\LightX\LightX_01\LightX_01\obj\Debug\MainWindow.g.cs
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01_MarkupCompile.lref
+G:\LightX\LightX_01\LightX_01\obj\Debug\MainWindow.baml
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.g.resources
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.Properties.Resources.resources
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.csproj.GenerateResource.Cache
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.exe
+G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.pdb
