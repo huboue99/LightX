@@ -8,6 +8,8 @@
         Height="740" Width="740" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
     
     <StackPanel Orientation="Vertical">
+        <Label FontSize="18" Margin="0,10,0,0" Content="{Binding CurrentTest}"/>
         <Label Content="Instructions :" Margin="0,10,0,0"/>
+        <TextBlock Text="{Binding CurrentTest}" Margin="5,10,0,0"/>
     </StackPanel>
 </Window>

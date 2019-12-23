@@ -28,10 +28,9 @@ namespace LightX_01
         public GuideWindow(PatientData patientData)
         {
             _guideWindowViewModel = new GuideWindowViewModel(patientData);
-
             InitializeComponent();
-            // var mainWindow = this.DataContext;
-            this.Title = $"LightX - {patientData.FirstName} {patientData.LastName}";
+            DataContext = _guideWindowViewModel;
+            this.Title = $"LightX - {patientData.FirstName} {patientData.LastName} - {patientData.ExamDate.Day:D2}/{patientData.ExamDate.Month:D2}/{patientData.ExamDate.Year} - {patientData.ExamDate.Hour:D2}:{patientData.ExamDate.Minute:D2}:{patientData.ExamDate.Second:D2}";
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
     }
