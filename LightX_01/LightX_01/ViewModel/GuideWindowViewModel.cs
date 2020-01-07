@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight.Command;
 using LightX_01.Classes;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,10 +17,14 @@ namespace LightX_01.ViewModel
         private PatientData patientData;
         private int TestIndex = 0;
 
+        public RelayCommand NextTestCommand { get; private set; }
 
         public GuideWindowViewModel(PatientData passed_patientData)
         {
             patientData = passed_patientData;
+            string jsonPatienData = JsonConvert.SerializeObject(patientData);
+            MessageBox.Show(jsonPatienData);
+            this.NextTestCommand = new RelayCommand(this.NextTest);
         }
 
         public string CurrentTest

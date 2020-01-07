@@ -79,15 +79,15 @@ namespace LightX_01.ViewModel
 
         private void CreateNewExam(Window window)
         {
-            patientData.FirstName = patientData.FirstName.Trim();
-            patientData.LastName = patientData.LastName.Trim();
-
             if (string.IsNullOrEmpty(patientData.FirstName) || string.IsNullOrWhiteSpace(patientData.FirstName) || string.IsNullOrWhiteSpace(patientData.LastName) || string.IsNullOrEmpty(patientData.LastName))
             {
                 MessageBox.Show("Veuillez préciser le prénom et le nom.");
             }
             else
             {
+                patientData.FirstName = patientData.FirstName.Trim();
+                patientData.LastName = patientData.LastName.Trim();
+
                 GuideWindow objGuideWindow = new GuideWindow(patientData);
                 //objGuideWindow.DataContext = this;
                 //this.Visibility = Visibility.Hidden; // Hidding the current window
