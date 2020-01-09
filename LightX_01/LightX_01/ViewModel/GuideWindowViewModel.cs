@@ -1,55 +1,163 @@
-﻿using GalaSoft.MvvmLight.Command;
+﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using LightX_01.Classes;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
-using System.Windows.Input;
+using System.Windows.Media;
+using System.Collections.Generic;
 
 namespace LightX_01.ViewModel
 {
-    public class GuideWindowViewModel : ViewModelBase, INotifyPropertyChanged
+    public class GuideWindowViewModel : ViewModelBase
     {
-        private PatientData patientData;
+        #region Fields
+
+        private Exam _currentExam;
+        private GuideData _currentTest;
+        private ParametersList _currentList;
+        private RunList _currentTestsState;
         private int TestIndex = 0;
+        private RelayCommand _nextTestCommand;
+        private RelayCommand _previousTestCommand;
+        
+        #endregion Fields
 
-        public RelayCommand NextTestCommand { get; private set; }
+        #region Properties
 
-        public GuideWindowViewModel(PatientData passed_patientData)
+        public Exam CurrentExam
         {
-            patientData = passed_patientData;
-            string jsonPatienData = JsonConvert.SerializeObject(patientData);
-            MessageBox.Show(jsonPatienData);
-            this.NextTestCommand = new RelayCommand(this.NextTest);
+            get { return _currentExam; }
+            set
+            {
+                if (value != _currentExam)
+                {
+                    _currentExam = value;
+                    RaisePropertyChanged(() => CurrentExam);
+                }
+            }
         }
 
-        public string CurrentTest
+        public GuideData CurrentTest
+        {
+            get { return _currentTest; }
+            set
+            {
+                _currentTest = value;
+                RaisePropertyChanged(() => CurrentTest);
+            }
+        }
+
+        public ParametersList CurrentList
+        {
+            get { return _currentList; }
+            set
+            {
+                _currentList = value;
+                RaisePropertyChanged(() => CurrentList);
+            }
+        }
+
+        public RunList CurrentTestsState
+        {
+            get { return _currentTestsState; }
+            set
+            {
+                if (_currentTestsState != value)
+                {
+                    _currentTestsState = value;
+                    RaisePropertyChanged(() => CurrentTestsState);
+                }
+            }
+        }
+
+        #endregion Properties
+
+        #region Commands
+
+        public RelayCommand NextTestCommand
         {
             get
             {
-                return patientData.TestList[TestIndex];
+                if (_nextTestCommand == null)
+                {
+                    _nextTestCommand = new RelayCommand(NextTest, true);
+                }
+                return _nextTestCommand;
             }
-            //set????? pour le propretyChanged setup
         }
 
-        public void NextTest()
+        public RelayCommand PreviousTestCommand
         {
-            TestIndex++;
-            OnPropertyChange("CurrentTest");
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChange(string propertyName)
-        {
-            if (PropertyChanged != null)
+            get
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                if (_previousTestCommand == null)
+                {
+                    _previousTestCommand = new RelayCommand(PreviousTest, true);
+                }
+                return _previousTestCommand;
             }
+        }
+
+        #endregion Commands
+
+        private void UpdateCurrentTest()
+        {
+            string path = $@".\Resources\{CurrentExam.TestList[TestIndex]}.json";
+            using (StreamReader file = File.OpenText(path))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                GuideData data = (GuideData)serializer.Deserialize(file, typeof(GuideData));
+                CurrentTest = data;
+            }
+
+        }
+
+        public void UpdateCurrentList()
+        {
+            CurrentList = new ParametersList(CurrentTest);
+        }
+
+        private void UpdateCurrentTestList()
+        {
+            CurrentTestsState = new RunList(new List<string>() { "Conjonctivite", "Van Herick", "Cornée", "Chambre Antérieur", "Cristalin", "Marges Pupillaires", "Transillumination de l'Iris", "Filtre Cobalt" });
+            CurrentTestsState[TestIndex].Foreground = Brushes.Black;
+            CurrentTestsState[TestIndex].FontWeight = FontWeights.Bold;
+        }
+
+        private void UpdateAllInfos()
+        {
+            UpdateCurrentTest();
+            UpdateCurrentList(); // make sure to call UpdateCurrentList after UpdateCurrentTest
+            UpdateCurrentTestList(); // same
+        }
+
+        private void NextTest()
+        {
+            if (TestIndex != CurrentExam.TestList.Count - 1)
+            {
+                TestIndex++;
+                UpdateAllInfos();
+            }
+            else
+            {
+                MessageBox.Show("Tous les tests ont été effectué.");
+            }
+        }
+
+        public void PreviousTest()
+        {
+            if (TestIndex != 0)
+            {
+                TestIndex--;
+                UpdateAllInfos();
+            }
+        }
+
+        public GuideWindowViewModel(Exam exam)
+        {
+            CurrentExam = exam;
+            UpdateAllInfos();
         }
     }
 }

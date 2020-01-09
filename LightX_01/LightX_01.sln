@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26228.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightX_01", "LightX_01\LightX_01.csproj", "{BFE90ECC-6A66-41BD-A203-BF90C1ADF488}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFileWriter", "ConsoleApp1\JsonFileWriter.csproj", "{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Capture.Workflow|Any CPU = Capture.Workflow|Any CPU
@@ -36,6 +38,24 @@ Global
 		{BFE90ECC-6A66-41BD-A203-BF90C1ADF488}.Release|x64.Build.0 = Release|Any CPU
 		{BFE90ECC-6A66-41BD-A203-BF90C1ADF488}.Release|x86.ActiveCfg = Release|Any CPU
 		{BFE90ECC-6A66-41BD-A203-BF90C1ADF488}.Release|x86.Build.0 = Release|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Capture.Workflow|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Capture.Workflow|Any CPU.Build.0 = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Capture.Workflow|x64.ActiveCfg = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Capture.Workflow|x64.Build.0 = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Capture.Workflow|x86.ActiveCfg = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Capture.Workflow|x86.Build.0 = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Debug|x64.Build.0 = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Debug|x86.Build.0 = Debug|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Release|x64.ActiveCfg = Release|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Release|x64.Build.0 = Release|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Release|x86.ActiveCfg = Release|Any CPU
+		{D9950C0C-E1E2-44C0-8C0D-A88E69F45DF2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

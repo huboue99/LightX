@@ -1,73 +1,71 @@
-﻿using GalaSoft.MvvmLight.Command;
+﻿using GalaSoft.MvvmLight;
 using LightX_01.Classes;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
+using System;
 using System.Windows.Input;
+using GalaSoft.MvvmLight.Command;
 
 namespace LightX_01.ViewModel
 {
-    public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
+    public class MainWindowViewModel : ViewModelBase
     {
-        private PatientData patientData;
+        #region Fields
 
-        //private ICommand exitMainWindow;
+        private Patient _currentPatient;
+        private ICommand _closeWindowCommand;
+        private ICommand _createNewExamCommand;
 
-        public string FirstName
+        #endregion Fields
+
+        #region Properties
+
+        public Patient CurrentPatient
         {
-            get
-            {
-                return patientData.FirstName;
-            }
+            get { return _currentPatient; }
             set
             {
-                if(patientData.FirstName != value)
+                if (value != _currentPatient)
                 {
-                    patientData.FirstName = value;
-                    OnPropertyChange("FirstName");
+                    _currentPatient = value;
+                    RaisePropertyChanged(() => CurrentPatient);
                 }
             }
         }
 
-        public string LastName
+        #endregion Properties
+
+        #region Commands
+
+        public ICommand CloseWindowCommand
         {
             get
             {
-                return patientData.LastName;
-            }
-            set
-            {
-                if (patientData.LastName != value)
+                if (_closeWindowCommand == null)
                 {
-                    patientData.LastName = value;
-                    OnPropertyChange("LastName");
+                    _closeWindowCommand = new RelayCommand<Window>(
+                        param => CloseWindow(param)
+                        );
                 }
+                return _closeWindowCommand;
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChange(string propertyName)
+        public ICommand CreateNewExamCommand
         {
-            if (PropertyChanged != null)
+            get
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                if (_createNewExamCommand == null)
+                {
+                    _createNewExamCommand = new RelayCommand<Window>(
+                        param => CreateNewExam(param)
+                        );
+                }
+                return _createNewExamCommand;
             }
         }
 
-        public RelayCommand<Window> CloseWindowCommand { get; private set; }
-        public RelayCommand<Window> CreateNewExamCommand { get; private set; }
-
-        public MainWindowViewModel()
-        {
-            patientData = new PatientData();
-            this.CloseWindowCommand = new RelayCommand<Window>(this.CloseWindow);
-            this.CreateNewExamCommand = new RelayCommand<Window>(this.CreateNewExam);
-        }
+        #endregion Commands
 
         private void CloseWindow(Window window)
         {
@@ -79,16 +77,18 @@ namespace LightX_01.ViewModel
 
         private void CreateNewExam(Window window)
         {
-            if (string.IsNullOrEmpty(patientData.FirstName) || string.IsNullOrWhiteSpace(patientData.FirstName) || string.IsNullOrWhiteSpace(patientData.LastName) || string.IsNullOrEmpty(patientData.LastName))
+            if (string.IsNullOrEmpty(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.LastName) || string.IsNullOrEmpty(CurrentPatient.LastName))
             {
                 MessageBox.Show("Veuillez préciser le prénom et le nom.");
             }
             else
             {
-                patientData.FirstName = patientData.FirstName.Trim();
-                patientData.LastName = patientData.LastName.Trim();
+                CurrentPatient.FirstName.Trim();
+                CurrentPatient.LastName = CurrentPatient.LastName.Trim();
 
-                GuideWindow objGuideWindow = new GuideWindow(patientData);
+                Exam exam = new Exam() { Patient = CurrentPatient };
+
+                GuideWindow objGuideWindow = new GuideWindow(exam);
                 //objGuideWindow.DataContext = this;
                 //this.Visibility = Visibility.Hidden; // Hidding the current window
                 this.CloseWindow(window);
@@ -96,23 +96,9 @@ namespace LightX_01.ViewModel
             }
         }
 
-        //public ICommand ExitMainWindow
-        //{
-        //    get
-        //    {
-        //        return exitMainWindow
-        //            ?? (exitMainWindow = new ActionCommand(() => { this.Close(); }));
-        //    }
-        //}
-
-        //public ICommand CreateNewExam_key
-        //{
-        //    get
-        //    {
-        //        return createNewExam_key
-        //            ?? (createNewExam_key = new ActionCommand(() => { CreateNewExam(); }));
-        //    }
-        //}
-
+        public MainWindowViewModel()
+        {
+            _currentPatient = new Patient();
+        }
     }
 }

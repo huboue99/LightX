@@ -1,0 +1,9 @@
+G:\LightX\LightX_01\ConsoleApp1\bin\Debug\netcoreapp1.1\JsonFileWriter.deps.json
+G:\LightX\LightX_01\ConsoleApp1\bin\Debug\netcoreapp1.1\JsonFileWriter.runtimeconfig.json
+G:\LightX\LightX_01\ConsoleApp1\bin\Debug\netcoreapp1.1\JsonFileWriter.runtimeconfig.dev.json
+G:\LightX\LightX_01\ConsoleApp1\obj\Debug\netcoreapp1.1\JsonFileWriter.csprojResolveAssemblyReference.cache
+G:\LightX\LightX_01\ConsoleApp1\obj\Debug\netcoreapp1.1\JsonFileWriter.AssemblyInfo.cs
+G:\LightX\LightX_01\ConsoleApp1\bin\Debug\netcoreapp1.1\JsonFileWriter.dll
+G:\LightX\LightX_01\ConsoleApp1\bin\Debug\netcoreapp1.1\JsonFileWriter.pdb
+G:\LightX\LightX_01\ConsoleApp1\obj\Debug\netcoreapp1.1\JsonFileWriter.dll
+G:\LightX\LightX_01\ConsoleApp1\obj\Debug\netcoreapp1.1\JsonFileWriter.pdb

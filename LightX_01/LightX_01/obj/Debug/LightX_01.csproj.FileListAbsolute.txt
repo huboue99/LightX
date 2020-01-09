@@ -17,7 +17,6 @@ G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\GuideWindow.g.cs
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\MainWindow.g.cs
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\GuideWindow.baml
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\MainWindow.baml
-G:\LightX\LightX_01\LightX_01\obj\Debug\GeneratedInternalTypeHelper.g.cs
 G:\LightX\LightX_01\LightX_01\bin\Debug\CommonServiceLocator.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.Extras.dll
@@ -29,7 +28,6 @@ G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.Extras.pdb
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.Extras.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.Platform.pdb
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.Platform.xml
-G:\LightX\LightX_01\LightX_01\obj\Debug\App.baml
 C:\Users\macham\Documents\Programs\LightX\LightX_01\LightX_01\bin\Debug\EDSDK.dll
 C:\Users\macham\Documents\Programs\LightX\LightX_01\LightX_01\bin\Debug\EdsImage.dll
 C:\Users\macham\Documents\Programs\LightX\LightX_01\LightX_01\bin\Debug\LightX_01.exe.config

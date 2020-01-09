@@ -1,18 +1,6 @@
 ﻿using LightX_01.Classes;
 using LightX_01.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace LightX_01
 {
@@ -25,13 +13,16 @@ namespace LightX_01
     {
         private readonly GuideWindowViewModel _guideWindowViewModel;
 
-        public GuideWindow(PatientData patientData)
+        public GuideWindow(Exam exam)
         {
-            _guideWindowViewModel = new GuideWindowViewModel(patientData);
+            _guideWindowViewModel = new GuideWindowViewModel(exam);
             InitializeComponent();
             DataContext = _guideWindowViewModel;
-            this.Title = $"LightX - {patientData.FirstName} {patientData.LastName} - {patientData.ExamDate.Day:D2}/{patientData.ExamDate.Month:D2}/{patientData.ExamDate.Year} - {patientData.ExamDate.Hour:D2}:{patientData.ExamDate.Minute:D2}:{patientData.ExamDate.Second:D2}";
+
+            Patient patientData = exam.Patient;
+            this.Title = $"LightX - {patientData.FirstName} {patientData.LastName} - {exam.ExamDate.Day:D2}/{exam.ExamDate.Month:D2}/{exam.ExamDate.Year} - {exam.ExamDate.Hour:D2}:{exam.ExamDate.Minute:D2}:{exam.ExamDate.Second:D2}";
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            
         }
     }
 }
