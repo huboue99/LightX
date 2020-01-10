@@ -1,0 +1,16 @@
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\EDSDK.dll
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\EdsImage.dll
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\JsonFileCreator.exe.config
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\JsonFileCreator.exe
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\JsonFileCreator.pdb
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\LightX_01.exe
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Newtonsoft.Json.dll
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\GalaSoft.MvvmLight.dll
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\LightX_01.pdb
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\LightX_01.exe.config
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Newtonsoft.Json.xml
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\GalaSoft.MvvmLight.pdb
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\GalaSoft.MvvmLight.xml
+G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csprojResolveAssemblyReference.cache
+G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.exe
+G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.pdb

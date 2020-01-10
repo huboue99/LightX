@@ -6,6 +6,9 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
+using System.Windows.Media.Imaging;
+using System;
+using System.Windows.Controls;
 
 namespace LightX_01.ViewModel
 {
@@ -17,9 +20,11 @@ namespace LightX_01.ViewModel
         private GuideData _currentTest;
         private ParametersList _currentList;
         private RunList _currentTestsState;
+        private BitmapImage _currentImage;
         private int TestIndex = 0;
         private RelayCommand _nextTestCommand;
         private RelayCommand _previousTestCommand;
+        
         
         #endregion Fields
 
@@ -71,6 +76,19 @@ namespace LightX_01.ViewModel
             }
         }
 
+        public BitmapImage CurrentImage
+        {
+            get { return _currentImage; }
+            set
+            {
+                if (value != _currentImage)
+                {
+                    _currentImage = value;
+                    RaisePropertyChanged(() => CurrentImage);
+                }
+            }
+        }
+        
         #endregion Properties
 
         #region Commands
@@ -113,9 +131,20 @@ namespace LightX_01.ViewModel
 
         }
 
-        public void UpdateCurrentList()
+        private void UpdateCurrentList()
         {
             CurrentList = new ParametersList(CurrentTest);
+        }
+
+        private void UpdateCurrentImage()
+        {
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            image.UriSource = new Uri(CurrentTest.ImagesPath[0], UriKind.Relative);
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.EndInit();
+            CurrentImage = image;
         }
 
         private void UpdateCurrentTestList()
@@ -130,6 +159,7 @@ namespace LightX_01.ViewModel
             UpdateCurrentTest();
             UpdateCurrentList(); // make sure to call UpdateCurrentList after UpdateCurrentTest
             UpdateCurrentTestList(); // same
+            UpdateCurrentImage();
         }
 
         private void NextTest()
@@ -145,7 +175,7 @@ namespace LightX_01.ViewModel
             }
         }
 
-        public void PreviousTest()
+        private void PreviousTest()
         {
             if (TestIndex != 0)
             {
