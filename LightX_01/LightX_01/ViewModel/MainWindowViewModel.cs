@@ -88,11 +88,13 @@ namespace LightX_01.ViewModel
 
                 Exam exam = new Exam() { Patient = CurrentPatient };
 
-                GuideWindow objGuideWindow = new GuideWindow(exam);
+                //GuideWindow objGuideWindow = new GuideWindow(exam);
+                CameraControlWindow objCamControlWindow = new CameraControlWindow();
                 //objGuideWindow.DataContext = this;
                 //this.Visibility = Visibility.Hidden; // Hidding the current window
                 this.CloseWindow(window);
-                objGuideWindow.Show();
+                //objGuideWindow.Show();
+                objCamControlWindow.Show();
             }
         }
 
