@@ -8,12 +8,14 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 using System;
+using System.Drawing;
 using System.Windows.Controls;
 using CameraControl.Devices;
 using CameraControl.Devices.Classes;
 using System.Threading;
 using System.Collections.ObjectModel;
 using CameraControl.Devices.Canon;
+using System.Timers;
 
 namespace LightX_01.ViewModel
 {
@@ -22,10 +24,14 @@ namespace LightX_01.ViewModel
         #region Fields
 
         private CameraDeviceManager _deviceManager;
-        //private bool _canLiveView;
+        private BitmapImage _currentLiveViewImage;
+        private bool _liveViewEnabled;
+        private System.Timers.Timer _liveViewTimer;
         private string _folderForPhotos;
         private object _locker = new object();
         private RelayCommand _captureCommand;
+
+        public ICameraDevice CameraDevice { get; set; }
 
         #endregion Fields
 
@@ -44,6 +50,19 @@ namespace LightX_01.ViewModel
             }
         }
 
+        public BitmapImage CurrentLiveViewImage
+        {
+            get { return _currentLiveViewImage; }
+            set
+            {
+                if (value != _currentLiveViewImage)
+                {
+                    _currentLiveViewImage = value;
+                    RaisePropertyChanged(() => CurrentLiveViewImage);
+                }
+            }
+        }
+
         public string FolderForPhotos
         {
             get { return _folderForPhotos; }
@@ -54,7 +73,123 @@ namespace LightX_01.ViewModel
 
         #region Commands
 
+        public bool LiveViewEnabled
+        {
+            get { return _liveViewEnabled; }
+            set
+            {
+                if (value != _liveViewEnabled)
+                {
+                    _liveViewEnabled = value;
+                    RaisePropertyChanged(() => LiveViewEnabled);
+                }
+            }
+        }
 
+        void _liveViewTimer_Tick(object sender, EventArgs e)
+        {
+            LiveViewData liveViewData = null;
+            try
+            {
+                liveViewData = DeviceManager.SelectedCameraDevice.GetLiveViewImage();
+            }
+            catch (Exception)
+            {
+                return;
+            }
+
+            if (liveViewData == null || liveViewData.ImageData == null)
+            {
+                return;
+            }
+            try
+            {
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                //image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                //image.UriSource = new Uri(CurrentTest.ImagesPath[0], UriKind.Relative);
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.StreamSource = new MemoryStream(liveViewData.ImageData,
+                                                                liveViewData.ImageDataPosition,
+                                                                liveViewData.ImageData.Length -
+                                                                liveViewData.ImageDataPosition);
+                image.EndInit();
+                image.Freeze();
+                CurrentLiveViewImage = image;
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        private void StartLiveView()
+        {
+            bool retry;
+            do
+            {
+                retry = false;
+                try
+                {
+                    while (DeviceManager.SelectedCameraDevice.IsBusy) { }
+                    DeviceManager.SelectedCameraDevice.StartLiveView();
+                    
+                }
+                catch (DeviceException exception)
+                {
+                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    {
+                        // this may cause infinite loop
+                        Thread.Sleep(100);
+                        retry = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error occurred :" + exception.Message);
+                    }
+                }
+
+            } while (retry);
+            _liveViewTimer.Start();
+
+        }
+
+        private void StopLiveView()
+        {
+            bool retry;
+            do
+            {
+                retry = false;
+                try
+                {
+                    _liveViewTimer.Stop();
+                    // wait for last get live view image
+                    Thread.Sleep(500);
+                    DeviceManager.SelectedCameraDevice.StopLiveView();
+                }
+                catch (DeviceException exception)
+                {
+                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    {
+                        // this may cause infinite loop
+                        Thread.Sleep(100);
+                        retry = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error occurred :" + exception.Message);
+                    }
+                }
+
+            } while (retry);
+        }
+
+        private void SetLiveViewTimer()
+        {
+            _liveViewTimer = new System.Timers.Timer(1000 / 60);
+            _liveViewTimer.Elapsed += _liveViewTimer_Tick;
+            _liveViewTimer.AutoReset = true;
+        }
 
         public RelayCommand CaptureCommand
         {
@@ -66,13 +201,23 @@ namespace LightX_01.ViewModel
                 }
                 return _captureCommand;
             }
-        }        
+        }
 
         private void CaptureInThread()
         {
-            Thread thread = new Thread(Capture);
-            thread.Start();
+            new Thread(Capture).Start();
         }
+
+        private void StartLiveViewInThread()
+        {
+            new Thread(StartLiveView).Start();
+        }
+
+        private void StopLiveViewInThread()
+        {
+            new Thread(StopLiveView).Start();
+        }
+
         #endregion Commands
 
         private void Capture()
@@ -152,7 +297,28 @@ namespace LightX_01.ViewModel
 
         void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
         {
-            //_canLiveView = newcameraDevice.GetCapability(CapabilityEnum.LiveView);
+            if (oldcameraDevice != newcameraDevice)
+            {
+                LiveViewEnabled = newcameraDevice.GetCapability(CapabilityEnum.LiveView);
+                if (_liveViewTimer.Enabled)
+                {
+                    // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
+                    oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
+                    _liveViewTimer.Stop();
+                }
+                //if (oldcameraDevice.GetStatus(OperationEnum.LiveView))
+                //{
+                //    oldcameraDevice.StopLiveView();
+                //}
+
+                
+                if (LiveViewEnabled)
+                {
+                    //CameraDevice = DeviceManager.SelectedCameraDevice;
+                    newcameraDevice.CameraDisconnected += SelectedCamera_CameraDisconnected;
+                    StartLiveViewInThread();
+                }
+            }
         }
 
         void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
@@ -174,6 +340,12 @@ namespace LightX_01.ViewModel
         void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
         {
             RefreshDisplay();
+        }
+
+        void SelectedCamera_CameraDisconnected(object sender, DisconnectCameraEventArgs eventArgs)
+        {
+            _liveViewTimer.Stop();
+            Thread.Sleep(100);
         }
 
         private void StartupThread()
@@ -202,20 +374,21 @@ namespace LightX_01.ViewModel
 
         public CameraControlWindowViewModel()
         {
+            SetLiveViewTimer();
             DeviceManager = new CameraDeviceManager();
             DeviceManager.CameraSelected += DeviceManager_CameraSelected;
             DeviceManager.CameraConnected += DeviceManager_CameraConnected;
             DeviceManager.PhotoCaptured += DeviceManager_PhotoCaptured;
             DeviceManager.CameraDisconnected += DeviceManager_CameraDisconnected;
+            
             // For experimental Canon driver support- to use canon driver the canon sdk files should be copied in application folder
             DeviceManager.UseExperimentalDrivers = true;
             DeviceManager.DisableNativeDrivers = false;
             FolderForPhotos = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Test");
-
-            DeviceManager.ConnectToCamera();
             //DeviceManager.AddFakeCamera();
-            var thread = new Thread(StartupThread);
-            thread.Start();
+            DeviceManager.ConnectToCamera();
+            
+            new Thread(StartupThread).Start();
             RefreshDisplay();
         }
     }

@@ -16,7 +16,8 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <Grid Height="350"/>
+        <Image Height="350" Source="{Binding CurrentLiveViewImage}" IsEnabled="{Binding LiveViewEnabled}"/>
+        <!--<Image Height="350" Source="{Binding CurrentLiveViewImage}" IsEnabled="false"/>-->
         <Grid Margin="0 10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
