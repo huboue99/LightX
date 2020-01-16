@@ -16,9 +16,12 @@ using System.Threading;
 using System.Collections.ObjectModel;
 using CameraControl.Devices.Canon;
 using System.Timers;
+using System.Windows.Input;
+using System.ComponentModel;
 
 namespace LightX_01.ViewModel
 {
+
     public class CameraControlWindowViewModel : ViewModelBase
     {
         #region Fields
@@ -30,6 +33,8 @@ namespace LightX_01.ViewModel
         private string _folderForPhotos;
         private object _locker = new object();
         private RelayCommand _captureCommand;
+        public BitmapImage LastPhoto { get; set; }
+        private ICommand _closingCommand;
 
         public ICameraDevice CameraDevice { get; set; }
 
@@ -151,8 +156,9 @@ namespace LightX_01.ViewModel
 
             } while (retry);
             _liveViewTimer.Start();
-
+            //CurrentFNumber = DeviceManager.SelectedCameraDevice.FNumber;
         }
+
 
         private void StopLiveView()
         {
@@ -165,6 +171,7 @@ namespace LightX_01.ViewModel
                     _liveViewTimer.Stop();
                     // wait for last get live view image
                     Thread.Sleep(500);
+                    //while (DeviceManager.SelectedCameraDevice.IsBusy) { }
                     DeviceManager.SelectedCameraDevice.StopLiveView();
                 }
                 catch (DeviceException exception)
@@ -203,8 +210,26 @@ namespace LightX_01.ViewModel
             }
         }
 
+        public ICommand ClosingCommand
+        {
+            get
+            {
+                if (_closingCommand == null)
+                {
+                    _closingCommand = new RelayCommand<CancelEventArgs>(
+                        param => CloseApplication(param)
+                        );
+                }
+                return _closingCommand;
+            }
+        }
+
         private void CaptureInThread()
         {
+            if (_liveViewEnabled)
+                StopLiveViewInThread();
+            //thread.ThreadState = ThreadState.
+            Thread.Sleep(100);
             new Thread(Capture).Start();
         }
 
@@ -215,7 +240,9 @@ namespace LightX_01.ViewModel
 
         private void StopLiveViewInThread()
         {
-            new Thread(StopLiveView).Start();
+            Thread thread = new Thread(StopLiveView);
+            thread.Start();
+            thread.Join();
         }
 
         #endregion Commands
@@ -259,6 +286,7 @@ namespace LightX_01.ViewModel
             RaisePropertyChanged(() => DeviceManager);
         }
 
+        [STAThread]
         private void PhotoCaptured(object o)
         {
             PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
@@ -285,14 +313,52 @@ namespace LightX_01.ViewModel
                 // the IsBusy may used internally, if file transfer is done should set to false  
                 eventArgs.CameraDevice.IsBusy = false;
                 eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
-                //img_photo.ImageLocation = fileName; // photo to display before going to the next test.
+
+
+
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                image.UriSource = new Uri(fileName, UriKind.Absolute);
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.EndInit();
+                image.Freeze();
+                LastPhoto = image;
+
             }
             catch (Exception exception)
             {
                 eventArgs.CameraDevice.IsBusy = false;
                 MessageBox.Show("Error download photo from camera :\n" + exception.Message);
             }
-            GC.Collect();
+            //GC.Collect();
+
+            // Restart the live view after capture is finished
+            //StartLiveViewInThread();
+
+
+            //StartLiveViewInThread();
+            //Thread thread = new Thread(ShowReviewWindow);
+            //thread.SetApartmentState(ApartmentState.STA);
+            //thread.Start();
+            ////ShowReviewWindow();
+            ////thread.Join();
+            //StartLiveViewInThread();
+        }
+
+        private void ShowReviewWindow()
+        {
+            ReviewWindow objReviewWindow = new ReviewWindow(LastPhoto);
+            objReviewWindow.ShowDialog();
+        }
+
+        void SelectedCamera_CaptureCompleted(object sender, EventArgs eventArgs)
+        {
+            Thread thread = new Thread(ShowReviewWindow);
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            StartLiveViewInThread();
         }
 
         void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
@@ -303,7 +369,8 @@ namespace LightX_01.ViewModel
                 if (_liveViewTimer.Enabled)
                 {
                     // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
-                    oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
+                    //oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
+                    oldcameraDevice.CaptureCompleted -= SelectedCamera_CaptureCompleted;
                     _liveViewTimer.Stop();
                 }
                 //if (oldcameraDevice.GetStatus(OperationEnum.LiveView))
@@ -314,9 +381,12 @@ namespace LightX_01.ViewModel
                 
                 if (LiveViewEnabled)
                 {
-                    //CameraDevice = DeviceManager.SelectedCameraDevice;
-                    newcameraDevice.CameraDisconnected += SelectedCamera_CameraDisconnected;
                     StartLiveViewInThread();
+                    //newcameraDevice.CameraDisconnected += SelectedCamera_CameraDisconnected;
+                    newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
+                    //CurrentFNumber.ValueChanged += SelectedCamera_FNumberChanged;
+
+
                 }
             }
         }
@@ -346,6 +416,35 @@ namespace LightX_01.ViewModel
         {
             _liveViewTimer.Stop();
             Thread.Sleep(100);
+        }
+
+        //void SelectedCamera_FNumberChanged(object sender, string key, long val)
+        //{
+        //    if (LiveViewEnabled)
+        //    {
+        //        StopLiveView();
+        //        StartLiveViewInThread();
+        //    }
+        //}
+
+        private void CloseApplication(CancelEventArgs e)
+        {
+            
+            var result = MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
+            e.Cancel = result != MessageBoxResult.Yes;
+            if (!e.Cancel)
+            {
+                if (_liveViewTimer.Enabled)
+                {
+                    StopLiveViewInThread();
+                }
+                Application.Current.Shutdown();
+            }
+        }
+
+        private void ApplicationClosing()
+        {
+
         }
 
         private void StartupThread()
@@ -380,7 +479,6 @@ namespace LightX_01.ViewModel
             DeviceManager.CameraConnected += DeviceManager_CameraConnected;
             DeviceManager.PhotoCaptured += DeviceManager_PhotoCaptured;
             DeviceManager.CameraDisconnected += DeviceManager_CameraDisconnected;
-            
             // For experimental Canon driver support- to use canon driver the canon sdk files should be copied in application folder
             DeviceManager.UseExperimentalDrivers = true;
             DeviceManager.DisableNativeDrivers = false;
@@ -390,6 +488,18 @@ namespace LightX_01.ViewModel
             
             new Thread(StartupThread).Start();
             RefreshDisplay();
+
+
+            Patient CurrentPatient = new Patient();
+
+            CurrentPatient.FirstName = "John";
+            CurrentPatient.LastName = "Smith";
+
+            Exam exam = new Exam() { Patient = CurrentPatient };
+
+
+            GuideWindow objGuideWindow = new GuideWindow(exam);
+            objGuideWindow.Show();
         }
     }
 }

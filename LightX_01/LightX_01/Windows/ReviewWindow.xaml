@@ -1,0 +1,25 @@
+﻿<Window x:Class="LightX_01.ReviewWindow"
+        x:Name="PhotoReviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LightX_01"
+        mc:Ignorable="d"
+        Title="Photo Review" Height="1000" Width="1200">
+    <StackPanel Margin="15">
+        <Image Height="800" Source="{Binding CurrentImage}"/>
+        <StackPanel Width="1160" Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Commentaires supplémentaires :"/>
+                <TextBox Height="90" Width="1000" Text="{Binding CurrentComment}"/>
+            </StackPanel>
+            <StackPanel Width="160" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Content="Confirm" Width="90" Height="20" Command="{Binding ConfirmCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}"/>
+                <!--<Button Content="Confirm" Width="90" Height="20"/>-->
+                <Button Content="Cancel" Width="90" Height="20" Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}" Margin="0 15 0 0" IsCancel="True"/>
+                <!--<Button Content="Cancel" Width="90" Height="20" Margin="0 15 0 0"/>-->
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</Window>

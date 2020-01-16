@@ -70,6 +70,7 @@ G:\LightX\LightX_01\LightX_01\bin\Debug\Newtonsoft.Json.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\PortableDeviceLib.pdb
 G:\LightX\LightX_01\LightX_01\bin\Debug\Rssdp.Native.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\websocket-sharp.xml
+G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\ReviewWindow.g.cs
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\CameraControlWindow.g.cs
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\GuideWindow.g.cs
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\MainWindow.g.cs
@@ -77,6 +78,7 @@ G:\LightX\LightX_01\LightX_01\obj\Debug\App.g.cs
 G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01_Content.g.cs
 G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01_MarkupCompile.cache
 G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01_MarkupCompile.lref
+G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\ReviewWindow.baml
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\CameraControlWindow.baml
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\GuideWindow.baml
 G:\LightX\LightX_01\LightX_01\obj\Debug\Windows\MainWindow.baml

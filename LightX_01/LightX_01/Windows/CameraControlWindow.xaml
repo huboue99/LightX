@@ -4,9 +4,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
         xmlns:local="clr-namespace:LightX_01"
         mc:Ignorable="d"
-        Title="Camera Controls" Height="550" Width="740" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
+        Title="Camera Controls" Height="670" Width="740" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <cmd:EventToCommand Command="{Binding ClosingCommand}" PassEventArgsToCommand="True"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <StackPanel Margin="15">
         <TextBlock Margin="0 2" Text="Select camera"/>
         <ComboBox Width="150" HorizontalAlignment="Left" ItemsSource="{Binding DeviceManager.ConnectedDevices, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding DeviceManager.SelectedCameraDevice, Mode=TwoWay}">
@@ -16,7 +23,7 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <Image Height="350" Source="{Binding CurrentLiveViewImage}" IsEnabled="{Binding LiveViewEnabled}"/>
+        <Image Height="470" Source="{Binding CurrentLiveViewImage}" IsEnabled="{Binding LiveViewEnabled}"/>
         <!--<Image Height="350" Source="{Binding CurrentLiveViewImage}" IsEnabled="false"/>-->
         <Grid Margin="0 10">
             <Grid.ColumnDefinitions>

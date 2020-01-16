@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -28,7 +29,9 @@ namespace LightX_01
             InitializeComponent();
             DataContext = _cameraControlWindowViewModel;
 
-            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            //this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            this.Left = Screen.AllScreens[0].WorkingArea.Right - this.Width - this.Width / 4;
+            this.Top = Screen.AllScreens[0].WorkingArea.Height / 2 - this.Height / 2;
         }
     }
 }
