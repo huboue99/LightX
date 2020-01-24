@@ -8,7 +8,7 @@
         xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
         xmlns:local="clr-namespace:LightX_01"
         mc:Ignorable="d"
-        Title="Camera Controls" Height="670" Width="740" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
+        Height="670" Width="740" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
             <cmd:EventToCommand Command="{Binding ClosingCommand}" PassEventArgsToCommand="True"/>
@@ -62,6 +62,6 @@
                 </ComboBox>
             </StackPanel>
         </Grid>
-        <Button IsEnabled="{Binding DeviceManager.SelectedCameraDevice.IsConnected}" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
+        <Button IsEnabled="{Binding DeviceManager.SelectedCameraDevice.IsConnected}" IsDefault="True" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
     </StackPanel>
 </Window>

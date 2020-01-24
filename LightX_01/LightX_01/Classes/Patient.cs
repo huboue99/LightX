@@ -9,9 +9,10 @@ namespace LightX_01.Classes
 
         private string _firstName;
         private string _lastName;
-        private int _age;
-        //private DateTime _examDate;
-        //private ObservableCollection<string> _testList;
+        private DateTime _birthdate;
+        private string _gender;
+        private string _fileNumber;
+        private string _ramq;
 
         #endregion Fields
 
@@ -43,15 +44,54 @@ namespace LightX_01.Classes
             }
         }
 
-        public int Age
+        public DateTime BirthDate
         {
-            get { return _age; }
+            get { return _birthdate; }
             set
             {
-                if (value != _age)
+                if (value != _birthdate)
                 {
-                    _age = value;
-                    OnPropertyChanged("Age");
+                    _birthdate = value;
+                    OnPropertyChanged("BirthDate");
+                }
+            }
+        }
+
+        public string Gender
+        {
+            get { return _gender; }
+            set
+            {
+                if (value != _gender)
+                {
+                    _gender = value;
+                    OnPropertyChanged("Gender");
+                }
+            }
+        }
+
+        public string FileNumber
+        {
+            get { return _fileNumber; }
+            set
+            {
+                if (value != _fileNumber)
+                {
+                    _fileNumber = value;
+                    OnPropertyChanged("FileNumber");
+                }
+            }
+        }
+
+        public string RAMQ
+        {
+            get { return _ramq; }
+            set
+            {
+                if (value != _ramq)
+                {
+                    _ramq = value;
+                    OnPropertyChanged("RAMQ");
                 }
             }
         }

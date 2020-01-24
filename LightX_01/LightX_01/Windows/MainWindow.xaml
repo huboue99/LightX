@@ -7,56 +7,66 @@
         xmlns:local="clr-namespace:LightX_01"
         xmlns:Sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="LightX - Nouvel Examen" Height="140" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
+        Title="LightX - Nouvel Examen" Height="280" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
 
     <Window.InputBindings>
-        <KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>
+        <!--<KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>-->
         <KeyBinding Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Return"/>
     </Window.InputBindings>
 
-    <StackPanel Orientation="Vertical">
-        <Label Content="Entrez les informations du patient :" Margin="0,10,0,0"/>
+    <StackPanel Orientation="Vertical" Margin="10">
+        <Label Content="Entrez les informations du patient :" Margin="25 0 0 0"/>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="195"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="195"/>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="250"/>
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
 
-            <Label Content="Prénom :" Grid.Column="0" HorizontalAlignment="Right"/>
-            <TextBox x:Name="FirstName" Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" TextWrapping="NoWrap" VerticalContentAlignment="Center" Width="190" HorizontalAlignment="Left"/>
-            <TextBlock IsHitTestVisible="False" Grid.Column="1" Text="John" VerticalAlignment="Center" Margin="2,0,0,0"  HorizontalAlignment="Left" Foreground="DarkGray">
-                <TextBlock.Style>
-                    <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text, ElementName=FirstName}" Value="">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+            <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Numéro de dossier :"/>
+                <TextBox x:Name="FileNumber" Text="{Binding CurrentPatient.FileNumber, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="RAMQ :"/>
+                <TextBox Text="{Binding CurrentPatient.RAMQ, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>
+            </StackPanel>
 
-            <Label Content="Nom :" Grid.Column="2" HorizontalAlignment="Right"/>
-            <TextBox x:Name="LastName" Text="{Binding CurrentPatient.LastName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="3" TextWrapping="NoWrap" VerticalContentAlignment="Center" Width="190" HorizontalAlignment="Left"/>
-            <TextBlock IsHitTestVisible="False" Grid.Column="3" Text="Smith" VerticalAlignment="Center" Margin="2,0,0,0"  HorizontalAlignment="Left" Foreground="DarkGray">
-                <TextBlock.Style>
-                    <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text, ElementName=LastName}" Value="">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+            <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Prénom :"/>
+                <TextBox x:Name="FirstName" Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Nom :"/>
+                <TextBox Text="{Binding CurrentPatient.LastName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Date de naissance :"/>
+                <TextBox Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="Genre :"/>
+                <ComboBox Width="190" ItemsSource="{Binding Genders}" SelectedItem="{Binding CurrentPatient.Gender, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+               
+            </StackPanel>
+
+            <!--<Label Content="Nom :" Grid.Column="2" HorizontalAlignment="Right"/>-->
+            <!--<TextBox Text="{Binding CurrentPatient.LastName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="3" TextWrapping="NoWrap" VerticalContentAlignment="Center" Width="190" HorizontalAlignment="Left"/>-->
         </Grid>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
-            <Button Name="ButtonCreate"  Content="Créer" Width="90" Margin="0,0,10,0" Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}"/>
-            <Button Name="ButtonClose" Content="Fermer" Width="90" Margin="10,0,0,0" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 15 0 0">
+            <Button Name="ButtonCreate" Margin="15 0"  Content="Créer" Width="90" Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}"/>
+            <Button Name="ButtonClose" Margin="15 0" Content="Fermer" Width="90" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" IsCancel="True"/>
         </StackPanel>
     </StackPanel>
 </Window>

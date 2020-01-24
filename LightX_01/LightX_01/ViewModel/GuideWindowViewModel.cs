@@ -16,12 +16,11 @@ namespace LightX_01.ViewModel
     {
         #region Fields
 
-        private Exam _currentExam;
         private GuideData _currentTest;
         private ParametersList _currentList;
         private RunList _currentTestsState;
         private BitmapImage _currentImage;
-        private int TestIndex = 0;
+        private int TestIndex;
         private RelayCommand _nextTestCommand;
         private RelayCommand _previousTestCommand;
         
@@ -29,19 +28,6 @@ namespace LightX_01.ViewModel
         #endregion Fields
 
         #region Properties
-
-        public Exam CurrentExam
-        {
-            get { return _currentExam; }
-            set
-            {
-                if (value != _currentExam)
-                {
-                    _currentExam = value;
-                    RaisePropertyChanged(() => CurrentExam);
-                }
-            }
-        }
 
         public GuideData CurrentTest
         {
@@ -91,52 +77,7 @@ namespace LightX_01.ViewModel
         
         #endregion Properties
 
-        #region Commands
-
-        public RelayCommand NextTestCommand
-        {
-            get
-            {
-                if (_nextTestCommand == null)
-                {
-                    _nextTestCommand = new RelayCommand(NextTest, true);
-                }
-                return _nextTestCommand;
-            }
-        }
-
-        public RelayCommand PreviousTestCommand
-        {
-            get
-            {
-                if (_previousTestCommand == null)
-                {
-                    _previousTestCommand = new RelayCommand(PreviousTest, true);
-                }
-                return _previousTestCommand;
-            }
-        }
-
-        #endregion Commands
-
-        private void UpdateCurrentTest()
-        {
-            string path = $@".\Resources\{CurrentExam.TestList[TestIndex]}.json";
-            using (StreamReader file = File.OpenText(path))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                GuideData data = (GuideData)serializer.Deserialize(file, typeof(GuideData));
-                CurrentTest = data;
-            }
-
-        }
-
-        private void UpdateCurrentList()
-        {
-            CurrentList = new ParametersList(CurrentTest);
-        }
-
-        private void UpdateCurrentImage()
+        private void FetchCurrentImage()
         {
             BitmapImage image = new BitmapImage();
             image.BeginInit();
@@ -147,47 +88,25 @@ namespace LightX_01.ViewModel
             CurrentImage = image;
         }
 
-        private void UpdateCurrentTestList()
+        private void FetchCurrentTestList()
         {
             CurrentTestsState = new RunList(new List<string>() { "Conjonctivite", "Van Herick", "Cornée", "Chambre Antérieur", "Cristalin", "Marges Pupillaires", "Transillumination de l'Iris", "Filtre Cobalt" });
             CurrentTestsState[TestIndex].Foreground = Brushes.Black;
             CurrentTestsState[TestIndex].FontWeight = FontWeights.Bold;
         }
 
-        private void UpdateAllInfos()
+        private void FetchAllData()
         {
-            UpdateCurrentTest();
-            UpdateCurrentList(); // make sure to call UpdateCurrentList after UpdateCurrentTest
-            UpdateCurrentTestList(); // same
-            UpdateCurrentImage();
+            CurrentList = new ParametersList(CurrentTest);
+            FetchCurrentTestList();
+            FetchCurrentImage();
         }
 
-        private void NextTest()
+        public GuideWindowViewModel(GuideData test, int i)
         {
-            if (TestIndex != CurrentExam.TestList.Count - 1)
-            {
-                TestIndex++;
-                UpdateAllInfos();
-            }
-            else
-            {
-                MessageBox.Show("Tous les tests ont été effectué.");
-            }
-        }
-
-        private void PreviousTest()
-        {
-            if (TestIndex != 0)
-            {
-                TestIndex--;
-                UpdateAllInfos();
-            }
-        }
-
-        public GuideWindowViewModel(Exam exam)
-        {
-            CurrentExam = exam;
-            UpdateAllInfos();
+            CurrentTest = test;
+            TestIndex = i;
+            FetchAllData();
         }
     }
 }

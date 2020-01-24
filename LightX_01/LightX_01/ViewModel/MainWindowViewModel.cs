@@ -5,6 +5,7 @@ using System.Windows;
 using System;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
+using System.Collections.ObjectModel;
 
 namespace LightX_01.ViewModel
 {
@@ -16,6 +17,7 @@ namespace LightX_01.ViewModel
         private ICommand _closeWindowCommand;
         private ICommand _createNewExamCommand;
 
+        public ObservableCollection<string> Genders { get; set; }
         #endregion Fields
 
         #region Properties
@@ -89,7 +91,7 @@ namespace LightX_01.ViewModel
                 Exam exam = new Exam() { Patient = CurrentPatient };
 
                 //GuideWindow objGuideWindow = new GuideWindow(exam);
-                CameraControlWindow objCamControlWindow = new CameraControlWindow();
+                CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
                 //objGuideWindow.DataContext = this;
                 //this.Visibility = Visibility.Hidden; // Hidding the current window
                 this.CloseWindow(window);
@@ -100,7 +102,9 @@ namespace LightX_01.ViewModel
 
         public MainWindowViewModel()
         {
-            _currentPatient = new Patient();
+            
+            Genders = new ObservableCollection<string>() { "Homme", "Femme" };
+            _currentPatient = new Patient() { Gender = Genders[0] };
         }
     }
 }

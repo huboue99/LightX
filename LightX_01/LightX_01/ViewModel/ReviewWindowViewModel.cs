@@ -78,12 +78,13 @@ namespace LightX_01.ViewModel
 
         private void ConfirmImage(Window currentWindow)
         {
-
+            currentWindow.DialogResult = true;
+            CloseWindow(currentWindow);
         }
 
         private void CancelImage(Window currentWindow)
         {
-            //
+            currentWindow.DialogResult = false;
             CloseWindow(currentWindow);
         }
 

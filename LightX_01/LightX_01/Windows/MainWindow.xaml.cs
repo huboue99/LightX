@@ -16,7 +16,7 @@ namespace LightX_01
             _mainWindowViewModel = new MainWindowViewModel();
             
             InitializeComponent();
-            FirstName.Focus();
+            FileNumber.Focus();
             DataContext = _mainWindowViewModel;
             this.Title = "LightX - Nouvel Examen";
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;

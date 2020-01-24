@@ -18,6 +18,7 @@ using CameraControl.Devices.Canon;
 using System.Timers;
 using System.Windows.Input;
 using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace LightX_01.ViewModel
 {
@@ -27,6 +28,9 @@ namespace LightX_01.ViewModel
         #region Fields
 
         private CameraDeviceManager _deviceManager;
+        private Exam _currentExam;
+        private int _testIndex = 0;
+        private List<double> _oldGuideWindowPosition = new List<double>(2);
         private BitmapImage _currentLiveViewImage;
         private bool _liveViewEnabled;
         private System.Timers.Timer _liveViewTimer;
@@ -51,6 +55,19 @@ namespace LightX_01.ViewModel
                 {
                     _deviceManager = value;
                     RaisePropertyChanged(() => DeviceManager);
+                }
+            }
+        }
+
+        public Exam CurrentExam
+        {
+            get { return _currentExam; }
+            set
+            {
+                if (value != _currentExam)
+                {
+                    _currentExam = value;
+                    RaisePropertyChanged(() => CurrentExam);
                 }
             }
         }
@@ -150,13 +167,12 @@ namespace LightX_01.ViewModel
                     }
                     else
                     {
-                        MessageBox.Show("Error occurred :" + exception.Message);
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
                     }
                 }
 
             } while (retry);
             _liveViewTimer.Start();
-            //CurrentFNumber = DeviceManager.SelectedCameraDevice.FNumber;
         }
 
 
@@ -184,7 +200,7 @@ namespace LightX_01.ViewModel
                     }
                     else
                     {
-                        MessageBox.Show("Error occurred :" + exception.Message);
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
                     }
                 }
 
@@ -247,8 +263,46 @@ namespace LightX_01.ViewModel
 
         #endregion Commands
 
+        private void ApplyCameraSettings()
+        {
+            if (DeviceManager.SelectedCameraDevice.CompressionSetting.Value != DeviceManager.SelectedCameraDevice.CompressionSetting.Values[4])
+            {
+                bool retry;
+                do
+                {
+                    retry = false;
+                    try
+                    {
+                        DeviceManager.SelectedCameraDevice.CompressionSetting.Value = DeviceManager.SelectedCameraDevice.CompressionSetting.Values[4];
+                    }
+                    catch (DeviceException exception)
+                    {
+                        // if device is bussy retry after 100 miliseconds
+                        if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy ||
+                            exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                        {
+                            // !!!!this may cause infinite loop
+                            //Thread.Yield();
+                            Thread.Sleep(100);
+                            retry = true;
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show("Error occurred :" + ex.Message);
+                    }
+
+                } while (retry);
+            }
+        }
+
         private void Capture()
         {
+            ApplyCameraSettings();
             bool retry;
             do
             {
@@ -270,12 +324,12 @@ namespace LightX_01.ViewModel
                     }
                     else
                     {
-                        MessageBox.Show("Error occurred :" + exception.Message);
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error occurred :" + ex.Message);
+                    System.Windows.MessageBox.Show("Error occurred :" + ex.Message);
                 }
 
             } while (retry);
@@ -286,7 +340,7 @@ namespace LightX_01.ViewModel
             RaisePropertyChanged(() => DeviceManager);
         }
 
-        [STAThread]
+        
         private void PhotoCaptured(object o)
         {
             PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
@@ -314,7 +368,8 @@ namespace LightX_01.ViewModel
                 eventArgs.CameraDevice.IsBusy = false;
                 eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
 
-
+                if (Path.GetExtension(fileName) == ".NEF")
+                    return;
 
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
@@ -324,40 +379,35 @@ namespace LightX_01.ViewModel
                 image.EndInit();
                 image.Freeze();
                 LastPhoto = image;
-
+                
             }
             catch (Exception exception)
             {
                 eventArgs.CameraDevice.IsBusy = false;
-                MessageBox.Show("Error download photo from camera :\n" + exception.Message);
+                System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
             }
             //GC.Collect();
 
-            // Restart the live view after capture is finished
-            //StartLiveViewInThread();
-
-
-            //StartLiveViewInThread();
-            //Thread thread = new Thread(ShowReviewWindow);
-            //thread.SetApartmentState(ApartmentState.STA);
-            //thread.Start();
-            ////ShowReviewWindow();
-            ////thread.Join();
-            //StartLiveViewInThread();
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                ShowReviewWindow();                
+            });
         }
 
         private void ShowReviewWindow()
         {
             ReviewWindow objReviewWindow = new ReviewWindow(LastPhoto);
-            objReviewWindow.ShowDialog();
-        }
-
-        void SelectedCamera_CaptureCompleted(object sender, EventArgs eventArgs)
-        {
-            Thread thread = new Thread(ShowReviewWindow);
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
+            bool? isAccepted = objReviewWindow.ShowDialog();
+            switch (isAccepted)
+            {
+                case true:
+                    CloseCurrentGuideWindow();
+                    _testIndex++;
+                    FetchCurrentTest();
+                    break;
+                default:
+                    break;
+            }
             StartLiveViewInThread();
         }
 
@@ -370,23 +420,17 @@ namespace LightX_01.ViewModel
                 {
                     // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
                     //oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
-                    oldcameraDevice.CaptureCompleted -= SelectedCamera_CaptureCompleted;
-                    _liveViewTimer.Stop();
+                    //oldcameraDevice.CaptureCompleted -= SelectedCamera_CaptureCompleted;
+                    StopLiveViewInThread();
                 }
-                //if (oldcameraDevice.GetStatus(OperationEnum.LiveView))
-                //{
-                //    oldcameraDevice.StopLiveView();
-                //}
-
                 
                 if (LiveViewEnabled)
                 {
+                    //newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
+                    //newcameraDevice.CompressionSetting.Value = newcameraDevice.CompressionSetting.Values[4];
+                    //newcameraDevice.CompressionSetting.SetValue(newcameraDevice.CompressionSetting.Values[4]);
                     StartLiveViewInThread();
                     //newcameraDevice.CameraDisconnected += SelectedCamera_CameraDisconnected;
-                    newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
-                    //CurrentFNumber.ValueChanged += SelectedCamera_FNumberChanged;
-
-
                 }
             }
         }
@@ -418,19 +462,10 @@ namespace LightX_01.ViewModel
             Thread.Sleep(100);
         }
 
-        //void SelectedCamera_FNumberChanged(object sender, string key, long val)
-        //{
-        //    if (LiveViewEnabled)
-        //    {
-        //        StopLiveView();
-        //        StartLiveViewInThread();
-        //    }
-        //}
-
         private void CloseApplication(CancelEventArgs e)
         {
             
-            var result = MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
+            var result = System.Windows.MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
             e.Cancel = result != MessageBoxResult.Yes;
             if (!e.Cancel)
             {
@@ -438,13 +473,49 @@ namespace LightX_01.ViewModel
                 {
                     StopLiveViewInThread();
                 }
-                Application.Current.Shutdown();
+                System.Windows.Application.Current.Shutdown();
             }
         }
 
-        private void ApplicationClosing()
+        private void FetchCurrentTest()
         {
+            GuideData currentTest;
+            //int i = _testIndex;
+            string path = $@".\Resources\{CurrentExam.TestList[_testIndex]}.json";
+            using (StreamReader file = File.OpenText(path))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                currentTest = (GuideData)serializer.Deserialize(file, typeof(GuideData));
+            }
 
+            GuideWindow objGuideWindow = new GuideWindow(currentTest, _testIndex);
+            if (_oldGuideWindowPosition.Count == 0)
+            {
+                // Initialize the new starting position
+                _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Left + objGuideWindow.Width / 4);
+                _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Height / 2 - objGuideWindow.Height / 2);
+            }
+
+            objGuideWindow.Left = _oldGuideWindowPosition[0];
+            objGuideWindow.Top = _oldGuideWindowPosition[1];
+
+            objGuideWindow.Show();
+        }
+
+        private void CloseCurrentGuideWindow()
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(GuideWindow))
+                    {
+                        _oldGuideWindowPosition[0] = (window as GuideWindow).Left;
+                        _oldGuideWindowPosition[1] = (window as GuideWindow).Top;
+                        (window as GuideWindow).Close();
+                    }
+                }
+            });
         }
 
         private void StartupThread()
@@ -471,7 +542,7 @@ namespace LightX_01.ViewModel
             }
         }
 
-        public CameraControlWindowViewModel()
+        public CameraControlWindowViewModel(Exam exam)
         {
             SetLiveViewTimer();
             DeviceManager = new CameraDeviceManager();
@@ -482,6 +553,7 @@ namespace LightX_01.ViewModel
             // For experimental Canon driver support- to use canon driver the canon sdk files should be copied in application folder
             DeviceManager.UseExperimentalDrivers = true;
             DeviceManager.DisableNativeDrivers = false;
+            
             FolderForPhotos = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Test");
             //DeviceManager.AddFakeCamera();
             DeviceManager.ConnectToCamera();
@@ -489,17 +561,9 @@ namespace LightX_01.ViewModel
             new Thread(StartupThread).Start();
             RefreshDisplay();
 
+            CurrentExam = exam;
 
-            Patient CurrentPatient = new Patient();
-
-            CurrentPatient.FirstName = "John";
-            CurrentPatient.LastName = "Smith";
-
-            Exam exam = new Exam() { Patient = CurrentPatient };
-
-
-            GuideWindow objGuideWindow = new GuideWindow(exam);
-            objGuideWindow.Show();
+            FetchCurrentTest();
         }
     }
 }
