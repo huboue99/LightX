@@ -8,8 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("edsdk.dll")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("edsimage.dll")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("accord.dll.config")]
 
 

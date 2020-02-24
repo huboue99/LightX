@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-G:\LightX\LightX_01\LightX_01\obj\Debug\
+C:\Users\macham\Documents\Programs\LightX\LightX_01\LightX_01\obj\Debug\
 LightX_01
 none
 false
 DEBUG;TRACE
-G:\LightX\LightX_01\LightX_01\App.xaml
+C:\Users\macham\Documents\Programs\LightX\LightX_01\LightX_01\App.xaml
 4911158700
-3-933136538
+1-1999377348
 21-1941307025
-85-1847306487
+811279585250
 Windows\ReviewWindow.xaml;Windows\CameraControlWindow.xaml;Windows\GuideWindow.xaml;Windows\MainWindow.xaml;
 
-True
+False
 

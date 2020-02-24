@@ -47,11 +47,13 @@
     <Reference Include="Accord.Video.DirectShow, Version=3.8.2.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
       <HintPath>..\packages\Accord.Video.DirectShow.3.8.2-alpha\lib\net46\Accord.Video.DirectShow.dll</HintPath>
     </Reference>
-    <Reference Include="CameraControl.Devices, Version=2.1.0.1, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\packages\CameraControl.Devices.2.1.0-beta\lib\net46\CameraControl.Devices.dll</HintPath>
+    <Reference Include="CameraControl.Devices, Version=2.1.2.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\digiCamControl-master\CameraControl.Devices\obj\x86\Debug\CameraControl.Devices.dll</HintPath>
     </Reference>
-    <Reference Include="Canon.Eos.Framework, Version=2.1.0.1, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\packages\CameraControl.Devices.2.1.0-beta\lib\net46\Canon.Eos.Framework.dll</HintPath>
+    <Reference Include="Canon.Eos.Framework, Version=2.1.2.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\digiCamControl-master\CameraControl.Devices\bin\x86\Debug\Canon.Eos.Framework.dll</HintPath>
     </Reference>
     <Reference Include="CommonServiceLocator, Version=2.0.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.2.0.2\lib\net45\CommonServiceLocator.dll</HintPath>
@@ -65,23 +67,8 @@
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.4.1.0, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
     </Reference>
-    <Reference Include="Interop.PortableDeviceApiLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CameraControl.Devices.2.1.0-beta\lib\net46\Interop.PortableDeviceApiLib.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Interop.PortableDeviceTypesLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CameraControl.Devices.2.1.0-beta\lib\net46\Interop.PortableDeviceTypesLib.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Interop.WIA, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\packages\CameraControl.Devices.2.1.0-beta\lib\net46\Interop.WIA.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="PortableDeviceLib, Version=2.1.0.1, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\packages\CameraControl.Devices.2.1.0-beta\lib\net46\PortableDeviceLib.dll</HintPath>
     </Reference>
     <Reference Include="Rssdp.Native, Version=2.0.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Rssdp.2.0.9\lib\net45\Rssdp.Native.dll</HintPath>
@@ -189,14 +176,6 @@
   <ItemGroup>
     <Folder Include="Images\" />
     <Folder Include="Resources\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="EDSDK.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="EdsImage.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -19,6 +19,7 @@ using System.Timers;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Windows.Threading;
 
 namespace LightX_01.ViewModel
 {
@@ -302,7 +303,7 @@ namespace LightX_01.ViewModel
 
         private void Capture()
         {
-            ApplyCameraSettings();
+            //ApplyCameraSettings();
             bool retry;
             do
             {
@@ -368,8 +369,15 @@ namespace LightX_01.ViewModel
                 eventArgs.CameraDevice.IsBusy = false;
                 eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
 
-                if (Path.GetExtension(fileName) == ".NEF")
+                if (Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        StartLiveViewInThread();
+                    });
                     return;
+                }
+                    
 
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
@@ -424,12 +432,16 @@ namespace LightX_01.ViewModel
                     StopLiveViewInThread();
                 }
                 
-                if (LiveViewEnabled)
+                if (true)
                 {
                     //newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
                     //newcameraDevice.CompressionSetting.Value = newcameraDevice.CompressionSetting.Values[4];
                     //newcameraDevice.CompressionSetting.SetValue(newcameraDevice.CompressionSetting.Values[4]);
-                    StartLiveViewInThread();
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        StartLiveViewInThread();
+                    });
+                    
                     //newcameraDevice.CameraDisconnected += SelectedCamera_CameraDisconnected;
                 }
             }
@@ -546,6 +558,8 @@ namespace LightX_01.ViewModel
         {
             SetLiveViewTimer();
             DeviceManager = new CameraDeviceManager();
+            DeviceManager.LoadWiaDevices = false;
+            DeviceManager.DetectWebcams = false;
             DeviceManager.CameraSelected += DeviceManager_CameraSelected;
             DeviceManager.CameraConnected += DeviceManager_CameraConnected;
             DeviceManager.PhotoCaptured += DeviceManager_PhotoCaptured;
@@ -556,13 +570,27 @@ namespace LightX_01.ViewModel
             
             FolderForPhotos = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Test");
             //DeviceManager.AddFakeCamera();
-            DeviceManager.ConnectToCamera();
+
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    DeviceManager.ConnectToCamera();
+                }
+                catch (Exception exception)
+                {
+                    Log.Error("Unable to initialize device manager", exception);
+                }
+            });
             
-            new Thread(StartupThread).Start();
-            RefreshDisplay();
+            //new Thread(StartupThread).Start();
+            StartupThread();
+            //RefreshDisplay();
 
             CurrentExam = exam;
+            //while(DeviceManager.SelecetedCameraDevice.IsBusy) { }
 
+            string whew = DeviceManager.SelectedCameraDevice.GetProhibitionCondition(OperationEnum.LiveView);
             FetchCurrentTest();
         }
     }
