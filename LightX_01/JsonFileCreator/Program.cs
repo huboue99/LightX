@@ -17,10 +17,10 @@ namespace JsonFileWriter
             {
                 FileName = "Conjonctive.json",
                 TestTitle = "Conjonctive",
-                Zoom = "10x",
-                IllumType = "Diffuse",
-                IllumIntensity = "Moyenne",
-                IllumAngle = "45°",
+                SlitIntensity = "0",
+                IllumAngle = "-",
+                DiffuseIntensity = "8",
+                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "2"},
                 InstructionsNotes = "Ayy lmao",
                 ImagesPath = new List<string>() { @"Resources\01_01.png", @"\\Resources\02_01.png" }
 
@@ -30,10 +30,10 @@ namespace JsonFileWriter
             {
                 FileName = "VanHerick.json",
                 TestTitle = "Van Herick",
-                Zoom = "10x",
-                IllumType = "Slit (plus mince possible)",
-                IllumIntensity = "Max",
+                SlitIntensity = "10",
                 IllumAngle = "60°",
+                DiffuseIntensity = "2",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/60", FNumber = "11.0", Iso = "400", BurstNumber = "1"},
                 InstructionsNotes = "On désir estimer l'espace entre la cornée et l'iris en terme d'épaisseur de cornée.",
                 ImagesPath = new List<string>() { @"Resources\02_01.png" }
             };
@@ -42,10 +42,10 @@ namespace JsonFileWriter
             {
                 FileName = "Cornea.json",
                 TestTitle = "Conée",
-                Zoom = "10x",
-                IllumType = "Slit (plus mince possible)",
-                IllumIntensity = "Max",
+                SlitIntensity = "10",
                 IllumAngle = "45°",
+                DiffuseIntensity = "2",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/30", FNumber = "11.0", Iso = "400", BurstNumber = "2"},
                 InstructionsNotes = "On désir observer toutes anomalies, défauts, ammincicement en surface/à l'intérieur/derrière la cornée.",
                 ImagesPath = new List<string>() { @"Resources\01_01.png" }
             };
@@ -54,10 +54,10 @@ namespace JsonFileWriter
             {
                 FileName = "AnteriorChamber.json",
                 TestTitle = "Chambre Antérieure",
-                Zoom = "16x",
-                IllumType = "Beam (1mm x 1mm)",
-                IllumIntensity = "Max",
+                SlitIntensity = "10",
                 IllumAngle = "40°",
+                DiffuseIntensity = "2",
+                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "1" },
                 InstructionsNotes = "On désir observer s'il y a présence de cellules et/ou de flares.  Désire que la prise de vue se fasse devant l'entrée de la pupille pour obtenir un arrière plan noir (meilleurs contraste).",
                 ImagesPath = new List<string>() { @"Resources\02_01.png" }
             };
@@ -66,10 +66,10 @@ namespace JsonFileWriter
             {
                 FileName = "Lens.json",
                 TestTitle = "Cristallin",
-                Zoom = "16x",
-                IllumType = "Slit (plus mince possible)",
-                IllumIntensity = "Max",
-                IllumAngle = "40° (ou moins)",
+                SlitIntensity = "10",
+                IllumAngle = "40°",
+                DiffuseIntensity = "2",
+                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "1" },
                 InstructionsNotes = "On désir observer s'il y a présence d'opacité ou changement de couleur dans le cristallin.",
                 ImagesPath = new List<string>() { @"Resources\02_01.png" }
             };
@@ -78,10 +78,10 @@ namespace JsonFileWriter
             {
                 FileName = "PupillaryMargin.json",
                 TestTitle = "Marges Pupillaires",
-                Zoom = "25x",
-                IllumType = "Beam (1mm x 1mm)",
-                IllumIntensity = "Élevé",
-                IllumAngle = "40° (ou moins)",
+                SlitIntensity = "0",
+                IllumAngle = "40°",
+                DiffuseIntensity = "2",
+                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "1" },
                 InstructionsNotes = "On désir observer s'il y a présence d'irrégularité ou de dépôt sur la marge.",
                 ImagesPath = new List<string>() { @"Resources\02_01.png" }
             };
@@ -90,10 +90,10 @@ namespace JsonFileWriter
             {
                 FileName = "IrisTransillumination.json",
                 TestTitle = "Transillumination de l'iris",
-                Zoom = "10x",
-                IllumType = "Beam (2mm x 2mm) Réduire la taille si la pupille est trop petite.",
-                IllumIntensity = "Max",
-                IllumAngle = "0° (environ)",
+                SlitIntensity = "10",
+                IllumAngle = "10°",
+                DiffuseIntensity = "0",
+                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "1" },
                 InstructionsNotes = "On désir observer s'il y a présence d'irrégularité ou de dépôt sur la marge.",
                 ImagesPath = new List<string>() { @"Resources\02_01.png" }
             };
@@ -102,10 +102,10 @@ namespace JsonFileWriter
             {
                 FileName = "CobaltFilter.json",
                 TestTitle = "Filtre Cobalt",
-                Zoom = "10x",
-                IllumType = "Diffuse avec filtre cobalt",
-                IllumIntensity = "Élevé",
-                IllumAngle = "30° (environ)",
+                SlitIntensity = "5",
+                IllumAngle = "30°",
+                DiffuseIntensity = "0",
+                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "1" },
                 InstructionsNotes = "Administer les gouttes de fluorescéine au patient et laissez agir. On désir observer s'il y a présence d'abrasion/défaut dans la cornée.",
                 ImagesPath = new List<string>() { @"Resources\02_01.png" }
             };

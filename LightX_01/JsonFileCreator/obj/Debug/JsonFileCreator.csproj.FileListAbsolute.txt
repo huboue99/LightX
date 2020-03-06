@@ -1,5 +1,3 @@
-G:\LightX\LightX_01\JsonFileCreator\bin\Debug\EDSDK.dll
-G:\LightX\LightX_01\JsonFileCreator\bin\Debug\EdsImage.dll
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Accord.dll.config
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\JsonFileCreator.exe.config
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\JsonFileCreator.exe
@@ -32,7 +30,6 @@ G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Accord.Video.DirectShow.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Rssdp.Native.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Accord.Video.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Accord.xml
-G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csprojResolveAssemblyReference.cache
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.exe
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.pdb
 C:\Users\macham\Documents\Programs\LightX\LightX_01\JsonFileCreator\bin\Debug\Accord.dll.config
@@ -65,3 +62,6 @@ C:\Users\macham\Documents\Programs\LightX\LightX_01\JsonFileCreator\bin\Debug\Ac
 C:\Users\macham\Documents\Programs\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csprojResolveAssemblyReference.cache
 C:\Users\macham\Documents\Programs\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.exe
 C:\Users\macham\Documents\Programs\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.pdb
+G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csprojAssemblyReference.cache
+G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csproj.CoreCompileInputs.cache
+G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csproj.CopyComplete

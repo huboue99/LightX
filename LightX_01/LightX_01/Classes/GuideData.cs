@@ -49,10 +49,13 @@ namespace LightX_01.Classes
         public ParametersList(GuideData data) : base()
         {
             ObservableCollection<Parameters> list = new ObservableCollection<Parameters>();
-            Add(new Parameters() { Name = "Grossissement", Value = data.Zoom });
-            Add(new Parameters() { Name = "Type d'illumination", Value = data.IllumType });
-            Add(new Parameters() { Name = "Intensité d'illumination", Value = data.IllumIntensity });
+            Add(new Parameters() { Name = "Intensité slit", Value = data.SlitIntensity });
             Add(new Parameters() { Name = "Angle d'illumination", Value = data.IllumAngle });
+            Add(new Parameters() { Name = "Intensité diffuse", Value = data.DiffuseIntensity });
+            Add(new Parameters() { Name = "Flash", Value = data.CamSettings.Flash});
+            Add(new Parameters() { Name = "Shutter speed", Value = data.CamSettings.ShutterSpeed });
+            Add(new Parameters() { Name = "f#", Value = data.CamSettings.FNumber });
+            Add(new Parameters() { Name = "ISO", Value = data.CamSettings.Iso });
             
         }
     }
@@ -63,10 +66,10 @@ namespace LightX_01.Classes
 
         private string _fileName;
         private string _testTitle;
-        private string _zoom;
-        private string _illumType;
-        private string _illumIntensity;
+        private string _slitIntensity;
         private string _illumAngle;
+        private string _diffuseIntensity;
+        private CameraSettings _camSettings;
         private string _instructionsNotes;
         private List<string> _imagesPath;
 
@@ -100,41 +103,15 @@ namespace LightX_01.Classes
             }
         }
 
-        public string Zoom
+        public string SlitIntensity
         {
-            get { return _zoom; }
+            get { return _slitIntensity; }
             set
             {
-                if (value != _zoom)
+                if (value != _slitIntensity)
                 {
-                    _zoom = value;
-                    OnPropertyChanged("Zoom");
-                }
-            }
-        }
-
-        public string IllumType
-        {
-            get { return _illumType; }
-            set
-            {
-                if (value != _illumType)
-                {
-                    _illumType = value;
-                    OnPropertyChanged("IllumType");
-                }
-            }
-        }
-
-        public string IllumIntensity
-        {
-            get { return _illumIntensity; }
-            set
-            {
-                if (value != _illumIntensity)
-                {
-                    _illumIntensity = value;
-                    OnPropertyChanged("IllumIntensity");
+                    _slitIntensity = value;
+                    OnPropertyChanged("SlitIntensity");
                 }
             }
         }
@@ -148,6 +125,32 @@ namespace LightX_01.Classes
                 {
                     _illumAngle = value;
                     OnPropertyChanged("IllumAngle");
+                }
+            }
+        }
+
+        public string DiffuseIntensity
+        {
+            get { return _diffuseIntensity; }
+            set
+            {
+                if (value != _diffuseIntensity)
+                {
+                    _diffuseIntensity = value;
+                    OnPropertyChanged("DiffuseIntensity");
+                }
+            }
+        }
+
+        public CameraSettings CamSettings
+        {
+            get { return _camSettings; }
+            set
+            {
+                if (value != _camSettings)
+                {
+                    _camSettings = value;
+                    OnPropertyChanged("CamSettings");
                 }
             }
         }

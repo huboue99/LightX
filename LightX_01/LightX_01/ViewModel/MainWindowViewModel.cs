@@ -53,6 +53,7 @@ namespace LightX_01.ViewModel
             }
         }
 
+
         public ICommand CreateNewExamCommand
         {
             get
@@ -79,12 +80,19 @@ namespace LightX_01.ViewModel
 
         private void CreateNewExam(Window window)
         {
-            if (string.IsNullOrEmpty(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.LastName) || string.IsNullOrEmpty(CurrentPatient.LastName))
+            bool TESTING = true;
+            if ((string.IsNullOrEmpty(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.LastName) || string.IsNullOrEmpty(CurrentPatient.LastName)) && !TESTING)
             {
                 MessageBox.Show("Veuillez préciser le prénom et le nom.");
             }
             else
             {
+                if(TESTING)
+                {
+                    CurrentPatient.FirstName = "John";
+                    CurrentPatient.LastName = "Smith";
+                }
+
                 CurrentPatient.FirstName.Trim();
                 CurrentPatient.LastName = CurrentPatient.LastName.Trim();
 

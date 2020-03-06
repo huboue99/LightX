@@ -10,7 +10,8 @@ namespace LightX_01.Classes
         private Patient _patient;
         private DateTime _examDate;
         private ObservableCollection<string> _testList;
-        private string _comments;
+        private ObservableCollection<TestResults> _results;
+        private string _generalComments;
 
         #endregion Fields
 
@@ -53,15 +54,28 @@ namespace LightX_01.Classes
             }
         }
 
-        public string Comments
+        public ObservableCollection<TestResults> Results
         {
-            get { return _comments; }
+            get { return _results; }
             set
             {
-                if (value != _comments)
+                if (value != _results)
                 {
-                    _comments = value;
-                    OnPropertyChanged("Comments");
+                    _results = value;
+                    OnPropertyChanged("Results");
+                }
+            }
+        }
+
+        public string GeneralComments
+        {
+            get { return _generalComments; }
+            set
+            {
+                if (value != _generalComments)
+                {
+                    _generalComments = value;
+                    OnPropertyChanged("GeneralComments");
                 }
             }
         }
@@ -70,6 +84,7 @@ namespace LightX_01.Classes
         {
             //get dateCurrent
             _testList = new ObservableCollection<string>() { "Conjonctive", "VanHerick", "Cornea", "AnteriorChamber", "Lens", "PupillaryMargin", "IrisTransillumination", "CobaltFilter" };
+            _results = new ObservableCollection<TestResults>();
             _examDate = DateTime.Now;
         }
     }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 using System;
 using System.Windows.Controls;
+using System.Collections.ObjectModel;
 
 namespace LightX_01.ViewModel
 {
@@ -16,6 +17,7 @@ namespace LightX_01.ViewModel
     {
         #region Fields
 
+        private ObservableCollection<string> _testList;
         private GuideData _currentTest;
         private ParametersList _currentList;
         private RunList _currentTestsState;
@@ -23,11 +25,24 @@ namespace LightX_01.ViewModel
         private int TestIndex;
         private RelayCommand _nextTestCommand;
         private RelayCommand _previousTestCommand;
-        
-        
+
+
         #endregion Fields
 
         #region Properties
+
+        //public ObservableCollection<string> TestList
+        //{
+        //    get { return _testList; }
+        //    set
+        //    {
+        //        if (_testList != value)
+        //        {
+        //            _testList = value;
+        //            RaisePropertyChanged(() => TestList);
+        //        }
+        //    }
+        //}
 
         public GuideData CurrentTest
         {
@@ -90,7 +105,8 @@ namespace LightX_01.ViewModel
 
         private void FetchCurrentTestList()
         {
-            CurrentTestsState = new RunList(new List<string>() { "Conjonctivite", "Van Herick", "Cornée", "Chambre Antérieur", "Cristalin", "Marges Pupillaires", "Transillumination de l'Iris", "Filtre Cobalt" });
+
+            CurrentTestsState = new RunList(_testList);
             CurrentTestsState[TestIndex].Foreground = Brushes.Black;
             CurrentTestsState[TestIndex].FontWeight = FontWeights.Bold;
         }
@@ -102,8 +118,9 @@ namespace LightX_01.ViewModel
             FetchCurrentImage();
         }
 
-        public GuideWindowViewModel(GuideData test, int i)
+        public GuideWindowViewModel(GuideData test, ObservableCollection<string> testList, int i)
         {
+            _testList = testList;
             CurrentTest = test;
             TestIndex = i;
             FetchAllData();

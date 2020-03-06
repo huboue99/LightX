@@ -21,9 +21,14 @@ namespace LightX_01
     {
         private readonly ReviewWindowViewModel _reviewWindowViewModel;
 
-        public ReviewWindow(BitmapImage image)
+        public string Comment
         {
-            _reviewWindowViewModel = new ReviewWindowViewModel(image);
+            get { return _reviewWindowViewModel.CurrentComment; }
+        }
+
+        public ReviewWindow(BitmapImage image, string comment)
+        {
+            _reviewWindowViewModel = new ReviewWindowViewModel(image, comment);
             InitializeComponent();
             DataContext = _reviewWindowViewModel;
 

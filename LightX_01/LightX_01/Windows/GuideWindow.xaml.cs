@@ -1,6 +1,8 @@
 ﻿using LightX_01.Classes;
 using LightX_01.ViewModel;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
@@ -34,9 +36,9 @@ namespace LightX_01
         const int WM_CLOSE = 0x10;
 
 
-        public GuideWindow(GuideData test, int i)
+        public GuideWindow(GuideData test, ObservableCollection<string> testList, int i)
         {
-            _guideWindowViewModel = new GuideWindowViewModel(test, i);
+            _guideWindowViewModel = new GuideWindowViewModel(test, testList, i);
             InitializeComponent();
             DataContext = _guideWindowViewModel;
 

@@ -6,7 +6,7 @@ namespace LightX_01.Classes
 {
     public class RunList : ObservableCollection<Run>
     {
-        public RunList(List<string> listString) : base()
+        public RunList(ObservableCollection<string> listString) : base()
         {
             ObservableCollection<Run> list = new ObservableCollection<Run>();
             foreach (string element in listString)

@@ -93,9 +93,10 @@ namespace LightX_01.ViewModel
             currentWindow.Close();
         }
 
-        public ReviewWindowViewModel(BitmapImage image)
+        public ReviewWindowViewModel(BitmapImage image, string comment)
         {
             _currentImage = image;
+            _currentComment = comment;
         }
     }
 }

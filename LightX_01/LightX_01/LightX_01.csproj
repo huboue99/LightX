@@ -49,11 +49,11 @@
     </Reference>
     <Reference Include="CameraControl.Devices, Version=2.1.2.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\digiCamControl-master\CameraControl.Devices\obj\x86\Debug\CameraControl.Devices.dll</HintPath>
+      <HintPath>..\..\..\digiCamControl\CameraControl.Devices\bin\x86\Debug\CameraControl.Devices.dll</HintPath>
     </Reference>
     <Reference Include="Canon.Eos.Framework, Version=2.1.2.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\digiCamControl-master\CameraControl.Devices\bin\x86\Debug\Canon.Eos.Framework.dll</HintPath>
+      <HintPath>..\..\..\digiCamControl\CameraControl.Devices\bin\x86\Debug\Canon.Eos.Framework.dll</HintPath>
     </Reference>
     <Reference Include="CommonServiceLocator, Version=2.0.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.2.0.2\lib\net45\CommonServiceLocator.dll</HintPath>
@@ -101,6 +101,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\CameraSettings.cs" />
+    <Compile Include="Classes\TestResults.cs" />
     <Compile Include="Windows\ReviewWindow.xaml.cs">
       <DependentUpon>ReviewWindow.xaml</DependentUpon>
     </Compile>
