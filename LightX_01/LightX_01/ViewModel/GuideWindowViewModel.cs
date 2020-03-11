@@ -1,15 +1,10 @@
 ﻿using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
 using LightX_01.Classes;
-using Newtonsoft.Json;
-using System.IO;
+using System;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
-using System.Collections.Generic;
 using System.Windows.Media.Imaging;
-using System;
-using System.Windows.Controls;
-using System.Collections.ObjectModel;
 
 namespace LightX_01.ViewModel
 {
@@ -23,26 +18,10 @@ namespace LightX_01.ViewModel
         private RunList _currentTestsState;
         private BitmapImage _currentImage;
         private int TestIndex;
-        private RelayCommand _nextTestCommand;
-        private RelayCommand _previousTestCommand;
-
 
         #endregion Fields
 
         #region Properties
-
-        //public ObservableCollection<string> TestList
-        //{
-        //    get { return _testList; }
-        //    set
-        //    {
-        //        if (_testList != value)
-        //        {
-        //            _testList = value;
-        //            RaisePropertyChanged(() => TestList);
-        //        }
-        //    }
-        //}
 
         public GuideData CurrentTest
         {
@@ -89,8 +68,10 @@ namespace LightX_01.ViewModel
                 }
             }
         }
-        
+
         #endregion Properties
+
+        #region DataFetching
 
         private void FetchCurrentImage()
         {
@@ -105,7 +86,6 @@ namespace LightX_01.ViewModel
 
         private void FetchCurrentTestList()
         {
-
             CurrentTestsState = new RunList(_testList);
             CurrentTestsState[TestIndex].Foreground = Brushes.Black;
             CurrentTestsState[TestIndex].FontWeight = FontWeights.Bold;
@@ -117,6 +97,8 @@ namespace LightX_01.ViewModel
             FetchCurrentTestList();
             FetchCurrentImage();
         }
+
+        #endregion DataFetching
 
         public GuideWindowViewModel(GuideData test, ObservableCollection<string> testList, int i)
         {

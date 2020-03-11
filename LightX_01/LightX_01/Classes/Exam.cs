@@ -15,6 +15,8 @@ namespace LightX_01.Classes
 
         #endregion Fields
 
+        #region Properties
+
         public Patient Patient
         {
             get { return _patient; }
@@ -80,10 +82,13 @@ namespace LightX_01.Classes
             }
         }
 
+        #endregion Properties
+
         public Exam()
         {
-            //get dateCurrent
-            _testList = new ObservableCollection<string>() { "Conjonctive", "VanHerick", "Cornea", "AnteriorChamber", "Lens", "PupillaryMargin", "IrisTransillumination", "CobaltFilter" };
+            // Default test list = ALL OF THEM
+            if(_testList == null)
+                _testList = new ObservableCollection<string>() { "Conjonctive", "VanHerick", "Cornea", "AnteriorChamber", "Lens", "PupillaryMargin", "IrisTransillumination", "CobaltFilter" };
             _results = new ObservableCollection<TestResults>();
             _examDate = DateTime.Now;
         }

@@ -1,5 +1,4 @@
 ﻿
-
 namespace LightX_01.Classes
 {
     public class CameraSettings : BaseClass

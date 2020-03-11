@@ -105,3 +105,5 @@ G:\LightX\LightX_01\LightX_01\bin\Debug\Interop.PortableDeviceTypesLib.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\CameraControl.Devices.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\PortableDeviceLib.pdb
 G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.csprojAssemblyReference.cache
+G:\LightX\LightX_01\LightX_01\bin\Debug\Magick.NET-Q16-AnyCPU.dll
+G:\LightX\LightX_01\LightX_01\bin\Debug\Magick.NET-Q16-AnyCPU.xml

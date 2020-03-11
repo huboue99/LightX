@@ -1,11 +1,9 @@
 ﻿using GalaSoft.MvvmLight;
-using LightX_01.Classes;
-using System.ComponentModel;
-using System.Windows;
-using System;
-using System.Windows.Input;
 using GalaSoft.MvvmLight.Command;
+using LightX_01.Classes;
 using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Input;
 
 namespace LightX_01.ViewModel
 {
@@ -14,10 +12,13 @@ namespace LightX_01.ViewModel
         #region Fields
 
         private Patient _currentPatient;
+
+        // Commands definition
         private ICommand _closeWindowCommand;
         private ICommand _createNewExamCommand;
 
         public ObservableCollection<string> Genders { get; set; }
+
         #endregion Fields
 
         #region Properties
@@ -37,18 +38,16 @@ namespace LightX_01.ViewModel
 
         #endregion Properties
 
-        #region Commands
+        #region RelayCommands
 
         public ICommand CloseWindowCommand
         {
             get
             {
                 if (_closeWindowCommand == null)
-                {
                     _closeWindowCommand = new RelayCommand<Window>(
                         param => CloseWindow(param)
                         );
-                }
                 return _closeWindowCommand;
             }
         }
@@ -59,16 +58,16 @@ namespace LightX_01.ViewModel
             get
             {
                 if (_createNewExamCommand == null)
-                {
                     _createNewExamCommand = new RelayCommand<Window>(
                         param => CreateNewExam(param)
                         );
-                }
                 return _createNewExamCommand;
             }
         }
 
-        #endregion Commands
+        #endregion RelayCommands
+
+        #region Actions
 
         private void CloseWindow(Window window)
         {
@@ -80,37 +79,42 @@ namespace LightX_01.ViewModel
 
         private void CreateNewExam(Window window)
         {
+            ///////////// TESTINGS /////////////////
             bool TESTING = true;
+            ////////////////////////////////////////
+            
             if ((string.IsNullOrEmpty(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.LastName) || string.IsNullOrEmpty(CurrentPatient.LastName)) && !TESTING)
             {
                 MessageBox.Show("Veuillez préciser le prénom et le nom.");
             }
             else
             {
+                ///////////////////////////////////
                 if(TESTING)
                 {
                     CurrentPatient.FirstName = "John";
                     CurrentPatient.LastName = "Smith";
                 }
+                //////////////////////////////////
 
+                // Sanitize input string
                 CurrentPatient.FirstName.Trim();
                 CurrentPatient.LastName = CurrentPatient.LastName.Trim();
 
+                // Create the Exam (patient, currentTime, testList)
                 Exam exam = new Exam() { Patient = CurrentPatient };
 
-                //GuideWindow objGuideWindow = new GuideWindow(exam);
+                // Open control and guide windows; close the patien info windows
                 CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
-                //objGuideWindow.DataContext = this;
-                //this.Visibility = Visibility.Hidden; // Hidding the current window
                 this.CloseWindow(window);
-                //objGuideWindow.Show();
                 objCamControlWindow.Show();
             }
         }
 
+        #endregion Actions
+
         public MainWindowViewModel()
         {
-            
             Genders = new ObservableCollection<string>() { "Homme", "Femme" };
             _currentPatient = new Patient() { Gender = Genders[0] };
         }

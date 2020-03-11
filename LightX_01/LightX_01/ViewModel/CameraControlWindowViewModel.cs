@@ -1,54 +1,53 @@
-﻿using GalaSoft.MvvmLight;
+﻿using CameraControl.Devices;
+using CameraControl.Devices.Canon;
+using CameraControl.Devices.Classes;
+using CameraControl.Devices.Nikon;
+using ImageMagick;
+using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using LightX_01.Classes;
 using Newtonsoft.Json;
-using System.IO;
-using System.Windows;
-using System.Windows.Media;
-using System.Collections.Generic;
-using System.Windows.Media.Imaging;
 using System;
-using System.Drawing;
-using System.Windows.Controls;
-using CameraControl.Devices;
-using CameraControl.Devices.Classes;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using CameraControl.Devices.Canon;
-using System.Timers;
-using System.Windows.Input;
 using System.ComponentModel;
+using System.IO;
+using System.Threading;
+using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Threading;
-using CameraControl.Devices.Nikon;
-using System.Windows.Interop;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace LightX_01.ViewModel
 {
-
     public class CameraControlWindowViewModel : ViewModelBase
     {
         #region Fields
 
+        // Main data holder & handler
         private CameraDeviceManager _deviceManager;
         private Exam _currentExam;
-        private CameraSettings _currentTestCameraSettings;
         private TestResults _currentTestResults;
-        private int _testIndex = 0;
-        private List<double> _oldGuideWindowPosition = new List<double>(2);
+
+        // Camera settings and results
+        private CameraSettings _currentTestCameraSettings;
         private BitmapImage _currentLiveViewImage;
         private bool _liveViewEnabled;
+        private volatile int _burstIsFinished;
+        public ObservableCollection<BitmapImage> CapturedImages { get; set; }
+
+        // System and windows vars
+        private List<double> _oldGuideWindowPosition = new List<double>(2);
         private System.Timers.Timer _liveViewTimer;
-        private string _folderForPhotos;
         private object _locker = new object();
+        private int _testIndex = 0;
+        private string _folderForPhotos;
+
+        // Commands definition
         private RelayCommand _captureCommand;
         private ICommand _imageMouseWheelCommand;
-        public BitmapImage LastPhoto { get; set; }
-        public ObservableCollection<BitmapImage> CapturedImages { get; set; }
         private ICommand _closingCommand;
-
-        public ICameraDevice CameraDevice { get; set; }
 
         #endregion Fields
 
@@ -99,10 +98,6 @@ namespace LightX_01.ViewModel
             set { _folderForPhotos = value; }
         }
 
-        #endregion Properties
-
-        #region Commands
-
         public bool LiveViewEnabled
         {
             get { return _liveViewEnabled; }
@@ -116,7 +111,56 @@ namespace LightX_01.ViewModel
             }
         }
 
-        void _liveViewTimer_Tick(object sender, EventArgs e)
+        #endregion Properties
+
+        #region RelayCommands
+
+        public RelayCommand CaptureCommand
+        {
+            get
+            {
+                if (_captureCommand == null)
+                    _captureCommand = new RelayCommand(CaptureInThread, true);
+                return _captureCommand;
+            }
+        }
+
+        public ICommand ImageMouseWheelCommand
+        {
+            get
+            {
+                if (_imageMouseWheelCommand == null)
+                    _imageMouseWheelCommand = new RelayCommand<MouseWheelEventArgs>(
+                        param => ImageMouseWheel(param)
+                        );
+                return _imageMouseWheelCommand;
+            }
+        }
+
+        public ICommand ClosingCommand
+        {
+            get
+            {
+                if (_closingCommand == null)
+                    _closingCommand = new RelayCommand<CancelEventArgs>(
+                        param => CloseApplication(param)
+                        );
+                return _closingCommand;
+            }
+        }
+
+        #endregion RelayCommands
+
+        #region SystemCommands
+
+        private void SetLiveViewTimer()
+        {
+            _liveViewTimer = new System.Timers.Timer(1000 / 60);
+            _liveViewTimer.Elapsed += _liveViewTimer_Tick;
+            _liveViewTimer.AutoReset = true;
+        }
+
+        private void _liveViewTimer_Tick(object sender, EventArgs e)
         {
             LiveViewData liveViewData = null;
             try
@@ -124,14 +168,11 @@ namespace LightX_01.ViewModel
                 liveViewData = DeviceManager.SelectedCameraDevice.GetLiveViewImage();
             }
             catch (Exception)
-            {
-                return;
-            }
+            { return; }
 
             if (liveViewData == null || liveViewData.ImageData == null)
-            {
                 return;
-            }
+
             try
             {
                 BitmapImage image = new BitmapImage();
@@ -148,42 +189,12 @@ namespace LightX_01.ViewModel
                 CurrentLiveViewImage = image;
             }
             catch (Exception)
-            {
-
-            }
+            { }
         }
 
-        private void StartLiveView()
-        {
-            bool retry;
-            do
-            {
-                retry = false;
-                try
-                {
-                    while (DeviceManager.SelectedCameraDevice.IsBusy) { }
-                    DeviceManager.SelectedCameraDevice.StartLiveView();
-                    
-                }
-                catch (DeviceException exception)
-                {
-                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
-                    {
-                        // this may cause infinite loop
-                        Thread.Sleep(100);
-                        retry = true;
-                    }
-                    else
-                    {
-                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
-                    }
-                }
+        #endregion SystemCommands
 
-            } while (retry);
-            _liveViewTimer.Start();
-            //DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(3);
-        }
-
+        #region EventHandlers
 
         private void ImageMouseWheel(MouseWheelEventArgs e)
         {
@@ -198,106 +209,69 @@ namespace LightX_01.ViewModel
             }
         }
 
-        private void StopLiveView()
+        void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
         {
-            bool retry;
-            do
+            ApplyCameraSettings(cameraDevice);
+        }
+
+        void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
+        {
+            //StartupThread();
+            if (oldcameraDevice != newcameraDevice)
             {
-                retry = false;
-                try
+                LiveViewEnabled = newcameraDevice.GetCapability(CapabilityEnum.LiveView);
+                if (_liveViewTimer.Enabled)
                 {
-                    _liveViewTimer.Stop();
-                    // wait for last get live view image
-                    Thread.Sleep(500);
-                    //while (DeviceManager.SelectedCameraDevice.IsBusy) { }
-                    DeviceManager.SelectedCameraDevice.StopLiveView();
+                    // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
+                    //oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
+                    //oldcameraDevice.CaptureCompleted -= SelectedCamera_CaptureCompleted;
+                    oldcameraDevice.CameraInitDone -= SelectedCamera_CameraInitDone;
+                    StopLiveViewInThread();
                 }
-                catch (DeviceException exception)
+
+                if (LiveViewEnabled)
                 {
-                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    //newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
+                    //newcameraDevice.CompressionSetting.Value = newcameraDevice.CompressionSetting.Values[4];
+                    //newcameraDevice.CompressionSetting.SetValue(newcameraDevice.CompressionSetting.Values[4]);
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        // this may cause infinite loop
-                        Thread.Sleep(100);
-                        retry = true;
-                    }
-                    else
-                    {
-                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
-                    }
+                        StartLiveViewInThread();
+                    });
                 }
-
-            } while (retry);
-        }
-
-        private void SetLiveViewTimer()
-        {
-            _liveViewTimer = new System.Timers.Timer(1000 / 60);
-            _liveViewTimer.Elapsed += _liveViewTimer_Tick;
-            _liveViewTimer.AutoReset = true;
-        }
-
-        public RelayCommand CaptureCommand
-        {
-            get
-            {
-                if (_captureCommand == null)
-                {
-                    _captureCommand = new RelayCommand(CaptureInThread, true);
-                }
-                return _captureCommand;
+                newcameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
             }
         }
 
-        public ICommand ImageMouseWheelCommand
+        void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
         {
-            get
-            {
-                if (_imageMouseWheelCommand == null)
-                {
-                    _imageMouseWheelCommand = new RelayCommand<MouseWheelEventArgs>(
-                        param => ImageMouseWheel(param)
-                        );
-                }
-                return _imageMouseWheelCommand;
-            }
+            //StartupThread();
+            RefreshDisplay();
         }
 
-        public ICommand ClosingCommand
+        void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
         {
-            get
-            {
-                if (_closingCommand == null)
-                {
-                    _closingCommand = new RelayCommand<CancelEventArgs>(
-                        param => CloseApplication(param)
-                        );
-                }
-                return _closingCommand;
-            }
+            //lock (_locker) // Prevent program to start new transfer while another transfer is active.
+            //{
+            //    // to prevent UI freeze start the transfer process in a new thread
+            //    //Thread thread = new Thread(PhotoCaptured);
+            //    //thread.Start(eventArgs);
+            //    PhotoCaptured(eventArgs);
+            //}
+            ++_burstIsFinished; // if the burst is controlled via the camera's trigger button itself (counts the number of capture to process before showing the review window)
+            Thread thread = new Thread(PhotoCaptured);
+            thread.Start(eventArgs);
         }
 
-        private void CaptureInThread()
+        void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
         {
-            if (_liveViewEnabled)
-                StopLiveViewInThread();
-            //thread.ThreadState = ThreadState.
-            Thread.Sleep(100);
-            new Thread(Capture).Start();
+            _liveViewTimer.Stop();
+            RefreshDisplay();
         }
 
-        private void StartLiveViewInThread()
-        {
-            new Thread(StartLiveView).Start();
-        }
+        #endregion EventHandlers
 
-        private void StopLiveViewInThread()
-        {
-            Thread thread = new Thread(StopLiveView);
-            thread.Start();
-            thread.Join();
-        }
-
-        #endregion Commands
+        #region CameraCommands
 
         private void ApplyCameraSettings(ICameraDevice cameraDevice)
         {
@@ -348,12 +322,21 @@ namespace LightX_01.ViewModel
                 }
                 cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.NumericValues[0]); // "AF-S"
                 //cameraDevice.LiveViewFocusMode.SetValue(cameraDevice.LiveViewFocusMode.NumericValues[0]); // "AF-S"
-                cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.NumericValues[0]); // "JPEG (BASIC)" = 0 / RAW = 3 / RAW + JPEG = 4
+                cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.NumericValues[3]); // "JPEG (BASIC)" = 0 / RAW = 3 / RAW + JPEG = 4
 
                 cameraDevice.ShutterSpeed.SetValue(_currentTestCameraSettings.ShutterSpeed);
                 cameraDevice.FNumber.SetValue(_currentTestCameraSettings.FNumber);
 
             }
+        }
+
+        private void CaptureInThread()
+        {
+            if (_liveViewEnabled)
+                StopLiveViewInThread();
+            //thread.ThreadState = ThreadState.
+            Thread.Sleep(100);
+            new Thread(Capture).Start();
         }
 
         private void Capture()
@@ -389,14 +372,9 @@ namespace LightX_01.ViewModel
             } while (retry);
         }
 
-        private void RefreshDisplay()
-        {
-            RaisePropertyChanged(() => DeviceManager);
-        }
-
-        
         private void PhotoCaptured(object o)
         {
+            //_burstIsFinished = true;
             if (CapturedImages == null)
                 CapturedImages = new ObservableCollection<BitmapImage>();
             PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
@@ -435,55 +413,62 @@ namespace LightX_01.ViewModel
                 //    return;
                 //}
 
-                //BitmapImage image = new BitmapImage();
-                //image.BeginInit();
-                //image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                //image.UriSource = new Uri(fileName, UriKind.Absolute);
-                //image.CacheOption = BitmapCacheOption.OnLoad;
-                //image.EndInit();
-                //image.Freeze();
-                //LastPhoto = image;
-
                 eventArgs.CameraDevice.IsBusy = true;
+
+                //BitmapImage image;
+
+                Stream memStream = new MemoryStream();
+                eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+
+                memStream.Position = 0;
+
+                
 
                 // Gestion temporaire des fichier RAW
                 string fileName = Path.Combine(FolderForPhotos, Path.GetFileName(eventArgs.FileName));
                 if(Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
                 {
-                    if (File.Exists(fileName))
-                        fileName =
-                          StaticHelper.GetUniqueFilename(
-                            Path.GetDirectoryName(fileName) + "\\" + Path.GetFileNameWithoutExtension(fileName) + "_", 0,
-                            Path.GetExtension(fileName));
-
-                    // check the folder of filename, if not found create it
-                    if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+                    using (MagickImage magickImage = new MagickImage(memStream, MagickFormat.Nef))
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+                        memStream.Close();
+                        //IPixelCollection pc = magickImage.GetPixels();
+                        //byte[] data = pc.ToByteArray("RGB");
+                        //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
+
+
+                        //IPixelCollection pc = magickImage.GetPixels();
+                        //byte[] data = pc.ToByteArray(PixelMapping.BGR);
+                        //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
+                        BitmapSource bmf = magickImage.ToBitmapSource();
+
+                        // conversion en bitmap image
+
+                        BitmapImage image = Bs2bi(bmf);
+                        image.Freeze();
+                        CapturedImages.Add(image);
                     }
-                    eventArgs.CameraDevice.TransferFile(eventArgs.Handle, fileName);
-                    // the IsBusy may used internally, if file transfer is done should set to false  
-                    eventArgs.CameraDevice.IsBusy = false;
-                    eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
-                    return;
+                }
+                else // JPEG 
+                {
+                    //Stream memStream = new MemoryStream();
+
+                    // eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+
+                    //memStream.Position = 0;
+
+                    BitmapImage image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = memStream;
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.EndInit();
+                    image.Freeze();
+                    memStream.Close();
+                    CapturedImages.Add(image);
                 }
 
-
-                Stream memStream = new MemoryStream();
-
-               eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
-
-                memStream.Position = 0;
-                BitmapImage image = new BitmapImage();
-                image.BeginInit();
-                image.StreamSource = memStream;
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.EndInit();
-                image.Freeze();
+                --_burstIsFinished;
 
                 //LastPhoto = image;
-                CapturedImages.Add(image);
-
                 eventArgs.CameraDevice.IsBusy = false;
                 eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
             }
@@ -493,116 +478,140 @@ namespace LightX_01.ViewModel
                 System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
             }
             
-            //GC.Collect();
-            if(_currentTestCameraSettings.BurstNumber == CapturedImages.Count.ToString())
+            GC.Collect();
+            //if (_currentTestCameraSettings.BurstNumber == CapturedImages.Count.ToString())
+            if (_burstIsFinished == 0) // (wait for all captureEvents to be process before showing the review window)
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     ShowReviewWindow();
                     CapturedImages.Clear();
+                    CapturedImages = null;
                 });
+            
         }
 
+        private void StartLiveViewInThread()
+        {
+            new Thread(StartLiveView).Start();
+        }
+
+        private void StartLiveView()
+        {
+            bool retry;
+            do
+            {
+                retry = false;
+                try
+                {
+                    while (DeviceManager.SelectedCameraDevice.IsBusy) { }
+                    DeviceManager.SelectedCameraDevice.StartLiveView();
+                    
+                }
+                catch (DeviceException exception)
+                {
+                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    {
+                        // this may cause infinite loop
+                        Thread.Sleep(100);
+                        retry = true;
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                    }
+                }
+
+            } while (retry);
+            _liveViewTimer.Start();
+            //DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(3);
+        }
+
+        private void StopLiveViewInThread()
+        {
+            Thread thread = new Thread(StopLiveView);
+            thread.Start();
+            thread.Join();
+        }
+
+        private void StopLiveView()
+        {
+            bool retry;
+            do
+            {
+                retry = false;
+                try
+                {
+                    _liveViewTimer.Stop();
+                    // wait for last get live view image
+                    Thread.Sleep(500);
+                    //while (DeviceManager.SelectedCameraDevice.IsBusy) { }
+                    DeviceManager.SelectedCameraDevice.StopLiveView();
+                }
+                catch (DeviceException exception)
+                {
+                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    {
+                        // this may cause infinite loop
+                        Thread.Sleep(100);
+                        retry = true;
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                    }
+                }
+
+            } while (retry);
+        }
+
+        private void StartupThread()
+        {
+            foreach (var cameraDevice in DeviceManager.ConnectedDevices)
+            {
+                //var property = cameraDevice.
+                //CameraPreset preset = ServiceProvider.Settings.GetPreset(property.DefaultPresetName);
+                // multiple canon cameras block with this settings
+
+
+                if (!(cameraDevice is CanonSDKBase))
+                    cameraDevice.CaptureInSdRam = true;
+
+                //Log.Debug("cameraDevice_CameraInitDone");
+                try
+                {
+                    cameraDevice.DateTime = DateTime.Now;
+                }
+                catch (Exception exception)
+                {
+                    Log.Error("Unable to sysnc date time", exception);
+                }
+                
+            }
+        }
+
+        #endregion CameraCommands
+
+        #region WindowsManagement
 
         private void ShowReviewWindow()
         {
-            ReviewWindow objReviewWindow = new ReviewWindow(CapturedImages[0], _currentTestResults.Comments);
+            ReviewWindow objReviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
             bool? isAccepted = objReviewWindow.ShowDialog();
             _currentTestResults.Comments = objReviewWindow.Comment;
             switch (isAccepted)
             {
                 case true:
                     CloseCurrentGuideWindow();
-                    SaveTestResults();
+                    SaveTestResults(objReviewWindow.SelectedImages);
                     _testIndex++;
                     FetchCurrentTest();
-                    break;
+                    goto default;
                 default:
+                    objReviewWindow.Close();
                     break;
             }
 
             StartLiveViewInThread();
-        }
-
-        private void SaveTestResults()
-        {
-            // get Applied camera settings
-            _currentTestResults.CamSettings = new CameraSettings()
-            {
-                FNumber = DeviceManager.SelectedCameraDevice.FNumber.Value,
-                ShutterSpeed = DeviceManager.SelectedCameraDevice.ShutterSpeed.Value,
-                Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
-            };
-
-            // get paths of selected images
-
-            // rename and copy/move selected images
-
-            // delete remaining images
-
-            // add _currentTestResults to _currentExam
-            _currentExam.Results.Add(_currentTestResults);
-        }
-
-        void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
-        {
-            //StartupThread();
-            if (oldcameraDevice != newcameraDevice)
-            {
-                LiveViewEnabled = newcameraDevice.GetCapability(CapabilityEnum.LiveView);
-                if (_liveViewTimer.Enabled)
-                {
-                    // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
-                    //oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
-                    //oldcameraDevice.CaptureCompleted -= SelectedCamera_CaptureCompleted;
-                    oldcameraDevice.CameraInitDone -= SelectedCamera_CameraInitDone;
-                    StopLiveViewInThread();
-                }
-                
-                if (LiveViewEnabled)
-                {
-                    //newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
-                    //newcameraDevice.CompressionSetting.Value = newcameraDevice.CompressionSetting.Values[4];
-                    //newcameraDevice.CompressionSetting.SetValue(newcameraDevice.CompressionSetting.Values[4]);
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        StartLiveViewInThread();
-                    });
-                }
-                newcameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
-            }
-        }
-
-        void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
-        {
-            ApplyCameraSettings(cameraDevice);
-        }
-
-        void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
-        {
-            //StartupThread();
-            RefreshDisplay();
-        }
-
-        void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
-        {
-            lock (_locker) // Prevent program to start new transfer while another transfer is active.
-            {
-                // to prevent UI freeze start the transfer process in a new thread
-                //Thread thread = new Thread(PhotoCaptured);
-                //thread.Start(eventArgs);
-                PhotoCaptured(eventArgs);
-            }
-        }
-
-        void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
-        {
-            RefreshDisplay();
-        }
-
-        void SelectedCamera_CameraDisconnected(object sender, DisconnectCameraEventArgs eventArgs)
-        {
-            _liveViewTimer.Stop();
-            Thread.Sleep(100);
         }
 
         private void CloseApplication(CancelEventArgs e)
@@ -618,6 +627,59 @@ namespace LightX_01.ViewModel
                 }
                 System.Windows.Application.Current.Shutdown();
             }
+        }
+
+        private void CloseCurrentGuideWindow()
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(GuideWindow))
+                    {
+                        _oldGuideWindowPosition[0] = (window as GuideWindow).Left;
+                        _oldGuideWindowPosition[1] = (window as GuideWindow).Top;
+                        (window as GuideWindow).Close();
+                    }
+                }
+            });
+        }
+
+        private void RefreshDisplay()
+        {
+            RaisePropertyChanged(() => DeviceManager);
+        }
+
+        #endregion WindowsManagement
+
+        #region DataAccess
+
+        private void SaveTestResults(ObservableCollection<bool> selectedImages)
+        {
+            // get Applied camera settings
+            _currentTestResults.CamSettings = new CameraSettings()
+            {
+                BurstNumber = _currentTestCameraSettings.BurstNumber,
+                Flash = _currentTestCameraSettings.Flash,
+                FNumber = DeviceManager.SelectedCameraDevice.FNumber.Value,
+                ShutterSpeed = DeviceManager.SelectedCameraDevice.ShutterSpeed.Value,
+                Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
+            };
+
+            // get paths of selected images
+
+            // rename and copy/move selected images
+            for(int i = 0; i < CapturedImages.Count; i++)
+            {
+                if (selectedImages[i]) { }
+                    //SaveToTiff(CapturedImages[i]);
+            }
+
+            // delete remaining images
+
+
+            // add _currentTestResults to _currentExam
+            _currentExam.Results.Add(_currentTestResults);
         }
 
         private void FetchCurrentTest()
@@ -658,93 +720,79 @@ namespace LightX_01.ViewModel
             
         }
 
-        private void CloseCurrentGuideWindow()
+        #endregion DataAccess
+
+        #region ImageManipulation
+
+        private static BitmapImage Bs2bi(BitmapSource bs)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                foreach (Window window in System.Windows.Application.Current.Windows)
-                {
-                    if (window.GetType() == typeof(GuideWindow))
-                    {
-                        _oldGuideWindowPosition[0] = (window as GuideWindow).Left;
-                        _oldGuideWindowPosition[1] = (window as GuideWindow).Top;
-                        (window as GuideWindow).Close();
-                    }
-                }
-            });
+            TiffBitmapEncoder encoder = new TiffBitmapEncoder();
+            //JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+            MemoryStream memoryStream = new MemoryStream();
+            BitmapImage bImg = new BitmapImage();
+
+            encoder.Frames.Add(BitmapFrame.Create(bs));
+            encoder.Save(memoryStream);
+
+            memoryStream.Position = 0;
+            bImg.BeginInit();
+            bImg.StreamSource = memoryStream;
+            bImg.CacheOption = BitmapCacheOption.OnLoad;
+            bImg.EndInit();
+
+            memoryStream.Close();
+
+            return bImg;
         }
 
-        private void StartupThread()
+        private static BitmapSource FromArray(byte[] data, int w, int h, int ch)
         {
-            foreach (var cameraDevice in DeviceManager.ConnectedDevices)
-            {
-                //var property = cameraDevice.
-                //CameraPreset preset = ServiceProvider.Settings.GetPreset(property.DefaultPresetName);
-                // multiple canon cameras block with this settings
+            PixelFormat format = PixelFormats.Default;
+
+            if (ch == 1) format = PixelFormats.Gray8; //grey scale image 0-255
+            if (ch == 3) format = PixelFormats.Rgb48; //RGB
+            if (ch == 4) format = PixelFormats.Bgr32; //RGB + alpha
 
 
-                if (!(cameraDevice is CanonSDKBase))
-                    cameraDevice.CaptureInSdRam = true;
+            WriteableBitmap wbm = new WriteableBitmap(w, h, 96, 96, format, null);
 
-                //Log.Debug("cameraDevice_CameraInitDone");
-                try
-                {
-                    cameraDevice.DateTime = DateTime.Now;
-                }
-                catch (Exception exception)
-                {
-                    Log.Error("Unable to sysnc date time", exception);
-                }
-                
-            }
+            wbm.WritePixels(new Int32Rect(0, 0, w, h), data, ch * w, 0);
+
+            return wbm;
         }
+
+        #endregion ImageManipulation
 
         public CameraControlWindowViewModel(Exam exam)
         {
             SetLiveViewTimer();
-
-
             
-            lock (_locker) // Prevent program to start new transfer while another transfer is active.
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                try
                 {
-                    try
-                    {
-                        DeviceManager = new CameraDeviceManager();
-                        DeviceManager.LoadWiaDevices = false;
-                        DeviceManager.DetectWebcams = false;
-                        DeviceManager.CameraSelected += DeviceManager_CameraSelected;
-                        DeviceManager.CameraConnected += DeviceManager_CameraConnected;
-                        DeviceManager.PhotoCaptured += DeviceManager_PhotoCaptured;
-                        DeviceManager.CameraDisconnected += DeviceManager_CameraDisconnected;
-                        // For experimental Canon driver support- to use canon driver the canon sdk files should be copied in application folder
-                        DeviceManager.UseExperimentalDrivers = true;
-                        DeviceManager.DisableNativeDrivers = false;
-                        DeviceManager.ConnectToCamera();
-                    }
-                    catch (Exception exception)
-                    {
-                        Log.Error("Unable to initialize device manager", exception);
-                    }
-                });
-            }
+                    DeviceManager = new CameraDeviceManager();
+                    DeviceManager.LoadWiaDevices = false;
+                    DeviceManager.DetectWebcams = false;
+                    DeviceManager.CameraSelected += DeviceManager_CameraSelected;
+                    DeviceManager.CameraConnected += DeviceManager_CameraConnected;
+                    DeviceManager.PhotoCaptured += DeviceManager_PhotoCaptured;
+                    DeviceManager.CameraDisconnected += DeviceManager_CameraDisconnected;
+                    // For experimental Canon driver support- to use canon driver the canon sdk files should be copied in application folder
+                    DeviceManager.UseExperimentalDrivers = true;
+                    DeviceManager.DisableNativeDrivers = false;
+                    DeviceManager.ConnectToCamera();
+                }
+                catch (Exception exception)
+                {
+                    Log.Error("Unable to initialize device manager", exception);
+                }
+            });
+
             FolderForPhotos = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Test");
 
-            //while (DeviceManager.SelectedCameraDevice.AdvancedProperties.Count == 0) { }
-
-            Thread sthread = new Thread(StartupThread);
-            
-            
-            //StartupThread();
-            //RefreshDisplay();
-
-
+            StartupThread(); // initial setup of camera
             CurrentExam = exam;
-            //while(DeviceManager.SelecetedCameraDevice.IsBusy) { }
-
-            string whew = DeviceManager.SelectedCameraDevice.GetProhibitionCondition(OperationEnum.LiveView);
             FetchCurrentTest();
         }
     }
