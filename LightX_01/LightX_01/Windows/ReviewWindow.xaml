@@ -22,10 +22,7 @@
                 <TextBox Height="90" Width="1000" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding CurrentComment}"/>
             </StackPanel>
             <StackPanel Width="160" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <StackPanel Margin="0 15" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <CheckBox HorizontalAlignment="Center" IsChecked="{Binding Path=CurrentImageIsSelected, Mode=TwoWay}" IsEnabled="{Binding ImageIsSelectable}"/>
-                    <TextBlock Text=" Keep this image"/>
-                </StackPanel>
+                <CheckBox Content="Keep this image" Margin="0 15" HorizontalAlignment="Center" IsChecked="{Binding Path=CurrentImageIsSelected, Mode=TwoWay}" IsEnabled="{Binding ImageIsSelectable}"/>
                 <Button Content="Confirm" Width="90" Height="20" Command="{Binding ConfirmCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}"/>
                 <!--<Button Content="Confirm" Width="90" Height="20"/>-->
                 <Button Content="Cancel" Width="90" Height="20" Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}" Margin="0 15 0 0" IsCancel="True"/>

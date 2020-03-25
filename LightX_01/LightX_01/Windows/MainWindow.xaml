@@ -4,10 +4,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:local="clr-namespace:LightX_01"
         xmlns:Sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="LightX - Nouvel Examen" Height="280" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
+        Title="LightX - Nouvel Examen" Height="485" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
 
     <Window.InputBindings>
         <!--<KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>-->
@@ -60,11 +61,24 @@
                 </ComboBox>
                
             </StackPanel>
-
             <!--<Label Content="Nom :" Grid.Column="2" HorizontalAlignment="Right"/>-->
             <!--<TextBox Text="{Binding CurrentPatient.LastName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="3" TextWrapping="NoWrap" VerticalContentAlignment="Center" Width="190" HorizontalAlignment="Left"/>-->
         </Grid>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 15 0 0">
+        <StackPanel Margin="0 15">
+            <Button Content="Select All"  Command="{Binding SelectAllClickCommand}" Width="90" HorizontalAlignment="Left" Margin="30 0 0 5"/>
+            <ListBox ItemsSource="{Binding CurrentTestListChoices}" Width="440">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding Text}" IsChecked="{Binding IsSelected}" Margin="0 0">
+                        </CheckBox>
+                    </DataTemplate>
+                    
+                </ListBox.ItemTemplate>
+                
+            </ListBox>
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 5 0 0">
             <Button Name="ButtonCreate" Margin="15 0"  Content="Créer" Width="90" Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}"/>
             <Button Name="ButtonClose" Margin="15 0" Content="Fermer" Width="90" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" IsCancel="True"/>
         </StackPanel>

@@ -1,8 +1,10 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using LightX_01.Classes;
-using System.Collections.ObjectModel;
+using System;
 using System.Windows;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace LightX_01.ViewModel
@@ -12,10 +14,13 @@ namespace LightX_01.ViewModel
         #region Fields
 
         private Patient _currentPatient;
+        private ObservableCollection<BoolStringClass> _currentTestListChoices;
+        private bool _allSelectedChecked = true;
 
         // Commands definition
         private ICommand _closeWindowCommand;
         private ICommand _createNewExamCommand;
+        private ICommand _selectAllClickCommand;
 
         public ObservableCollection<string> Genders { get; set; }
 
@@ -32,6 +37,32 @@ namespace LightX_01.ViewModel
                 {
                     _currentPatient = value;
                     RaisePropertyChanged(() => CurrentPatient);
+                }
+            }
+        }
+
+        public ObservableCollection<BoolStringClass> CurrentTestListChoices
+        {
+            get { return _currentTestListChoices; }
+            set
+            {
+                if (value != _currentTestListChoices)
+                {
+                    _currentTestListChoices = value;
+                    RaisePropertyChanged(() => CurrentTestListChoices);
+                }
+            }
+        }
+
+        public bool AllSelectedChecked
+        {
+            get { return _allSelectedChecked; }
+            set
+            {
+                if (value != _allSelectedChecked)
+                {
+                    _allSelectedChecked = value;
+                    RaisePropertyChanged(() => AllSelectedChecked);
                 }
             }
         }
@@ -65,6 +96,16 @@ namespace LightX_01.ViewModel
             }
         }
 
+        public ICommand SelectAllClickCommand
+        {
+            get
+            {
+                if(_selectAllClickCommand == null)
+                    _selectAllClickCommand = new RelayCommand(SelectAllClick, true);
+                return _selectAllClickCommand;
+            }
+        }
+
         #endregion RelayCommands
 
         #region Actions
@@ -77,20 +118,37 @@ namespace LightX_01.ViewModel
             }
         }
 
+        private ObservableCollection<string> CreateTestList()
+        {
+            ObservableCollection<string> testList = new ObservableCollection<string>();
+            foreach(BoolStringClass test in CurrentTestListChoices)
+            {
+                if (test.IsSelected)
+                    testList.Add(test.Value);
+            }
+
+
+
+            return testList;
+        }
+
         private void CreateNewExam(Window window)
         {
             ///////////// TESTINGS /////////////////
             bool TESTING = true;
             ////////////////////////////////////////
-            
+
+            // Vérifications
             if ((string.IsNullOrEmpty(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.LastName) || string.IsNullOrEmpty(CurrentPatient.LastName)) && !TESTING)
             {
                 MessageBox.Show("Veuillez préciser le prénom et le nom.");
             }
+            else if (AreAllTrueOrFalse() == 0)
+                MessageBox.Show("Aucun test n'a été selectionné. Veuillez en sélectionner au moins un.");
             else
             {
                 ///////////////////////////////////
-                if(TESTING)
+                if (TESTING)
                 {
                     CurrentPatient.FirstName = "John";
                     CurrentPatient.LastName = "Smith";
@@ -101,8 +159,10 @@ namespace LightX_01.ViewModel
                 CurrentPatient.FirstName.Trim();
                 CurrentPatient.LastName = CurrentPatient.LastName.Trim();
 
+                ObservableCollection<string> testList = CreateTestList();
+
                 // Create the Exam (patient, currentTime, testList)
-                Exam exam = new Exam() { Patient = CurrentPatient };
+                Exam exam = new Exam() { Patient = CurrentPatient, TestList = testList };
 
                 // Open control and guide windows; close the patien info windows
                 CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
@@ -111,10 +171,59 @@ namespace LightX_01.ViewModel
             }
         }
 
+        private void CreateCheckBoxList()
+        {
+            _currentTestListChoices = new ObservableCollection<BoolStringClass>();
+            _currentTestListChoices.Add(new BoolStringClass("Conjonctive", "Conjonctive"));
+            _currentTestListChoices.Add(new BoolStringClass("Van Herick", "VanHerick"));
+            _currentTestListChoices.Add(new BoolStringClass("Cornée", "Cornea"));
+            _currentTestListChoices.Add(new BoolStringClass("Chambre Antérieure", "AnteriorChamber"));
+            _currentTestListChoices.Add(new BoolStringClass("Cristallin", "Lens"));
+            _currentTestListChoices.Add(new BoolStringClass("Marge Pupillaire", "PupillaryMargin"));
+            _currentTestListChoices.Add(new BoolStringClass("Transillumination de l'iris", "IrisTransillumination"));
+            _currentTestListChoices.Add(new BoolStringClass("Filtre Cobalt", "CobaltFilter"));
+        }
+
+        private void SelectAllClick()
+        {
+            int a = AreAllTrueOrFalse();
+            foreach (BoolStringClass test in _currentTestListChoices)
+            {
+                switch(a)
+                {
+                    case 1:
+                        test.IsSelected = false;
+                        break;
+                    default:
+                        test.IsSelected = true;
+                        break;
+                }
+            }
+        }
+
         #endregion Actions
+
+        private int AreAllTrueOrFalse()
+        {
+            bool a = false;
+            int i = 0;
+            foreach(BoolStringClass test in _currentTestListChoices)
+            {
+                a = a || test.IsSelected;
+                if (test.IsSelected)
+                    i++;
+            }
+            if (!a)
+                return 0; // All false
+            else if (i != _currentTestListChoices.Count)
+                return 2; // Some true, some false
+            else
+                return 1; // All true
+        }
 
         public MainWindowViewModel()
         {
+            CreateCheckBoxList();
             Genders = new ObservableCollection<string>() { "Homme", "Femme" };
             _currentPatient = new Patient() { Gender = Genders[0] };
         }

@@ -24,6 +24,53 @@ namespace LightX_01
     {
         private readonly CameraControlWindowViewModel _cameraControlWindowViewModel;
 
+        public void KeyDownEventHandler(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Space:
+                    if (!e.IsRepeat)
+                        _cameraControlWindowViewModel.ZoomOutEvent();
+                    break;
+                case Key.Up:
+                    goto case Key.Right;
+                case Key.Down:
+                    goto case Key.Right;
+                case Key.Left:
+                    goto case Key.Right;
+                case Key.Right:
+                    _cameraControlWindowViewModel.MoveRoiXY(e);
+                    break;
+            }
+            e.Handled = true;
+        }
+
+        public void KeyUpEventHandler(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            switch(e.Key)
+            {
+                case Key.Space:
+                    if(!e.IsRepeat)
+                        _cameraControlWindowViewModel.SetZoom();
+                    break;
+            }
+            e.Handled = true;
+        }
+
+        public void MouseLeftButtonDownEventHandler(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                Point cursorPosition = e.GetPosition(e.Source as IInputElement);
+                // divide by the dimension of the image shown on screen
+                _cameraControlWindowViewModel.MouseLeftButtonDown(cursorPosition.X/(sender as System.Windows.Controls.Grid).ActualWidth, cursorPosition.Y/(sender as System.Windows.Controls.Grid).ActualHeight);
+            }
+            catch (Exception exception)
+            {
+                string ayylmao = exception.ToString();
+            }
+        }
+
         public CameraControlWindow(Exam exam)
         {
             _cameraControlWindowViewModel = new CameraControlWindowViewModel(exam);

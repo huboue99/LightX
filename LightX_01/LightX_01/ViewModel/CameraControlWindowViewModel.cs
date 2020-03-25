@@ -18,6 +18,9 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace LightX_01.ViewModel
 {
@@ -34,7 +37,14 @@ namespace LightX_01.ViewModel
         private CameraSettings _currentTestCameraSettings;
         private BitmapImage _currentLiveViewImage;
         private bool _liveViewEnabled;
-        private volatile int _burstIsFinished;
+        private string _lastZoom;
+        private volatile bool _zoomHasChanged = true;
+        private ObservableCollection<int> _roiXY = null;
+        private ObservableCollection<int> ROIXYMAX;
+        private ObservableCollection<int> _currentRoiXYLimits;
+        private WriteableBitmap _overlayBitmap;
+        private volatile int _remainingBurst = 0;
+        private int _totalBurstNumber = 0;
         public ObservableCollection<BitmapImage> CapturedImages { get; set; }
 
         // System and windows vars
@@ -42,7 +52,6 @@ namespace LightX_01.ViewModel
         private System.Timers.Timer _liveViewTimer;
         private object _locker = new object();
         private int _testIndex = 0;
-        private string _folderForPhotos;
 
         // Commands definition
         private RelayCommand _captureCommand;
@@ -92,10 +101,56 @@ namespace LightX_01.ViewModel
             }
         }
 
-        public string FolderForPhotos
+        public WriteableBitmap OverlayBitmap
         {
-            get { return _folderForPhotos; }
-            set { _folderForPhotos = value; }
+            get { return _overlayBitmap; }
+            set
+            {
+                if (value != _overlayBitmap)
+                {
+                    _overlayBitmap = value;
+                    RaisePropertyChanged(() => OverlayBitmap);
+                }
+            }
+        }
+
+        public ObservableCollection<int> RoiXY
+        {
+            get { return _roiXY; }
+            set
+            {
+                if (value != _roiXY)
+                {
+                    _roiXY = value;
+                    RaisePropertyChanged(() => RoiXY);
+                    new Thread(() =>
+                    {
+                        bool retry;
+                        Thread.CurrentThread.IsBackground = true;
+                        do
+                        {
+                            retry = false;
+                            try
+                            {
+                                DeviceManager.SelectedCameraDevice.Focus(_roiXY[0], _roiXY[1]);
+                            }
+                            catch (DeviceException exception)
+                            {
+                                if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                                {
+                                    // this may cause infinite loop
+                                    Thread.Sleep(100);
+                                    retry = true;
+                                }
+                                else
+                                {
+                                    System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                                }
+                            }
+                        } while (retry);
+                    }).Start();
+                }
+            }
         }
 
         public bool LiveViewEnabled
@@ -137,6 +192,18 @@ namespace LightX_01.ViewModel
             }
         }
 
+        //public ICommand ImageMouseLeftButtonDownCommand
+        //{
+        //    get
+        //    {
+        //        if (_imageMouseLeftButtonDownCommand == null)
+        //            _imageMouseLeftButtonDownCommand = new RelayCommand<MouseButtonEventArgs>(
+        //                param => ImageMouseLeftButtonDown(param)
+        //                );
+        //        return _imageMouseLeftButtonDownCommand;
+        //    }
+        //}
+
         public ICommand ClosingCommand
         {
             get
@@ -173,6 +240,36 @@ namespace LightX_01.ViewModel
             if (liveViewData == null || liveViewData.ImageData == null)
                 return;
 
+            /* Set le ROI du live view (and get the dimensions of the bitmapImage) */
+            if (RoiXY == null)
+            {
+                ROIXYMAX = new ObservableCollection<int>() { liveViewData.ImageWidth, liveViewData.ImageHeight };
+                SetRoiXY(ROIXYMAX[0]/2, ROIXYMAX[1]/2);
+            }
+
+            if (_zoomHasChanged)
+            {
+                double ratioX = GetZoomRatio(liveViewData.LiveViewImageWidth, liveViewData.ImageWidth);
+                double ratioY = GetZoomRatio(liveViewData.LiveViewImageHeight, liveViewData.ImageHeight);
+                _currentRoiXYLimits = new ObservableCollection<int>
+                {
+                    (int)(ratioX*liveViewData.LiveViewImageWidth/2),
+                    ROIXYMAX[0] - (int)(ratioX*liveViewData.LiveViewImageWidth/2),
+                    (int)(ratioY*liveViewData.LiveViewImageHeight/2),
+                    ROIXYMAX[1] - (int)(ratioY*liveViewData.LiveViewImageHeight/2)
+                };
+                _zoomHasChanged = false;
+            }
+            /**/
+
+            if (true)
+            {
+                if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0])
+                    OverlayBitmap = DrawFocusPoint(liveViewData);
+                else
+                    OverlayBitmap = null;
+            }
+                
             try
             {
                 BitmapImage image = new BitmapImage();
@@ -192,6 +289,11 @@ namespace LightX_01.ViewModel
             { }
         }
 
+        private static int Clamp(int value, int min, int max)
+        {
+            return (value < min) ? min : (value > max) ? max : value;
+        }
+
         #endregion SystemCommands
 
         #region EventHandlers
@@ -199,28 +301,62 @@ namespace LightX_01.ViewModel
         private void ImageMouseWheel(MouseWheelEventArgs e)
         {
             e.Handled = true;
-            if (e.Delta > 0)
+            new Thread(() =>
             {
-                DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.NextValue();
-            }
-            else if (e.Delta < 0)
-            {
-                DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.PrevValue();
-            }
+                Thread.CurrentThread.IsBackground = true;
+                /* run your code here */
+                if (e.Delta > 0)
+                {
+                    if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values.Count - 2])
+                        DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.NextValue();
+                }
+                else if (e.Delta < 0)
+                {
+                    DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.PrevValue();
+                }
+            }).Start();
+            _zoomHasChanged = true;
+        }
+
+        public void MouseLeftButtonDown(double x, double y)
+        {
+            //x*(liveViewSize/imageSizeOnScreen)*(fullResolutionSize/liveViewSize) = x * fullResolutionSize / imageSizeOnScreen
+            SetRoiXY((int)(x*(double)ROIXYMAX[0]), (int)(y*(double)ROIXYMAX[1]));
+        }
+
+        public void ZoomOutEvent()
+        {
+            _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value;
+            SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
+        }
+
+        public void SetZoom(string desiredZoom = null)
+        {
+            if (desiredZoom == null)
+                desiredZoom = _lastZoom;
+            if(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != desiredZoom)
+                DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(desiredZoom);
+            _zoomHasChanged = true;
         }
 
         void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
         {
             ApplyCameraSettings(cameraDevice);
+            if (LiveViewEnabled)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    StartLiveViewInThread();
+                });
+            }
         }
 
         void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
         {
-            //StartupThread();
             if (oldcameraDevice != newcameraDevice)
             {
                 LiveViewEnabled = newcameraDevice.GetCapability(CapabilityEnum.LiveView);
-                if (_liveViewTimer.Enabled)
+                if (_liveViewTimer.Enabled && (oldcameraDevice is NikonBase || oldcameraDevice is CanonSDKBase))
                 {
                     // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
                     //oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
@@ -229,15 +365,11 @@ namespace LightX_01.ViewModel
                     StopLiveViewInThread();
                 }
 
-                if (LiveViewEnabled)
+                if (LiveViewEnabled && (newcameraDevice is NikonBase || newcameraDevice is CanonSDKBase))
                 {
                     //newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
                     //newcameraDevice.CompressionSetting.Value = newcameraDevice.CompressionSetting.Values[4];
                     //newcameraDevice.CompressionSetting.SetValue(newcameraDevice.CompressionSetting.Values[4]);
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        StartLiveViewInThread();
-                    });
                 }
                 newcameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
             }
@@ -245,7 +377,6 @@ namespace LightX_01.ViewModel
 
         void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
         {
-            //StartupThread();
             RefreshDisplay();
         }
 
@@ -258,7 +389,8 @@ namespace LightX_01.ViewModel
             //    //thread.Start(eventArgs);
             //    PhotoCaptured(eventArgs);
             //}
-            ++_burstIsFinished; // if the burst is controlled via the camera's trigger button itself (counts the number of capture to process before showing the review window)
+            ++_remainingBurst; // if the burst is controlled via the camera's trigger button itself (counts the number of capture to process before showing the review window)
+            ++_totalBurstNumber;
             Thread thread = new Thread(PhotoCaptured);
             thread.Start(eventArgs);
         }
@@ -309,7 +441,7 @@ namespace LightX_01.ViewModel
                             propertyVal.SetValue(propertyVal.NumericValues[0]); // Flash prohibited = 0 / Normal synch = 2 / slow synch = 3
                             break;
                         case "Color space":
-                            propertyVal.SetValue(propertyVal.NumericValues[1]); // Adobe RGB
+                            propertyVal.SetValue(propertyVal.NumericValues[0]); // Adobe RGB = 1
                             break;
                         case "Flash sync speeeeeeeed":
                             propertyVal.SetValue(propertyVal.NumericValues[0]); // 1/320
@@ -326,7 +458,7 @@ namespace LightX_01.ViewModel
 
                 cameraDevice.ShutterSpeed.SetValue(_currentTestCameraSettings.ShutterSpeed);
                 cameraDevice.FNumber.SetValue(_currentTestCameraSettings.FNumber);
-
+                SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
             }
         }
 
@@ -362,6 +494,8 @@ namespace LightX_01.ViewModel
                     }
                     else
                     {
+                        if (exception.ErrorCode == ErrorCodes.MTP_Out_of_Focus) // restart the liveView when can't focus
+                            StartLiveViewInThread();
                         System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
                     }
                 }
@@ -374,7 +508,6 @@ namespace LightX_01.ViewModel
 
         private void PhotoCaptured(object o)
         {
-            //_burstIsFinished = true;
             if (CapturedImages == null)
                 CapturedImages = new ObservableCollection<BitmapImage>();
             PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
@@ -382,21 +515,6 @@ namespace LightX_01.ViewModel
                 return;
             try
             {
-                //eventArgs.CameraDevice.IsBusy = true;
-                //string fileName = Path.Combine(FolderForPhotos, Path.GetFileName(eventArgs.FileName));
-                //// if file exist try to generate a new filename to prevent file lost. 
-                //// This useful when camera is set to record in ram the the all file names are same.
-                //if (File.Exists(fileName))
-                //    fileName =
-                //      StaticHelper.GetUniqueFilename(
-                //        Path.GetDirectoryName(fileName) + "\\" + Path.GetFileNameWithoutExtension(fileName) + "_", 0,
-                //        Path.GetExtension(fileName));
-
-                //// check the folder of filename, if not found create it
-                //if (!Directory.Exists(Path.GetDirectoryName(fileName)))
-                //{
-                //    Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-                //}
                 //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, fileName);
                 //// the IsBusy may used internally, if file transfer is done should set to false  
                 //eventArgs.CameraDevice.IsBusy = false;
@@ -422,30 +540,94 @@ namespace LightX_01.ViewModel
 
                 memStream.Position = 0;
 
-                
-
                 // Gestion temporaire des fichier RAW
-                string fileName = Path.Combine(FolderForPhotos, Path.GetFileName(eventArgs.FileName));
+                string fileName = Path.GetFileName(eventArgs.FileName);
                 if(Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
                 {
                     using (MagickImage magickImage = new MagickImage(memStream, MagickFormat.Nef))
                     {
                         memStream.Close();
+                        GC.Collect();
                         //IPixelCollection pc = magickImage.GetPixels();
                         //byte[] data = pc.ToByteArray("RGB");
                         //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
 
 
+                        System.Drawing.Bitmap bmp = magickImage.ToBitmap(System.Drawing.Imaging.ImageFormat.Tiff);
+
+                        //System.Drawing.Bitmap uwu = new System.Drawing.Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format48bppRgb);
+
+                        //using (Graphics graph = Graphics.FromImage(uwu))
+                        //{
+                        //    graph.DrawImage(bmp, new System.Drawing.Point(0, 0));
+                        //}
+
+                        //bmp.PixelFormat = System.Drawing.Imaging.PixelFormat.Format48bppRgb;
+
+                        //Bitmap ayy;
+
+                        //System.Drawing.Imaging.PixelFormat pixelFormat = System.Drawing.Imaging.PixelFormat.Format48bppRgb;
+
+                        //Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+
+                        //BitmapData bitmapData = bmp.LockBits(rect, ImageLockMode.ReadOnly, pixelFormat);
+                        //try
+                        //{
+                        //    Bitmap convertedBitmap = new Bitmap(bmp.Width, bmp.Height, pixelFormat);
+                        //    BitmapData convertedBitmapData = convertedBitmap.LockBits(rect, ImageLockMode.WriteOnly, pixelFormat);
+                        //    try
+                        //    {
+                        //        NativeMethods.CopyMemory(convertedBitmapData.Scan0, bitmapData.Scan0, (uint)bitmapData.Stride * (uint)bitmapData.Height);
+                        //    }
+                        //    finally
+                        //    {
+                        //        convertedBitmap.UnlockBits(convertedBitmapData);
+                        //    }
+
+                        //    ayy = convertedBitmap;
+                        //}
+                        //finally
+                        //{
+                        //    bmp.UnlockBits(bitmapData);
+                        //}
+
+                        magickImage.Dispose();
+                        GC.Collect();
+
+                        using (var mem = new MemoryStream())
+                        {
+                            bmp.Save(mem, System.Drawing.Imaging.ImageFormat.Tiff);
+                            bmp.Dispose();
+                            mem.Position = 0;
+
+                            BitmapImage image = new BitmapImage();
+                            image.BeginInit();
+                            image.StreamSource = mem;
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.EndInit();
+                            image.Freeze();
+
+                            CapturedImages.Add(image);
+                            mem.Close();
+                        }
+
+                        //    bmp.Save()
                         //IPixelCollection pc = magickImage.GetPixels();
+
                         //byte[] data = pc.ToByteArray(PixelMapping.BGR);
+
+                        //ushort[] data = pc.ToArray();
                         //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
-                        BitmapSource bmf = magickImage.ToBitmapSource();
+
+                        //BitmapSource bmf = magickImage.ToBitmapSource(BitmapDensity.)
 
                         // conversion en bitmap image
 
-                        BitmapImage image = Bs2bi(bmf);
-                        image.Freeze();
-                        CapturedImages.Add(image);
+                        //BitmapImage image = Bs2bi(bmf);
+
+
+                        //image.Freeze();
+                        //CapturedImages.Add(image);
                     }
                 }
                 else // JPEG 
@@ -466,9 +648,8 @@ namespace LightX_01.ViewModel
                     CapturedImages.Add(image);
                 }
 
-                --_burstIsFinished;
+                --_remainingBurst;
 
-                //LastPhoto = image;
                 eventArgs.CameraDevice.IsBusy = false;
                 eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
             }
@@ -477,17 +658,99 @@ namespace LightX_01.ViewModel
                 eventArgs.CameraDevice.IsBusy = false;
                 System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
             }
-            
             GC.Collect();
-            //if (_currentTestCameraSettings.BurstNumber == CapturedImages.Count.ToString())
-            if (_burstIsFinished == 0) // (wait for all captureEvents to be process before showing the review window)
+
+            if (_remainingBurst == 0) // (wait for all captureEvents to be process before showing the review window)
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     ShowReviewWindow();
-                    CapturedImages.Clear();
-                    CapturedImages = null;
                 });
-            
+        }
+
+        public void SetRoiXY(int x, int y)
+        {
+            bool retry;
+            do
+            {
+                retry = false;
+                try
+                {
+                    RoiXY = new ObservableCollection<int>() { Clamp(x, 0, ROIXYMAX[0]), Clamp(y, 0, ROIXYMAX[1]) };
+                }
+                catch (DeviceException exception)
+                {
+                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    {
+                        // this may cause infinite loop
+                        Thread.Sleep(100);
+                        retry = true;
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                    }
+                }
+            } while (retry);
+        }
+
+        public void MoveRoiXY(System.Windows.Input.KeyEventArgs e)
+        {
+            int stepSize;
+            bool retry;
+            switch (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value)
+            {
+                case "33%":
+                    stepSize = 150;
+                    break;
+                case "50%":
+                    stepSize = 100;
+                    break;
+                case "66%":
+                    stepSize = 50;
+                    break;
+                case "100%":
+                    stepSize = 25;
+                    break;
+                default: // case "All" + "25%"
+                    stepSize = 200;
+                    break;
+            }
+
+            do // to deal if you press the direction keys too quickly
+            {
+                retry = false;
+                try
+                {
+                    switch (e.Key)
+                    {
+                        case Key.Up:
+                            SetRoiXY(RoiXY[0], Clamp(RoiXY[1] - stepSize, _currentRoiXYLimits[2], _currentRoiXYLimits[3]));
+                            break;
+                        case Key.Down:
+                            SetRoiXY(RoiXY[0], Clamp(RoiXY[1] + stepSize, _currentRoiXYLimits[2], _currentRoiXYLimits[3]));
+                            break;
+                        case Key.Left:
+                            SetRoiXY(Clamp(RoiXY[0] - stepSize, _currentRoiXYLimits[0], _currentRoiXYLimits[1]), RoiXY[1]);
+                            break;
+                        case Key.Right:
+                            SetRoiXY(Clamp(RoiXY[0] + stepSize, _currentRoiXYLimits[0], _currentRoiXYLimits[1]), RoiXY[1]);
+                            break;
+                    }
+                }
+                catch (DeviceException exception)
+                {
+                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    {
+                        // this may cause infinite loop
+                        Thread.Sleep(100);
+                        retry = true;
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                    }
+                }
+            } while (retry);
         }
 
         private void StartLiveViewInThread()
@@ -503,9 +766,8 @@ namespace LightX_01.ViewModel
                 retry = false;
                 try
                 {
-                    while (DeviceManager.SelectedCameraDevice.IsBusy) { }
+                    //while (DeviceManager.SelectedCameraDevice.IsBusy) { }
                     DeviceManager.SelectedCameraDevice.StartLiveView();
-                    
                 }
                 catch (DeviceException exception)
                 {
@@ -520,10 +782,8 @@ namespace LightX_01.ViewModel
                         System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
                     }
                 }
-
             } while (retry);
             _liveViewTimer.Start();
-            //DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(3);
         }
 
         private void StopLiveViewInThread()
@@ -544,7 +804,6 @@ namespace LightX_01.ViewModel
                     _liveViewTimer.Stop();
                     // wait for last get live view image
                     Thread.Sleep(500);
-                    //while (DeviceManager.SelectedCameraDevice.IsBusy) { }
                     DeviceManager.SelectedCameraDevice.StopLiveView();
                 }
                 catch (DeviceException exception)
@@ -560,7 +819,6 @@ namespace LightX_01.ViewModel
                         System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
                     }
                 }
-
             } while (retry);
         }
 
@@ -568,15 +826,9 @@ namespace LightX_01.ViewModel
         {
             foreach (var cameraDevice in DeviceManager.ConnectedDevices)
             {
-                //var property = cameraDevice.
-                //CameraPreset preset = ServiceProvider.Settings.GetPreset(property.DefaultPresetName);
                 // multiple canon cameras block with this settings
-
-
                 if (!(cameraDevice is CanonSDKBase))
                     cameraDevice.CaptureInSdRam = true;
-
-                //Log.Debug("cameraDevice_CameraInitDone");
                 try
                 {
                     cameraDevice.DateTime = DateTime.Now;
@@ -585,7 +837,6 @@ namespace LightX_01.ViewModel
                 {
                     Log.Error("Unable to sysnc date time", exception);
                 }
-                
             }
         }
 
@@ -607,10 +858,25 @@ namespace LightX_01.ViewModel
                     FetchCurrentTest();
                     goto default;
                 default:
+                    CapturedImages.Clear();
+                    CapturedImages = null;
+                    GC.Collect();
+                    _totalBurstNumber = 0; // reset the burstNumber after review
                     objReviewWindow.Close();
                     break;
             }
 
+            // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(CameraControlWindow))
+                    {
+                        (window as CameraControlWindow).Activate();
+                    }
+                }
+            });
             StartLiveViewInThread();
         }
 
@@ -659,22 +925,38 @@ namespace LightX_01.ViewModel
             // get Applied camera settings
             _currentTestResults.CamSettings = new CameraSettings()
             {
-                BurstNumber = _currentTestCameraSettings.BurstNumber,
+                BurstNumber = _totalBurstNumber.ToString(),
                 Flash = _currentTestCameraSettings.Flash,
                 FNumber = DeviceManager.SelectedCameraDevice.FNumber.Value,
                 ShutterSpeed = DeviceManager.SelectedCameraDevice.ShutterSpeed.Value,
                 Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
             };
 
-            // get paths of selected images
+            // create filenames, folder and save selected images
+            _currentTestResults.ResultsImages = new List<string>();
+            string fileName01 = CurrentExam.TestList[_testIndex];
+            string folderName = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5}h{6}", 
+                Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), 
+                "LightX", 
+                CurrentExam.Patient.LastName, 
+                CurrentExam.Patient.FirstName, 
+                CurrentExam.ExamDate.ToLongDateString(), 
+                CurrentExam.ExamDate.Hour.ToString(), 
+                CurrentExam.ExamDate.Minute.ToString());
 
-            // rename and copy/move selected images
-            for(int i = 0; i < CapturedImages.Count; i++)
-            {
-                if (selectedImages[i]) { }
-                    //SaveToTiff(CapturedImages[i]);
-            }
+            for (int i = 0; i < selectedImages.Count; ++i)
+                if(selectedImages[i])
+                {
+                    
+                    string path = string.Format("{0}\\{1}_{2,2:D2}.tiff", folderName, fileName01, i);  // add path to the folder (Nom_Prenom_timestamp)
+                    // check the folder of filename, if not found create it
+                    if (!Directory.Exists(Path.GetDirectoryName(path)))
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    _currentTestResults.ResultsImages.Add(path);
+                    //SaveToTiff(CapturedImages[i], path);
+                }
 
+            
             // delete remaining images
 
 
@@ -715,13 +997,16 @@ namespace LightX_01.ViewModel
                 ApplyCameraSettings(DeviceManager.SelectedCameraDevice);
 
             if (_currentTestResults != null)
+            {
                 _currentTestResults = null;
+                GC.Collect();
+            }
             _currentTestResults = new TestResults() { TestTitle = currentTest.TestTitle };
             
         }
 
         #endregion DataAccess
-
+        
         #region ImageManipulation
 
         private static BitmapImage Bs2bi(BitmapSource bs)
@@ -745,20 +1030,58 @@ namespace LightX_01.ViewModel
             return bImg;
         }
 
-        private static BitmapSource FromArray(byte[] data, int w, int h, int ch)
+        private double GetZoomRatio(int displayLenght, int fullLenght)
         {
-            PixelFormat format = PixelFormats.Default;
+            double ratio = fullLenght/displayLenght;
+            switch(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value)
+            {
+                case "25%":
+                    ratio = 4;
+                    break;
+                case "33%":
+                    ratio = 3;
+                    break;
+                case "50%":
+                    ratio = 2;
+                    break;
+                case "66%":
+                    ratio = 1.5;
+                    break;
+                case "100%":
+                    ratio = 1;
+                    break;
+                default:
+                    goto case "66%";
+            }
+            return ratio;
+        }
 
-            if (ch == 1) format = PixelFormats.Gray8; //grey scale image 0-255
-            if (ch == 3) format = PixelFormats.Rgb48; //RGB
-            if (ch == 4) format = PixelFormats.Bgr32; //RGB + alpha
+        private WriteableBitmap DrawFocusPoint(LiveViewData liveViewData)
+        {
+            var bitmap = new WriteableBitmap(liveViewData.LiveViewImageWidth, liveViewData.LiveViewImageHeight, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null);
+            try
+            {
+                if (liveViewData == null)
+                    return null;
+                double xt = bitmap.Width / liveViewData.ImageWidth;
+                double yt = bitmap.Height / liveViewData.ImageHeight;
 
+                System.Windows.Media.Color col = Colors.LightGreen;
+                col.A = 240;
 
-            WriteableBitmap wbm = new WriteableBitmap(w, h, 96, 96, format, null);
-
-            wbm.WritePixels(new Int32Rect(0, 0, w, h), data, ch * w, 0);
-
-            return wbm;
+                bitmap.DrawRectangle((int)(liveViewData.FocusX * xt - (liveViewData.FocusFrameXSize * xt / 2)),
+                    (int)(liveViewData.FocusY * yt - (liveViewData.FocusFrameYSize * yt / 2)),
+                    (int)(liveViewData.FocusX * xt + (liveViewData.FocusFrameXSize * xt / 2)),
+                    (int)(liveViewData.FocusY * yt + (liveViewData.FocusFrameYSize * yt / 2)),
+                    col);
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error draw helper lines", exception);
+                return null;
+            }
         }
 
         #endregion ImageManipulation
@@ -788,8 +1111,6 @@ namespace LightX_01.ViewModel
                     Log.Error("Unable to initialize device manager", exception);
                 }
             });
-
-            FolderForPhotos = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Test");
 
             StartupThread(); // initial setup of camera
             CurrentExam = exam;

@@ -192,8 +192,18 @@ namespace LightX_01.ViewModel
 
         private void ConfirmImage(Window currentWindow)
         {
-            currentWindow.DialogResult = true;
-            CloseWindow(currentWindow);
+            bool oneIsSelected = false;
+            foreach(bool b in SelectedImages)
+            {
+                oneIsSelected |= b;
+            }
+            if(!oneIsSelected)
+                MessageBox.Show("Veuillez selectionner au moins une photo.");
+            else
+            {
+                currentWindow.DialogResult = true;
+                CloseWindow(currentWindow);
+            }
         }
 
         private void CancelImage(Window currentWindow)
