@@ -8,6 +8,7 @@
         xmlns:local="clr-namespace:LightX_01"
         xmlns:Sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
+        Icon="../LightXLogo.ico"
         Title="LightX - Nouvel Examen" Height="485" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
 
     <Window.InputBindings>
@@ -48,7 +49,8 @@
 
             <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Date de naissance :"/>
-                <TextBox Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>
+                <!--<TextBox Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>-->
+                <DatePicker Height="22" Width="190" Text="" xml:lang="fr-CA" SelectedDate="{Binding CurrentPatient.BirthDate}" HorizontalAlignment="Left"/>
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Genre :"/>

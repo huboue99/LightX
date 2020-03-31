@@ -65,3 +65,8 @@ C:\Users\macham\Documents\Programs\LightX\LightX_01\JsonFileCreator\obj\Debug\Js
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csprojAssemblyReference.cache
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csproj.CoreCompileInputs.cache
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csproj.CopyComplete
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Magick.NET-Q16-AnyCPU.dll
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\WriteableBitmapEx.Wpf.dll
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Magick.NET-Q16-AnyCPU.xml
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\WriteableBitmapEx.Wpf.pdb
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\WriteableBitmapEx.Wpf.xml

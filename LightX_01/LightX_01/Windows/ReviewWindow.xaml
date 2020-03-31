@@ -6,28 +6,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LightX_01"
         mc:Ignorable="d"
-        Title="Photo Review" Height="1000" Width="1200">
-    <StackPanel Margin="15">
-        <Image Width="1170" Source="{Binding CurrentImage}"/>
-        <StackPanel Margin="0 10 0 0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+        Icon="../LightXLogo.ico"
+        Title="Photo Review" Height="1000" Width="1200" MinHeight="550" MinWidth="500">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="300"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Image Grid.Row="0" Source="{Binding CurrentImage}"/>
+        <!--Stretch="Fill"-->
+
+        <StackPanel Grid.Row="1" Margin="0 10 0 0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button IsEnabled="{Binding NotFirstImage}" Width="25" Height="20" Margin="0 0 10 0" Command="{Binding PreviousImageCommand}">&lt;</Button>
             <TextBlock Text="{Binding CurrentImageIndexString}"/>
             <TextBlock Text="/"/>
             <TextBlock Text="{Binding ImageCount}"/>
             <Button IsEnabled="{Binding NotLastImage}" Width="25" Height="20" Margin="10 0 0 0" Command="{Binding NextImageCommand}">&gt;</Button>
         </StackPanel>
-        <StackPanel Width="1160" Orientation="Horizontal">
-            <StackPanel Orientation="Vertical">
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="300"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Vertical">
                 <TextBlock Text="Commentaires supplémentaires :"/>
-                <TextBox Height="90" Width="1000" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding CurrentComment}"/>
+                <TextBox Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding CurrentComment}"/>
             </StackPanel>
-            <StackPanel Width="160" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <StackPanel Grid.Column="1" Width="160" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <CheckBox Content="Keep this image" Margin="0 15" HorizontalAlignment="Center" IsChecked="{Binding Path=CurrentImageIsSelected, Mode=TwoWay}" IsEnabled="{Binding ImageIsSelectable}"/>
                 <Button Content="Confirm" Width="90" Height="20" Command="{Binding ConfirmCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}"/>
                 <!--<Button Content="Confirm" Width="90" Height="20"/>-->
                 <Button Content="Cancel" Width="90" Height="20" Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}" Margin="0 15 0 0" IsCancel="True"/>
                 <!--<Button Content="Cancel" Width="90" Height="20" Margin="0 15 0 0"/>-->
             </StackPanel>
-        </StackPanel>
-    </StackPanel>
+        </Grid>
+    </Grid>
 </Window>

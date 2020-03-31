@@ -98,8 +98,4 @@ namespace LightX_01.Classes
 
         #endregion Properties
     }
-
-
-
-
 }

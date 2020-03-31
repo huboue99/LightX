@@ -21,6 +21,8 @@ using System.Windows.Media.Imaging;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using Canon.Eos.Framework.Eventing;
+using Canon.Eos.Framework;
 
 namespace LightX_01.ViewModel
 {
@@ -38,11 +40,14 @@ namespace LightX_01.ViewModel
         private BitmapImage _currentLiveViewImage;
         private bool _liveViewEnabled;
         private string _lastZoom;
+        private double _subZoomDivider = 1;
+        private double _lastSubZoomDivider = 1;
         private volatile bool _zoomHasChanged = true;
         private ObservableCollection<int> _roiXY = null;
         private ObservableCollection<int> ROIXYMAX;
         private ObservableCollection<int> _currentRoiXYLimits;
         private WriteableBitmap _overlayBitmap;
+        //private Int32Rect sourceRect = new Int32Rect();
         private volatile int _remainingBurst = 0;
         private int _totalBurstNumber = 0;
         public ObservableCollection<BitmapImage> CapturedImages { get; set; }
@@ -147,6 +152,11 @@ namespace LightX_01.ViewModel
                                     System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
                                 }
                             }
+                            catch (Exception err)
+                            {
+                                // might access a null var
+                                System.Windows.MessageBox.Show("Error occurred :" + err.Message);
+                            }
                         } while (retry);
                     }).Start();
                 }
@@ -191,18 +201,6 @@ namespace LightX_01.ViewModel
                 return _imageMouseWheelCommand;
             }
         }
-
-        //public ICommand ImageMouseLeftButtonDownCommand
-        //{
-        //    get
-        //    {
-        //        if (_imageMouseLeftButtonDownCommand == null)
-        //            _imageMouseLeftButtonDownCommand = new RelayCommand<MouseButtonEventArgs>(
-        //                param => ImageMouseLeftButtonDown(param)
-        //                );
-        //        return _imageMouseLeftButtonDownCommand;
-        //    }
-        //}
 
         public ICommand ClosingCommand
         {
@@ -258,13 +256,15 @@ namespace LightX_01.ViewModel
                     (int)(ratioY*liveViewData.LiveViewImageHeight/2),
                     ROIXYMAX[1] - (int)(ratioY*liveViewData.LiveViewImageHeight/2)
                 };
+                
                 _zoomHasChanged = false;
             }
             /**/
+            //sourceRect = GetSourceRect(0, 0, liveViewData);
 
             if (true)
             {
-                if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0])
+                if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0] && _subZoomDivider == 1)
                     OverlayBitmap = DrawFocusPoint(liveViewData);
                 else
                     OverlayBitmap = null;
@@ -272,6 +272,7 @@ namespace LightX_01.ViewModel
                 
             try
             {
+
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 //image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
@@ -281,12 +282,15 @@ namespace LightX_01.ViewModel
                                                                 liveViewData.ImageDataPosition,
                                                                 liveViewData.ImageData.Length -
                                                                 liveViewData.ImageDataPosition);
+                image.SourceRect = GetSourceRect(liveViewData); // Crop the image to get smaller zoom steps
                 image.EndInit();
                 image.Freeze();
                 CurrentLiveViewImage = image;
             }
-            catch (Exception)
-            { }
+            catch (Exception err)
+            {
+                err.GetHashCode();
+            }
         }
 
         private static int Clamp(int value, int min, int max)
@@ -304,15 +308,33 @@ namespace LightX_01.ViewModel
             new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
-                /* run your code here */
                 if (e.Delta > 0)
                 {
-                    if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values.Count - 2])
+                    if (_subZoomDivider == 1)
+                        _subZoomDivider = 1.25;
+                    else if ( _subZoomDivider < 2.75 && DeviceManager.SelectedCameraDevice is CanonSDKBase)
+                    {
+                        _subZoomDivider += 0.75;
+                    }
+                    else if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values.Count - 2])
+                    {
                         DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.NextValue();
+                        _subZoomDivider = 1;
+                    }
                 }
                 else if (e.Delta < 0)
                 {
-                    DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.PrevValue();
+                    if (_subZoomDivider == 1.25)
+                        _subZoomDivider = 1;
+                    else if (_subZoomDivider >= 1.50 && DeviceManager.SelectedCameraDevice is CanonSDKBase)
+                    {
+                        _subZoomDivider -= 0.75;
+                    }
+                    else if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0])
+                    {
+                        DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.PrevValue();
+                        _subZoomDivider = DeviceManager.SelectedCameraDevice is CanonSDKBase ? 2.75: 1.25;
+                    }
                 }
             }).Start();
             _zoomHasChanged = true;
@@ -320,20 +342,27 @@ namespace LightX_01.ViewModel
 
         public void MouseLeftButtonDown(double x, double y)
         {
+            // don't want the click to focus action when already zoomed in?
             //x*(liveViewSize/imageSizeOnScreen)*(fullResolutionSize/liveViewSize) = x * fullResolutionSize / imageSizeOnScreen
-            SetRoiXY((int)(x*(double)ROIXYMAX[0]), (int)(y*(double)ROIXYMAX[1]));
+            if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0] && _subZoomDivider == 1)
+                SetRoiXY((int)(x * (double)ROIXYMAX[0]), (int)(y * (double)ROIXYMAX[1]));
         }
 
         public void ZoomOutEvent()
         {
             _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value;
+            _lastSubZoomDivider = _subZoomDivider;
             SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
+            _subZoomDivider = 1;
         }
 
         public void SetZoom(string desiredZoom = null)
         {
             if (desiredZoom == null)
+            {
                 desiredZoom = _lastZoom;
+                _subZoomDivider = _lastSubZoomDivider;
+            }
             if(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != desiredZoom)
                 DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(desiredZoom);
             _zoomHasChanged = true;
@@ -365,14 +394,22 @@ namespace LightX_01.ViewModel
                     StopLiveViewInThread();
                 }
 
-                if (LiveViewEnabled && (newcameraDevice is NikonBase || newcameraDevice is CanonSDKBase))
+                if (LiveViewEnabled && (newcameraDevice is CanonSDKBase))
                 {
                     //newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
                     //newcameraDevice.CompressionSetting.Value = newcameraDevice.CompressionSetting.Values[4];
                     //newcameraDevice.CompressionSetting.SetValue(newcameraDevice.CompressionSetting.Values[4]);
+
+                    // Canon EOS R is too quick and already initialized when we get here
+                    SelectedCamera_CameraInitDone(newcameraDevice);
                 }
                 newcameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
             }
+        }
+
+        void CanonPictureTaken(object sender, EosImageEventArgs e)
+        {
+            e.Pointer.ToInt32();
         }
 
         void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
@@ -409,18 +446,22 @@ namespace LightX_01.ViewModel
         {
             if (cameraDevice is CanonSDKBase)
             {
+                
                 foreach (var propertyVal in cameraDevice.AdvancedProperties)
                 {
-                    if (propertyVal.Name == "Drive Mode")
+                    switch(propertyVal.Name)
                     {
-                        //propertyVal.NumericValue = propertyVal.NumericValues[1]; //Continuous shooting
-                        //propertyVal.SetValue(propertyVal.NumericValues[1]);//Continuous shooting
-                        propertyVal.SetValue(propertyVal.NumericValues[4]); //High-Speed Continuous shooting
-                        //propertyVal.NumericValue = propertyVal.NumericValues[12]; //14fps super high shooting
-                        //propertyVal.NumericValue = propertyVal.NumericValues[14]; //Silent Continuous shooting
-                        //propertyVal.NumericValue = propertyVal.NumericValues[15]; //Silent high-speed Continuous shooting
+                        case "Drive Mode":
+                            propertyVal.SetValue(propertyVal.Values[1]); //High-Speed Continuous shooting
+                            break;
+                        default:
+                            break;
                     }
                 }
+
+                //cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.NumericValues[0]); // "AF-S"
+                //cameraDevice.LiveViewFocusMode.SetValue(cameraDevice.LiveViewFocusMode.NumericValues[0]); // "AF-S"
+                cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
             }
             else if (cameraDevice is NikonBase)
             {
@@ -452,14 +493,22 @@ namespace LightX_01.ViewModel
 
                     }
                 }
-                cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.NumericValues[0]); // "AF-S"
+                cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.Values[0]); // "AF-S"
                 //cameraDevice.LiveViewFocusMode.SetValue(cameraDevice.LiveViewFocusMode.NumericValues[0]); // "AF-S"
-                cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.NumericValues[3]); // "JPEG (BASIC)" = 0 / RAW = 3 / RAW + JPEG = 4
-
-                cameraDevice.ShutterSpeed.SetValue(_currentTestCameraSettings.ShutterSpeed);
-                cameraDevice.FNumber.SetValue(_currentTestCameraSettings.FNumber);
-                SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
+                cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[3]); // "JPEG (BASIC)" = 0 / RAW = 3 / RAW + JPEG = 4
             }
+            //bool retry = true;
+            //do
+            //{
+                //if (_currentTestCameraSettings != null)
+                //{
+                    cameraDevice.ShutterSpeed.SetValue(_currentTestCameraSettings.ShutterSpeed);
+                    cameraDevice.FNumber.SetValue(_currentTestCameraSettings.FNumber);
+                    SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
+                    _roiXY = null; // will reset the focus point to the center of the image;
+                    //retry = false;
+                //}
+            //} while (retry);
         }
 
         private void CaptureInThread()
@@ -511,6 +560,14 @@ namespace LightX_01.ViewModel
             if (CapturedImages == null)
                 CapturedImages = new ObservableCollection<BitmapImage>();
             PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
+            //PhotoCapturedEventArgs eventAr = new PhotoCapturedEventArgs
+            //{
+            //    WiaImageItem = null,
+            //    CameraDevice = this,
+            //    FileName = "DSC_0000.CR3",
+            //    Handle = (uint)BitConverter.ToUInt32(eventArgs.Handle as , 0)
+            //}
+            //EosMemoryImageEventArgs file = o as EosMemoryImageEventArgs;
             if (eventArgs == null)
                 return;
             try
@@ -536,7 +593,16 @@ namespace LightX_01.ViewModel
                 //BitmapImage image;
 
                 Stream memStream = new MemoryStream();
+
+                //GC.TryStartNoGCRegion(244);
                 eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+                //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+                //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, eventArgs.FileName);
+                //EosMemoryImageEventArgs memory = eventArgs.Handle as EosMemoryImageEventArgs;
+                //EosImageEventArgs arg = o as EosImageEventArgs;
+                //memStream.Write(memory.ImageData, 0, memory.ImageData.Length);
+
+                //GC.EndNoGCRegion();
 
                 memStream.Position = 0;
 
@@ -544,7 +610,7 @@ namespace LightX_01.ViewModel
                 string fileName = Path.GetFileName(eventArgs.FileName);
                 if(Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
                 {
-                    using (MagickImage magickImage = new MagickImage(memStream, MagickFormat.Nef))
+                    using (MagickImage magickImage = new MagickImage(memStream, MagickFormat.Cr3))
                     {
                         memStream.Close();
                         GC.Collect();
@@ -856,15 +922,18 @@ namespace LightX_01.ViewModel
                     SaveTestResults(objReviewWindow.SelectedImages);
                     _testIndex++;
                     FetchCurrentTest();
-                    goto default;
+                    break;
                 default:
-                    CapturedImages.Clear();
-                    CapturedImages = null;
-                    GC.Collect();
-                    _totalBurstNumber = 0; // reset the burstNumber after review
-                    objReviewWindow.Close();
+                    ZoomOutEvent();
                     break;
             }
+            CapturedImages.Clear();
+            CapturedImages = null;
+            GC.Collect();
+            _totalBurstNumber = 0; // reset the burstNumber after review
+                                   
+            objReviewWindow.Close();
+
 
             // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -1002,7 +1071,6 @@ namespace LightX_01.ViewModel
                 GC.Collect();
             }
             _currentTestResults = new TestResults() { TestTitle = currentTest.TestTitle };
-            
         }
 
         #endregion DataAccess
@@ -1032,7 +1100,7 @@ namespace LightX_01.ViewModel
 
         private double GetZoomRatio(int displayLenght, int fullLenght)
         {
-            double ratio = fullLenght/displayLenght;
+            double ratio;
             switch(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value)
             {
                 case "25%":
@@ -1051,7 +1119,7 @@ namespace LightX_01.ViewModel
                     ratio = 1;
                     break;
                 default:
-                    goto case "66%";
+                    goto case "100%";
             }
             return ratio;
         }
@@ -1084,12 +1152,42 @@ namespace LightX_01.ViewModel
             }
         }
 
+        private Int32Rect GetSourceRect(LiveViewData liveViewData)
+        {
+            if (_subZoomDivider == 1)
+            {
+                Int32Rect ret = new Int32Rect();
+                return ret;
+            }
+            else if(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0])
+            {
+                double xt = (double)liveViewData.LiveViewImageWidth / (double)liveViewData.ImageWidth;
+                double yt = (double)liveViewData.LiveViewImageHeight / (double)liveViewData.ImageHeight;
+                return new Int32Rect(
+                    Clamp((int)((liveViewData.FocusX * xt) - (liveViewData.LiveViewImageWidth / _subZoomDivider / 2)), 0, (int)(liveViewData.LiveViewImageWidth - (liveViewData.LiveViewImageWidth / _subZoomDivider))),
+                    Clamp((int)((liveViewData.FocusY * yt) - (liveViewData.LiveViewImageHeight / _subZoomDivider / 2)), 0, (int)(liveViewData.LiveViewImageHeight - (liveViewData.LiveViewImageHeight / _subZoomDivider))),
+                    (int)(liveViewData.LiveViewImageWidth / _subZoomDivider),
+                    (int)(liveViewData.LiveViewImageHeight / _subZoomDivider));
+            }
+            else // pas idéal pour les extémité de l'image
+            {
+                return new Int32Rect(
+                    Clamp((int)((liveViewData.LiveViewImageWidth / 2) - (liveViewData.LiveViewImageWidth / _subZoomDivider / 2)), 0, (int)(liveViewData.LiveViewImageWidth - (liveViewData.LiveViewImageWidth / _subZoomDivider))),
+                    Clamp((int)((liveViewData.LiveViewImageHeight / 2) - (liveViewData.LiveViewImageHeight / _subZoomDivider / 2)), 0, (int)(liveViewData.LiveViewImageHeight - (liveViewData.LiveViewImageHeight / _subZoomDivider))),
+                    (int)(liveViewData.LiveViewImageWidth / _subZoomDivider),
+                    (int)(liveViewData.LiveViewImageHeight / _subZoomDivider));
+            }
+        }
+
         #endregion ImageManipulation
 
         public CameraControlWindowViewModel(Exam exam)
         {
             SetLiveViewTimer();
-            
+
+            CurrentExam = exam;
+            FetchCurrentTest();
+
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 try
@@ -1112,9 +1210,9 @@ namespace LightX_01.ViewModel
                 }
             });
 
-            StartupThread(); // initial setup of camera
-            CurrentExam = exam;
-            FetchCurrentTest();
+            Thread thread = new Thread(StartupThread);
+            thread.Start();
+            //StartupThread(); // initial setup of camera
         }
     }
 }
