@@ -12,6 +12,13 @@
         Keyboard.KeyDown="KeyDownEventHandler" Keyboard.KeyUp="KeyUpEventHandler"
         Icon="../LightXLogo.ico"
         Height="670" Width="740" Topmost="False" WindowState="Normal">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+    
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
             <cmd:EventToCommand Command="{Binding ClosingCommand}" PassEventArgsToCommand="True"/>

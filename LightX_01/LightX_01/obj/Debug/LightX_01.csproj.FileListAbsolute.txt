@@ -16,9 +16,7 @@ G:\LightX\LightX_01\LightX_01\bin\Debug\websocket-sharp.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\Accord.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\Accord.Video.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\Accord.Video.DirectShow.xml
-G:\LightX\LightX_01\LightX_01\bin\Debug\CameraControl.Devices.pdb
 G:\LightX\LightX_01\LightX_01\bin\Debug\Canon.Eos.Framework.pdb
-G:\LightX\LightX_01\LightX_01\bin\Debug\Canon.Eos.Framework.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.pdb
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\GalaSoft.MvvmLight.Extras.pdb
@@ -102,11 +100,10 @@ G:\LightX\LightX_01\LightX_01\bin\Debug\Canon.Eos.Framework.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\PortableDeviceLib.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\Interop.PortableDeviceApiLib.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\Interop.PortableDeviceTypesLib.dll
-G:\LightX\LightX_01\LightX_01\bin\Debug\CameraControl.Devices.xml
-G:\LightX\LightX_01\LightX_01\bin\Debug\PortableDeviceLib.pdb
 G:\LightX\LightX_01\LightX_01\obj\Debug\LightX_01.csprojAssemblyReference.cache
 G:\LightX\LightX_01\LightX_01\bin\Debug\Magick.NET-Q16-AnyCPU.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\Magick.NET-Q16-AnyCPU.xml
 G:\LightX\LightX_01\LightX_01\bin\Debug\WriteableBitmapEx.Wpf.dll
 G:\LightX\LightX_01\LightX_01\bin\Debug\WriteableBitmapEx.Wpf.pdb
 G:\LightX\LightX_01\LightX_01\bin\Debug\WriteableBitmapEx.Wpf.xml
+G:\LightX\LightX_01\LightX_01\bin\Debug\LibRawTester.dll

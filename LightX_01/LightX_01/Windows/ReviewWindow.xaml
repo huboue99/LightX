@@ -8,6 +8,13 @@
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
         Title="Photo Review" Height="1000" Width="1200" MinHeight="550" MinWidth="500">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+    
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" MinHeight="300"/>

@@ -8,7 +8,13 @@
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
         Height="500" Width="740" MinHeight="500" MinWidth="500" Topmost="False" WindowState="Normal">
-
+    
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+    
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

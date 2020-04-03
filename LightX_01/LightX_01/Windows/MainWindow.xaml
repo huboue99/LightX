@@ -11,6 +11,8 @@
         Icon="../LightXLogo.ico"
         Title="LightX - Nouvel Examen" Height="485" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
 
+    
+    
     <Window.InputBindings>
         <!--<KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>-->
         <KeyBinding Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Return"/>

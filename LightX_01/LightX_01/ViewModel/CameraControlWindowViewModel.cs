@@ -30,6 +30,9 @@ namespace LightX_01.ViewModel
     {
         #region Fields
 
+        //[DllImport(@"G:\\LibRawTester\\x64\\Release\\LibRawTester.dll")]
+        //public static extern int processRawImage(int a);
+
         // Main data holder & handler
         private CameraDeviceManager _deviceManager;
         private Exam _currentExam;
@@ -407,11 +410,6 @@ namespace LightX_01.ViewModel
             }
         }
 
-        void CanonPictureTaken(object sender, EosImageEventArgs e)
-        {
-            e.Pointer.ToInt32();
-        }
-
         void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
         {
             RefreshDisplay();
@@ -459,6 +457,7 @@ namespace LightX_01.ViewModel
                     }
                 }
 
+                (cameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
                 //cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.NumericValues[0]); // "AF-S"
                 //cameraDevice.LiveViewFocusMode.SetValue(cameraDevice.LiveViewFocusMode.NumericValues[0]); // "AF-S"
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
@@ -506,9 +505,10 @@ namespace LightX_01.ViewModel
                     cameraDevice.FNumber.SetValue(_currentTestCameraSettings.FNumber);
                     SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
                     _roiXY = null; // will reset the focus point to the center of the image;
-                    //retry = false;
-                //}
-            //} while (retry);
+                                   //retry = false;
+                                   //}
+                                   //} while (retry);
+            //cameraDevice.UnLockCamera();
         }
 
         private void CaptureInThread()
@@ -516,8 +516,32 @@ namespace LightX_01.ViewModel
             if (_liveViewEnabled)
                 StopLiveViewInThread();
             //thread.ThreadState = ThreadState.
-            Thread.Sleep(100);
-            new Thread(Capture).Start();
+            //Thread.Sleep(100);
+            //new Thread(Capture).Start();
+
+            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.PauseLiveview();
+            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).PressButton();
+
+            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResetShutterButton();
+            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.SendCommand(Canon.Eos.Framework.Internal.SDK.Edsdk.CameraCommand_TakePicture);
+
+            //while (_totalBurstNumber < Int32.Parse(_currentTestCameraSettings.BurstNumber)) { };
+            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).ReleaseButton();
+
+            try
+            {
+                (DeviceManager.SelectedCameraDevice as CanonSDKBase).CapturePhotoBurstNoAf(1);
+            }
+            catch (COMException comException)
+            {
+                DeviceManager.SelectedCameraDevice.IsBusy = false;
+                ErrorCodes.GetException(comException);
+            }
+            catch
+            {
+                DeviceManager.SelectedCameraDevice.IsBusy = false;
+                throw;
+            }
         }
 
         private void Capture()
@@ -528,7 +552,7 @@ namespace LightX_01.ViewModel
                 retry = false;
                 try
                 {
-                    DeviceManager.SelectedCameraDevice.CapturePhoto();
+                    DeviceManager.SelectedCameraDevice.CapturePhotoNoAf();
                 }
                 catch (DeviceException exception)
                 {
@@ -595,6 +619,7 @@ namespace LightX_01.ViewModel
                 Stream memStream = new MemoryStream();
 
                 //GC.TryStartNoGCRegion(244);
+                while (eventArgs.CameraDevice.TransferProgress != 100u && eventArgs.CameraDevice.TransferProgress != 0u) { }
                 eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
                 //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
                 //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, eventArgs.FileName);
@@ -850,6 +875,7 @@ namespace LightX_01.ViewModel
                 }
             } while (retry);
             _liveViewTimer.Start();
+            //DeviceManager.SelectedCameraDevice.IsBusy = false;
         }
 
         private void StopLiveViewInThread()
@@ -1062,7 +1088,7 @@ namespace LightX_01.ViewModel
                 _currentTestCameraSettings = new CameraSettings();
 
             _currentTestCameraSettings = currentTest.CamSettings;
-            if (_testIndex != 0)
+            if (_testIndex != 0) // since DeviceManage is not declared yet in the first call of this function -> ok
                 ApplyCameraSettings(DeviceManager.SelectedCameraDevice);
 
             if (_currentTestResults != null)
@@ -1210,6 +1236,8 @@ namespace LightX_01.ViewModel
                 }
             });
 
+            //int i = LibrawClass.processRawImage(15);
+            
             Thread thread = new Thread(StartupThread);
             thread.Start();
             //StartupThread(); // initial setup of camera
