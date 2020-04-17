@@ -1,7 +1,9 @@
 ﻿using LightX_01.ViewModel;
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+
 
 namespace LightX_01
 {
@@ -19,7 +21,19 @@ namespace LightX_01
             get { return _reviewWindowViewModel.SelectedImages; }
         }
 
-        public ReviewWindow(ObservableCollection<BitmapImage> images, string comment)
+        private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            Image image = sender as Image;
+
+            BitmapImage newImage = new BitmapImage();
+            newImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            newImage.UriSource = (image.Source as BitmapImage).UriSource;
+
+            image.Source = newImage;
+        }
+
+        //public ReviewWindow(ObservableCollection<BitmapImage> images, string comment)
+        public ReviewWindow(string[] images, string comment)
         {
             _reviewWindowViewModel = new ReviewWindowViewModel(images, comment);
             InitializeComponent();
@@ -27,5 +41,7 @@ namespace LightX_01
 
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
+
+
     }
 }

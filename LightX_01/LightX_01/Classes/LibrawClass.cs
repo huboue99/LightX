@@ -11,7 +11,10 @@ namespace LightX_01.Classes
 {
     public class LibrawClass
     {
-        [DllImport("LibRawTester.dll")]
-        public static extern int processRawImage(int a);
+        [DllImport("LibRawTester.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr processRawImage(IntPtr rawData, int dataLength);
+
+        [DllImport("LibRawTester.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int extractThumb([In,Out] IntPtr rawData, int dataLength);
     }
 }

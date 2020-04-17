@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -13,7 +14,11 @@ namespace LightX_01.ViewModel
         #region Fields
 
         // Main data holders
-        private ObservableCollection<BitmapImage> _images;
+        //private readonly ObservableCollection<BitmapImage> _images;
+        //private readonly BitmapImage[] _images;
+        //private readonly ObservableCollection<string> _images;
+        private string[] _images;
+        protected string _currentImage;
         ObservableCollection<bool> _selectedImages;
         private string _currentComment;
 
@@ -47,9 +52,21 @@ namespace LightX_01.ViewModel
             }
         }
 
-        public BitmapImage CurrentImage
+        //public BitmapImage CurrentImage
+        //{
+        //    get { return _images[_currentImageIndex]; }
+        //}
+
+        public string CurrentImage
         {
-            get { return _images[_currentImageIndex]; }
+            //get { return _images[_currentImageIndex] + ".jpeg"; }
+            get { return _currentImage; }
+            set
+            {
+                _currentImage = string.Empty;
+                _currentImage = value;
+                RaisePropertyChanged(() => CurrentImage);
+            }
         }
 
         public ObservableCollection<bool> SelectedImages
@@ -74,7 +91,7 @@ namespace LightX_01.ViewModel
                 {
                     _currentImageIndex = value;
                     RaisePropertyChanged(() => CurrentImageIndex);
-                    RaisePropertyChanged(() => CurrentImage);
+                    //CurrentImage = _images[_currentImageIndex] + ".jpeg";
                     RaisePropertyChanged(() => CurrentImageIndexString);
                     RaisePropertyChanged(() => CurrentImageIsSelected);
                     RaisePropertyChanged(() => NotLastImage);
@@ -103,7 +120,7 @@ namespace LightX_01.ViewModel
 
         public bool NotLastImage
         {
-            get { return (_currentImageIndex < _images.Count - 1); }
+            get { return (_currentImageIndex < _images.Length - 1); }
             set
             {
                 if (value != _notLastImage)
@@ -181,13 +198,25 @@ namespace LightX_01.ViewModel
         public void NextImage()
         {
             if(NotLastImage)
-                CurrentImageIndex++;
+                CurrentImage = _images[++CurrentImageIndex] + ".jpeg";
+            //CurrentImageIndex++;
+            GC.Collect();
         }
+
+        //public BitmapImage NImage()
+        //{
+        //    if (NotLastImage)
+        //        return _images[++CurrentImageIndex];
+        //    else
+        //        return CurrentImage;
+        //}
 
         public void PreviousImage()
         {
             if(NotFirstImage)
-                CurrentImageIndex--;
+                CurrentImage = _images[--CurrentImageIndex] + ".jpeg";
+            //CurrentImageIndex--;
+            GC.Collect();
         }
 
         private void ConfirmImage(Window currentWindow)
@@ -220,16 +249,25 @@ namespace LightX_01.ViewModel
         #endregion Actions
 
 
-        public ReviewWindowViewModel(ObservableCollection<BitmapImage> images, string comment)
+        //public ReviewWindowViewModel(ObservableCollection<BitmapImage> images, string comment)
+        public ReviewWindowViewModel(string[] images, string comment)
         {
+            //_images = new BitmapImage[images.Count];
+            //images.CopyTo(_images, 0);
             _images = images;
+            CurrentImageIndex = 0;
+            CurrentImage = _images[_currentImageIndex] + ".jpeg";
             _currentComment = comment;
 
-            ImageCount = images.Count.ToString();
-            ImageIsSelectable = images.Count > 1;
-            SelectedImages = new ObservableCollection<bool>(Enumerable.Repeat(false, images.Count).ToArray());
+            ImageCount = images.Length.ToString();
+            ImageIsSelectable = images.Length > 1;
+            SelectedImages = new ObservableCollection<bool>(Enumerable.Repeat(false, images.Length).ToArray());
+            //GC.Collect();
             if (!ImageIsSelectable)
                 SelectedImages[0] = true;
+
+            // weird caching for first image, so do a "refresh" by using previous command
+            PreviousImage();
         }
     }
 }

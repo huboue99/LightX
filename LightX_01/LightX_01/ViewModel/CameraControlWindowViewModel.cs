@@ -23,15 +23,13 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using Canon.Eos.Framework.Eventing;
 using Canon.Eos.Framework;
+using System.Threading.Tasks;
 
 namespace LightX_01.ViewModel
 {
     public class CameraControlWindowViewModel : ViewModelBase
     {
         #region Fields
-
-        //[DllImport(@"G:\\LibRawTester\\x64\\Release\\LibRawTester.dll")]
-        //public static extern int processRawImage(int a);
 
         // Main data holder & handler
         private CameraDeviceManager _deviceManager;
@@ -50,16 +48,20 @@ namespace LightX_01.ViewModel
         private ObservableCollection<int> ROIXYMAX;
         private ObservableCollection<int> _currentRoiXYLimits;
         private WriteableBitmap _overlayBitmap;
-        //private Int32Rect sourceRect = new Int32Rect();
         private volatile int _remainingBurst = 0;
         private int _totalBurstNumber = 0;
-        public ObservableCollection<BitmapImage> CapturedImages { get; set; }
+        //public ObservableCollection<BitmapImage> CapturedImages { get; set; }
+        public ObservableCollection<string> CapturedImages { get; set; }
+        //public BitmapImage[] CapturedImages { get; set; }
+        //public ObservableCollection<Stream> CapturedImagesStreams { get; set; }
 
         // System and windows vars
         private List<double> _oldGuideWindowPosition = new List<double>(2);
         private System.Timers.Timer _liveViewTimer;
         private object _locker = new object();
         private int _testIndex = 0;
+        private List<Task> _tasks = new List<Task>();
+        private List<Task> _lowPriorityTasks = new List<Task>();
 
         // Commands definition
         private RelayCommand _captureCommand;
@@ -134,6 +136,7 @@ namespace LightX_01.ViewModel
                     new Thread(() =>
                     {
                         bool retry;
+                        Thread.CurrentThread.Name = "SetRoiXY";
                         Thread.CurrentThread.IsBackground = true;
                         do
                         {
@@ -308,9 +311,10 @@ namespace LightX_01.ViewModel
         private void ImageMouseWheel(MouseWheelEventArgs e)
         {
             e.Handled = true;
-            new Thread(() =>
-            {
-                Thread.CurrentThread.IsBackground = true;
+            //new Thread(() =>
+            //{
+                //Thread.CurrentThread.Name = "ImageMouseWheel";
+                //Thread.CurrentThread.IsBackground = true;
                 if (e.Delta > 0)
                 {
                     if (_subZoomDivider == 1)
@@ -322,6 +326,7 @@ namespace LightX_01.ViewModel
                     else if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values.Count - 2])
                     {
                         DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.NextValue();
+                        DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value, true);
                         _subZoomDivider = 1;
                     }
                 }
@@ -339,7 +344,7 @@ namespace LightX_01.ViewModel
                         _subZoomDivider = DeviceManager.SelectedCameraDevice is CanonSDKBase ? 2.75: 1.25;
                     }
                 }
-            }).Start();
+            //}).Start();
             _zoomHasChanged = true;
         }
 
@@ -417,17 +422,191 @@ namespace LightX_01.ViewModel
 
         void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
         {
-            //lock (_locker) // Prevent program to start new transfer while another transfer is active.
-            //{
-            //    // to prevent UI freeze start the transfer process in a new thread
-            //    //Thread thread = new Thread(PhotoCaptured);
-            //    //thread.Start(eventArgs);
-            //    PhotoCaptured(eventArgs);
-            //}
-            ++_remainingBurst; // if the burst is controlled via the camera's trigger button itself (counts the number of capture to process before showing the review window)
+            ++_remainingBurst;
             ++_totalBurstNumber;
-            Thread thread = new Thread(PhotoCaptured);
-            thread.Start(eventArgs);
+
+            Stream stream = new MemoryStream();
+            //byte[] buffer;
+            lock (_locker) // Prevent program to start new transfer while another transfer is active.
+            {
+                //PhotoCaptured(eventArgs);
+                Task task = Task.Run(() => GetImageStream(eventArgs, stream));
+                //Task task = Task.Run(() => GetImageBuffer(eventArgs, buffer));
+                task.Wait();
+                //buffer = GetImageBuffer(eventArgs);
+            }
+            //byte[] buffer = (stream as MemoryStream).ToArray();
+            //stream.Close();
+            _tasks.Add(new Task(() => ProcessImage(stream)));
+
+            if (_remainingBurst == 0)
+            {
+                foreach (Task task in _tasks)
+                {
+                    task.Start();
+                    //task.Wait();
+                }
+                Task.WaitAll(_tasks.ToArray());
+
+                foreach (Task task in _lowPriorityTasks)
+                {
+                    if (!task.IsCompleted)
+                        task.Start();
+                }
+
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Thread.Sleep(10);
+                    ShowReviewWindow();
+                    //GC.KeepAlive(CapturedImages);
+                });
+                _tasks.Clear();
+            }
+        }
+
+        private void WriteRawStream(byte[] buffer, string fileName)
+        {
+            //File.WriteAllBytes(fileName, (stream as MemoryStream).ToArray());
+            //stream.Close();
+            File.WriteAllBytes(fileName, buffer);
+            //buffer = null;
+            //GC.Collect();
+        }
+
+        private void ProcessImage(Stream stream)
+        {
+            if (CapturedImages == null)
+                CapturedImages = new ObservableCollection<string>();
+
+            byte[] rawData;
+            rawData = new byte[stream.Length];
+            stream.Read(rawData, 0, (int)stream.Length);
+
+            GCHandle rawDataHandle = GCHandle.Alloc(rawData, GCHandleType.Pinned);
+            //GCHandle rawDataHandle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            IntPtr address = rawDataHandle.AddrOfPinnedObject();
+
+            //stream.Close();
+
+            //System.Windows.Media.PixelFormat pf = PixelFormats.Rgb24;
+            //int width = 6720;
+            //int height = 4480;
+            //int rawStride = (width * pf.BitsPerPixel + 7) / 8;
+
+            int size = LibrawClass.extractThumb(address, rawData.Length);
+
+            //byte[] result = new byte[rawStride * height];
+            byte[] result = new byte[size];
+            rawDataHandle.Free();
+            Marshal.Copy(address, result, 0, size);
+
+            //mem.Write(result, 0, size);
+            //Stream mem = new MemoryStream(result);
+            //mem.Position = 0;
+
+
+            var fileName = Path.GetTempFileName();
+            //_tasks.Add(Task.Run(() => File.WriteAllBytes(fileName, result)));
+            //_lowPriorityTasks.Add(new Task(() => WriteRawStream(buffer, fileName + ".cr3")));
+            _lowPriorityTasks.Add(new Task(() => File.WriteAllBytes(fileName + ".cr3", (stream as MemoryStream).ToArray())));
+            File.WriteAllBytes(fileName + ".jpeg", result);
+
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            //image.DecodeFailed += dcFailed;
+            //image.StreamSource = memoryStream;
+            image.UriSource = new Uri(fileName + ".jpeg");
+            image.CacheOption = BitmapCacheOption.None;
+            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            image.EndInit();
+            image.Freeze();
+
+            //if(CapturedImages != null)
+            //{
+            //    BitmapImage[] CapturedImages_temp = new BitmapImage[CapturedImages.Length + 1];
+            //    CapturedImages.CopyTo(CapturedImages_temp, 0);
+            //    CapturedImages_temp[CapturedImages_temp.Length - 1] = image;
+            //    CapturedImages = new BitmapImage[CapturedImages_temp.Length];
+            //    CapturedImages = CapturedImages_temp;
+            //}
+            //else
+            //{
+            //    CapturedImages = new BitmapImage[1];
+            //    CapturedImages[0] = image;
+            //}
+            
+            //CapturedImages.Add(image);
+            CapturedImages.Add(fileName);
+            //mem.Close();
+            //GC.Collect();
+            //GC.KeepAlive(CapturedImages);
+        }
+
+        void dcFailed(object sender, ExceptionEventArgs e)
+        {
+            System.Windows.MessageBox.Show("Error creating JPEG Thumbnails :\n" + e.ErrorException.Message);
+        }
+
+        private void GetImageStream(object o, Stream memStream)
+        {
+            
+            //if (CapturedImagesStreams == null)
+            //    CapturedImagesStreams = new ObservableCollection<Stream>();
+            PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
+
+            if (eventArgs == null)
+                return;
+            //Stream memStream = new MemoryStream();
+
+            try
+            {
+                eventArgs.CameraDevice.IsBusy = true;
+
+                eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+                memStream.Position = 0;
+
+                --_remainingBurst;
+            }
+            catch (Exception exception)
+            {
+                eventArgs.CameraDevice.IsBusy = false;
+                System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
+                return;
+            }
+
+            eventArgs.CameraDevice.IsBusy = false;
+            eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
+        }
+
+        private byte[] GetImageBuffer(object o)
+        {
+
+            //if (CapturedImagesStreams == null)
+            //    CapturedImagesStreams = new ObservableCollection<Stream>();
+            PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
+
+            if (eventArgs == null)
+                return null;
+            //Stream memStream = new MemoryStream();
+
+            try
+            {
+                eventArgs.CameraDevice.IsBusy = true;
+                byte[] buffer = (eventArgs.CameraDevice as CanonSDKBase).TransferFile(eventArgs.Handle);
+
+                --_remainingBurst;
+
+                eventArgs.CameraDevice.IsBusy = false;
+                eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
+                return buffer;
+            }
+            catch (Exception exception)
+            {
+                eventArgs.CameraDevice.IsBusy = false;
+                eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
+                System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
+                return null;
+            }
         }
 
         void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
@@ -444,13 +623,16 @@ namespace LightX_01.ViewModel
         {
             if (cameraDevice is CanonSDKBase)
             {
-                
+
                 foreach (var propertyVal in cameraDevice.AdvancedProperties)
                 {
-                    switch(propertyVal.Name)
+                    switch (propertyVal.Name)
                     {
                         case "Drive Mode":
                             propertyVal.SetValue(propertyVal.Values[1]); //High-Speed Continuous shooting
+                            break;
+                        case "Flash":
+                            propertyVal.SetValue(propertyVal.Values[0]);
                             break;
                         default:
                             break;
@@ -461,6 +643,7 @@ namespace LightX_01.ViewModel
                 //cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.NumericValues[0]); // "AF-S"
                 //cameraDevice.LiveViewFocusMode.SetValue(cameraDevice.LiveViewFocusMode.NumericValues[0]); // "AF-S"
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
+
             }
             else if (cameraDevice is NikonBase)
             {
@@ -504,6 +687,7 @@ namespace LightX_01.ViewModel
                     cameraDevice.ShutterSpeed.SetValue(_currentTestCameraSettings.ShutterSpeed);
                     cameraDevice.FNumber.SetValue(_currentTestCameraSettings.FNumber);
                     SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
+            _subZoomDivider = 1;
                     _roiXY = null; // will reset the focus point to the center of the image;
                                    //retry = false;
                                    //}
@@ -513,38 +697,55 @@ namespace LightX_01.ViewModel
 
         private void CaptureInThread()
         {
-            if (_liveViewEnabled)
-                StopLiveViewInThread();
-            //thread.ThreadState = ThreadState.
-            //Thread.Sleep(100);
-            //new Thread(Capture).Start();
-
-            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.PauseLiveview();
-            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).PressButton();
-
-            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResetShutterButton();
-            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.SendCommand(Canon.Eos.Framework.Internal.SDK.Edsdk.CameraCommand_TakePicture);
-
-            //while (_totalBurstNumber < Int32.Parse(_currentTestCameraSettings.BurstNumber)) { };
-            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).ReleaseButton();
-
-            try
+            if (DeviceManager.SelectedCameraDevice is NikonBase)
             {
-                (DeviceManager.SelectedCameraDevice as CanonSDKBase).CapturePhotoBurstNoAf(1);
+                if (_liveViewEnabled)
+                    StopLiveViewInThread();
+                Thread.Sleep(100); // wait for the liveView to stop
+                new Thread(Capture).Start();
             }
-            catch (COMException comException)
+            else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
             {
-                DeviceManager.SelectedCameraDevice.IsBusy = false;
-                ErrorCodes.GetException(comException);
-            }
-            catch
-            {
-                DeviceManager.SelectedCameraDevice.IsBusy = false;
-                throw;
+                //if (_liveViewEnabled)
+                    //StopLiveViewInThread();
+                //Thread.Sleep(100); // wait for the liveView to stop
+
+                _liveViewTimer.Stop();
+
+                try
+                {
+                    int burst = 5;
+                    // no thread, since we control the burst number on timing alone
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).CapturePhotoBurstNoAf();
+                    while (burst != 0)
+                    {
+                        Thread.Sleep(130);
+                        burst--;
+                    }
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
+                    Thread.Sleep(150);
+                }
+                catch (COMException comException)
+                {
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
+                    DeviceManager.SelectedCameraDevice.IsBusy = false;
+                    ErrorCodes.GetException(comException);
+                }
+                catch
+                {
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
+                    DeviceManager.SelectedCameraDevice.IsBusy = false;
+                    throw;
+                }
+
             }
         }
 
-        private void Capture()
+        private void Capture() // FOR NIKON CAMERA ONLY
         {
             bool retry;
             do
@@ -579,184 +780,351 @@ namespace LightX_01.ViewModel
             } while (retry);
         }
 
-        private void PhotoCaptured(object o)
-        {
-            if (CapturedImages == null)
-                CapturedImages = new ObservableCollection<BitmapImage>();
-            PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
-            //PhotoCapturedEventArgs eventAr = new PhotoCapturedEventArgs
-            //{
-            //    WiaImageItem = null,
-            //    CameraDevice = this,
-            //    FileName = "DSC_0000.CR3",
-            //    Handle = (uint)BitConverter.ToUInt32(eventArgs.Handle as , 0)
-            //}
-            //EosMemoryImageEventArgs file = o as EosMemoryImageEventArgs;
-            if (eventArgs == null)
-                return;
-            try
-            {
-                //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, fileName);
-                //// the IsBusy may used internally, if file transfer is done should set to false  
-                //eventArgs.CameraDevice.IsBusy = false;
-                //eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
 
-                //if (Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
-                //{
-                //    bool OnlyRaw = false; //to restart the liveView when only uploading raw files (gotta do the raw->tiff->bitmap function)
-                //    if(OnlyRaw)
-                //        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                //        {
-                //            StartLiveViewInThread();
-                //        });
-                //    return;
-                //}
+        //private void PhotoCaptured(object o)
+        //{
+            
+        //    if (CapturedImages == null)
+        //        CapturedImages = new ObservableCollection<BitmapImage>();
+        //    PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
 
-                eventArgs.CameraDevice.IsBusy = true;
+        //    if (eventArgs == null)
+        //        return;
 
-                //BitmapImage image;
+        //    try
+        //    {
+        //        eventArgs.CameraDevice.IsBusy = true;
 
-                Stream memStream = new MemoryStream();
+        //        //while (eventArgs.CameraDevice.TransferProgress != 100u && eventArgs.CameraDevice.TransferProgress != 0u) { }
+        //        //using (Stream memStream = new MemoryStream())
+        //        //{
+        //        Stream memStream = new MemoryStream();
+        //        Stream mem = new MemoryStream();
+        //        //Thread.Sleep(100);
+        //        //GC.KeepAlive(eventArgs);
+        //        eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+        //            //GC.KeepAlive(eventArgs);
+        //            //while (eventArgs.CameraDevice.TransferProgress != 100u && eventArgs.CameraDevice.TransferProgress != 0u) { }
+        //            memStream.Position = 0;
 
-                //GC.TryStartNoGCRegion(244);
-                while (eventArgs.CameraDevice.TransferProgress != 100u && eventArgs.CameraDevice.TransferProgress != 0u) { }
-                eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
-                //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
-                //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, eventArgs.FileName);
-                //EosMemoryImageEventArgs memory = eventArgs.Handle as EosMemoryImageEventArgs;
-                //EosImageEventArgs arg = o as EosImageEventArgs;
-                //memStream.Write(memory.ImageData, 0, memory.ImageData.Length);
+        //            string fileName = Path.GetFileName(eventArgs.FileName);
+        //            if (Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
+        //            {
+        //                byte[] rawData;
+        //                rawData = new byte[memStream.Length];
+        //                memStream.Read(rawData, 0, (int)memStream.Length);
 
-                //GC.EndNoGCRegion();
+        //                GCHandle rawDataHandle = GCHandle.Alloc(rawData, GCHandleType.Pinned);
+        //                IntPtr address = rawDataHandle.AddrOfPinnedObject();
 
-                memStream.Position = 0;
-
-                // Gestion temporaire des fichier RAW
-                string fileName = Path.GetFileName(eventArgs.FileName);
-                if(Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
-                {
-                    using (MagickImage magickImage = new MagickImage(memStream, MagickFormat.Cr3))
-                    {
-                        memStream.Close();
-                        GC.Collect();
-                        //IPixelCollection pc = magickImage.GetPixels();
-                        //byte[] data = pc.ToByteArray("RGB");
-                        //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
+        //                System.Windows.Media.PixelFormat pf = PixelFormats.Rgb24;
+        //                int width = 6720;
+        //                int height = 4480;
+        //                int rawStride = (width * pf.BitsPerPixel + 7) / 8;
+        //                byte[] result = new byte[rawStride * height];
 
 
-                        System.Drawing.Bitmap bmp = magickImage.ToBitmap(System.Drawing.Imaging.ImageFormat.Tiff);
+        //                //byte[] result = new byte[6720 * 4480 * 3 * 1];
+        //                //byte[] result = new byte[6720 * 4480 * 3 * 2];
+        //                //GCHandle resultHandle = GCHandle.Alloc(result, GCHandleType.Pinned);
+        //                //IntPtr resAdd = resultHandle.AddrOfPinnedObject();
 
-                        //System.Drawing.Bitmap uwu = new System.Drawing.Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format48bppRgb);
+        //                int size = LibrawClass.extractThumb(address, rawData.Length);
 
-                        //using (Graphics graph = Graphics.FromImage(uwu))
-                        //{
-                        //    graph.DrawImage(bmp, new System.Drawing.Point(0, 0));
-                        //}
+        //                //Thread.Sleep(100);
+        //                rawDataHandle.Free();
+        //                //Thread.Sleep(100);
+        //                Marshal.Copy(address, result, 0, size);
+        //                //Thread.Sleep(100);
+        //                //resultHandle.Free();
 
-                        //bmp.PixelFormat = System.Drawing.Imaging.PixelFormat.Format48bppRgb;
+                        
+        //                mem.Write(result, 0, size);
+        //                /*
+        //                BitmapSource bitmap = BitmapSource.Create(width, height, 300, 300, pf, null, result, rawStride);
+        //                //BitmapSource bitmap = BitmapSource .Create()
+        //                JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+        //                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        //                encoder.Save(mem);
+        //                */
+        //                mem.Position = 0;
 
-                        //Bitmap ayy;
+        //                BitmapImage image = new BitmapImage();
+        //                image.BeginInit();
+        //                image.StreamSource = mem;
+        //                image.CacheOption = BitmapCacheOption.None;
+        //                image.EndInit();
+        //                image.Freeze();
+        //                //mem.Close();
+        //                CapturedImages.Add(image);
 
-                        //System.Drawing.Imaging.PixelFormat pixelFormat = System.Drawing.Imaging.PixelFormat.Format48bppRgb;
+        //                --_remainingBurst;
+        //                //memStream.Close();
+        //            }
+        //            else // JPEG
+        //            {
+        //                BitmapImage image = new BitmapImage();
+        //                image.BeginInit();
+        //                image.StreamSource = memStream;
+        //                image.CacheOption = BitmapCacheOption.Default;
+        //                image.EndInit();
+        //                image.Freeze();
+        //                //memStream.Close();
+        //                CapturedImages.Add(image);
 
-                        //Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+        //                --_remainingBurst;
+        //            }
 
-                        //BitmapData bitmapData = bmp.LockBits(rect, ImageLockMode.ReadOnly, pixelFormat);
-                        //try
-                        //{
-                        //    Bitmap convertedBitmap = new Bitmap(bmp.Width, bmp.Height, pixelFormat);
-                        //    BitmapData convertedBitmapData = convertedBitmap.LockBits(rect, ImageLockMode.WriteOnly, pixelFormat);
-                        //    try
-                        //    {
-                        //        NativeMethods.CopyMemory(convertedBitmapData.Scan0, bitmapData.Scan0, (uint)bitmapData.Stride * (uint)bitmapData.Height);
-                        //    }
-                        //    finally
-                        //    {
-                        //        convertedBitmap.UnlockBits(convertedBitmapData);
-                        //    }
+        //            //GC.KeepAlive(eventArgs);
+        //            eventArgs.CameraDevice.IsBusy = false;
+        //            eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
+        //         //}
 
-                        //    ayy = convertedBitmap;
-                        //}
-                        //finally
-                        //{
-                        //    bmp.UnlockBits(bitmapData);
-                        //}
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        eventArgs.CameraDevice.IsBusy = false;
+        //        System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
+        //    }
+        //    //GC.Collect();
 
-                        magickImage.Dispose();
-                        GC.Collect();
+        //    if (_remainingBurst == 0 && CapturedImages.Count != 0) // (wait for all captureEvents to be process before showing the review window)
+        //        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        //        {
+        //            //_totalBurstNumber /= 2; // if JPEG + RAW
+        //            ShowReviewWindow();
+        //        });
+        //}
 
-                        using (var mem = new MemoryStream())
-                        {
-                            bmp.Save(mem, System.Drawing.Imaging.ImageFormat.Tiff);
-                            bmp.Dispose();
-                            mem.Position = 0;
+        //private void PhotoCaptured_OLD(object o)
+        //{
+        //    if (CapturedImages == null)
+        //        CapturedImages = new ObservableCollection<BitmapImage>();
+        //    PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
+            
+        //    if (eventArgs == null)
+        //        return;
+        //    try
+        //    {
+        //        //eventArgs.CameraDevice.TransferFile(eventArgs.Handle, fileName);
+        //        //// the IsBusy may used internally, if file transfer is done should set to false  
+        //        //eventArgs.CameraDevice.IsBusy = false;
+        //        //eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
 
-                            BitmapImage image = new BitmapImage();
-                            image.BeginInit();
-                            image.StreamSource = mem;
-                            image.CacheOption = BitmapCacheOption.OnLoad;
-                            image.EndInit();
-                            image.Freeze();
+        //        //if (Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
+        //        //{
+        //        //    bool OnlyRaw = false; //to restart the liveView when only uploading raw files (gotta do the raw->tiff->bitmap function)
+        //        //    if(OnlyRaw)
+        //        //        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        //        //        {
+        //        //            StartLiveViewInThread();
+        //        //        });
+        //        //    return;
+        //        //}
 
-                            CapturedImages.Add(image);
-                            mem.Close();
-                        }
+        //        eventArgs.CameraDevice.IsBusy = true;
 
-                        //    bmp.Save()
-                        //IPixelCollection pc = magickImage.GetPixels();
+        //        //BitmapImage image;
 
-                        //byte[] data = pc.ToByteArray(PixelMapping.BGR);
+        //        //Stream memStream = new MemoryStream();
 
-                        //ushort[] data = pc.ToArray();
-                        //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
+        //        while (eventArgs.CameraDevice.TransferProgress != 100u && eventArgs.CameraDevice.TransferProgress != 0u) { }
+        //        byte[] rawData;
+        //        using (Stream memStream = new MemoryStream())
+        //        {
+        //            eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
 
-                        //BitmapSource bmf = magickImage.ToBitmapSource(BitmapDensity.)
+        //            memStream.Position = 0;
 
-                        // conversion en bitmap image
+        //            rawData = new byte[memStream.Length];
+        //            memStream.Read(rawData, 0, (int)memStream.Length);
+        //        }
 
-                        //BitmapImage image = Bs2bi(bmf);
+        //        GCHandle rawDataHandle = GCHandle.Alloc(rawData, GCHandleType.Pinned);
+        //        IntPtr address = rawDataHandle.AddrOfPinnedObject();
+
+        //        System.Windows.Media.PixelFormat pf = PixelFormats.Rgb48;
+        //        int width = 6742;
+        //        int height = 4498;
+        //        int rawStride = (width * pf.BitsPerPixel + 7) / 8;
+        //        byte[] result = new byte[rawStride * height];
 
 
-                        //image.Freeze();
-                        //CapturedImages.Add(image);
-                    }
-                }
-                else // JPEG 
-                {
-                    //Stream memStream = new MemoryStream();
+        //        //byte[] result = new byte[6742 * 4498 * 3 * 2];
+        //        GCHandle resultHandle = GCHandle.Alloc(result, GCHandleType.Pinned);
+        //        IntPtr resAdd = resultHandle.AddrOfPinnedObject();
 
-                    // eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+        //        resAdd = LibrawClass.processRawImage(address, rawData.Length);
 
-                    //memStream.Position = 0;
+        //        Thread.Sleep(100);
 
-                    BitmapImage image = new BitmapImage();
-                    image.BeginInit();
-                    image.StreamSource = memStream;
-                    image.CacheOption = BitmapCacheOption.OnLoad;
-                    image.EndInit();
-                    image.Freeze();
-                    memStream.Close();
-                    CapturedImages.Add(image);
-                }
+        //        rawDataHandle.Free();
 
-                --_remainingBurst;
+        //        //byte[] buff = new byte[6742 * 4498 * 3 * 2];
 
-                eventArgs.CameraDevice.IsBusy = false;
-                eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
-            }
-            catch (Exception exception)
-            {
-                eventArgs.CameraDevice.IsBusy = false;
-                System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
-            }
-            GC.Collect();
+        //        Thread.Sleep(100);
 
-            if (_remainingBurst == 0) // (wait for all captureEvents to be process before showing the review window)
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    ShowReviewWindow();
-                });
-        }
+
+        //        Marshal.Copy(resAdd, result, 0, result.Length);
+        //        Thread.Sleep(100);
+
+        //        resultHandle.Free();
+
+        //        MemoryStream mem = new MemoryStream();
+        //        //mem.Write(result, 0, result.Length);
+
+                
+
+        //        BitmapSource bitmap = BitmapSource.Create(width, height, 96, 96, pf, null, result, rawStride);
+
+        //        //JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+        //        BmpBitmapEncoder encoder = new BmpBitmapEncoder();
+        //        encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        //        encoder.Save(mem);
+        //        mem.Position = 0;
+
+        //        BitmapImage image = new BitmapImage();
+        //        image.BeginInit();
+        //        image.StreamSource = mem;
+        //        image.CacheOption = BitmapCacheOption.OnLoad;
+        //        image.EndInit();
+        //        image.Freeze();
+        //        mem.Close();
+        //        CapturedImages.Add(image);
+
+
+               
+                
+        //        // Gestion temporaire des fichier RAW
+
+
+        //        string fileName = Path.GetFileName(eventArgs.FileName);
+        //        /*
+        //        if(Path.GetExtension(fileName) == ".NEF" || Path.GetExtension(fileName) == ".CR2" || Path.GetExtension(fileName) == ".CR3")
+        //        {
+        //            using (MagickImage magickImage = new MagickImage(memStream, MagickFormat.Cr3))
+        //            {
+        //                memStream.Close();
+        //                GC.Collect();
+        //                //IPixelCollection pc = magickImage.GetPixels();
+        //                //byte[] data = pc.ToByteArray("RGB");
+        //                //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
+
+
+        //                System.Drawing.Bitmap bmp = magickImage.ToBitmap(System.Drawing.Imaging.ImageFormat.Tiff);
+
+        //                //System.Drawing.Bitmap uwu = new System.Drawing.Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format48bppRgb);
+
+        //                //using (Graphics graph = Graphics.FromImage(uwu))
+        //                //{
+        //                //    graph.DrawImage(bmp, new System.Drawing.Point(0, 0));
+        //                //}
+
+        //                //bmp.PixelFormat = System.Drawing.Imaging.PixelFormat.Format48bppRgb;
+
+        //                //Bitmap ayy;
+
+        //                //System.Drawing.Imaging.PixelFormat pixelFormat = System.Drawing.Imaging.PixelFormat.Format48bppRgb;
+
+        //                //Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+
+        //                //BitmapData bitmapData = bmp.LockBits(rect, ImageLockMode.ReadOnly, pixelFormat);
+        //                //try
+        //                //{
+        //                //    Bitmap convertedBitmap = new Bitmap(bmp.Width, bmp.Height, pixelFormat);
+        //                //    BitmapData convertedBitmapData = convertedBitmap.LockBits(rect, ImageLockMode.WriteOnly, pixelFormat);
+        //                //    try
+        //                //    {
+        //                //        NativeMethods.CopyMemory(convertedBitmapData.Scan0, bitmapData.Scan0, (uint)bitmapData.Stride * (uint)bitmapData.Height);
+        //                //    }
+        //                //    finally
+        //                //    {
+        //                //        convertedBitmap.UnlockBits(convertedBitmapData);
+        //                //    }
+
+        //                //    ayy = convertedBitmap;
+        //                //}
+        //                //finally
+        //                //{
+        //                //    bmp.UnlockBits(bitmapData);
+        //                //}
+
+        //                magickImage.Dispose();
+        //                GC.Collect();
+
+        //                using (var mem = new MemoryStream())
+        //                {
+        //                    bmp.Save(mem, System.Drawing.Imaging.ImageFormat.Tiff);
+        //                    bmp.Dispose();
+        //                    mem.Position = 0;
+
+        //                    BitmapImage image = new BitmapImage();
+        //                    image.BeginInit();
+        //                    image.StreamSource = mem;
+        //                    image.CacheOption = BitmapCacheOption.OnLoad;
+        //                    image.EndInit();
+        //                    image.Freeze();
+
+        //                    CapturedImages.Add(image);
+        //                    mem.Close();
+        //                }
+
+        //                //    bmp.Save()
+        //                //IPixelCollection pc = magickImage.GetPixels();
+
+        //                //byte[] data = pc.ToByteArray(PixelMapping.BGR);
+
+        //                //ushort[] data = pc.ToArray();
+        //                //BitmapSource bmf = FromArray(data, magickImage.Width, magickImage.Height, magickImage.ChannelCount);
+
+        //                //BitmapSource bmf = magickImage.ToBitmapSource(BitmapDensity.)
+
+        //                // conversion en bitmap image
+
+        //                //BitmapImage image = Bs2bi(bmf);
+
+
+        //                //image.Freeze();
+        //                //CapturedImages.Add(image);
+        //            }
+        //        }
+        //        else // JPEG 
+        //        {
+        //            //Stream memStream = new MemoryStream();
+
+        //            // eventArgs.CameraDevice.TransferFile(eventArgs.Handle, memStream);
+
+        //            //memStream.Position = 0;
+
+        //            BitmapImage image = new BitmapImage();
+        //            image.BeginInit();
+        //            image.StreamSource = memStream;
+        //            image.CacheOption = BitmapCacheOption.OnLoad;
+        //            image.EndInit();
+        //            image.Freeze();
+        //            memStream.Close();
+        //            CapturedImages.Add(image);
+        //        }
+        //        */
+        //        --_remainingBurst;
+
+        //        eventArgs.CameraDevice.IsBusy = false;
+        //        eventArgs.CameraDevice.ReleaseResurce(eventArgs.Handle);
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        eventArgs.CameraDevice.IsBusy = false;
+        //        System.Windows.MessageBox.Show("Error download photo from camera :\n" + exception.Message);
+        //    }
+        //    GC.Collect();
+
+        //    if (_remainingBurst == 0) // (wait for all captureEvents to be process before showing the review window)
+        //        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        //        {
+        //            ShowReviewWindow();
+        //        });
+
+        //}
 
         public void SetRoiXY(int x, int y)
         {
@@ -846,7 +1214,9 @@ namespace LightX_01.ViewModel
 
         private void StartLiveViewInThread()
         {
-            new Thread(StartLiveView).Start();
+            Thread thread = new Thread(StartLiveView);
+            thread.Name = "StartLiveView";
+            thread.Start();
         }
 
         private void StartLiveView()
@@ -881,6 +1251,7 @@ namespace LightX_01.ViewModel
         private void StopLiveViewInThread()
         {
             Thread thread = new Thread(StopLiveView);
+            thread.Name = "StopLiveView";
             thread.Start();
             thread.Join();
         }
@@ -938,7 +1309,9 @@ namespace LightX_01.ViewModel
 
         private void ShowReviewWindow()
         {
-            ReviewWindow objReviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
+            string[] imageArray = new string[CapturedImages.Count];
+            CapturedImages.CopyTo(imageArray, 0);
+            ReviewWindow objReviewWindow = new ReviewWindow(imageArray, _currentTestResults.Comments);
             bool? isAccepted = objReviewWindow.ShowDialog();
             _currentTestResults.Comments = objReviewWindow.Comment;
             switch (isAccepted)
@@ -950,6 +1323,8 @@ namespace LightX_01.ViewModel
                     FetchCurrentTest();
                     break;
                 default:
+                    if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
                     ZoomOutEvent();
                     break;
             }
@@ -972,7 +1347,8 @@ namespace LightX_01.ViewModel
                     }
                 }
             });
-            StartLiveViewInThread();
+            _liveViewTimer.Start();
+            //StartLiveViewInThread();
         }
 
         private void CloseApplication(CancelEventArgs e)
@@ -984,7 +1360,12 @@ namespace LightX_01.ViewModel
             {
                 if (_liveViewTimer.Enabled)
                 {
-                    StopLiveViewInThread();
+                    StopLiveView();
+                    if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+                    {
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Close();
+                    }
                 }
                 System.Windows.Application.Current.Shutdown();
             }
@@ -1209,6 +1590,7 @@ namespace LightX_01.ViewModel
 
         public CameraControlWindowViewModel(Exam exam)
         {
+            Thread.CurrentThread.Name = "MainThread";
             SetLiveViewTimer();
 
             CurrentExam = exam;
@@ -1236,9 +1618,8 @@ namespace LightX_01.ViewModel
                 }
             });
 
-            //int i = LibrawClass.processRawImage(15);
-            
             Thread thread = new Thread(StartupThread);
+            thread.Name = "Startup";
             thread.Start();
             //StartupThread(); // initial setup of camera
         }
