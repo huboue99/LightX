@@ -63,9 +63,16 @@ namespace LightX_01.ViewModel
             get { return _currentImage; }
             set
             {
+                if (value != null && value != string.Empty)
+                {
                 _currentImage = string.Empty;
                 _currentImage = value;
                 RaisePropertyChanged(() => CurrentImage);
+                }
+                else
+                {
+                    MessageBox.Show("CurrentImage is trying to read an empty path.");
+                }
             }
         }
 

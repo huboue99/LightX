@@ -14,7 +14,7 @@
             <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
         </Style>
     </Window.Style>
-    
+
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" MinHeight="300"/>
@@ -22,8 +22,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Image Grid.Row="0" MinWidth="100" MinHeight="100" Source="{Binding CurrentImage,UpdateSourceTrigger=PropertyChanged}" Stretch="Uniform"/>
-        
+        <Image Grid.Row="0" MinWidth="100" MinHeight="100" Source="{Binding CurrentImage,UpdateSourceTrigger=PropertyChanged, Converter={StaticResource uriToImageConv}}" Stretch="Uniform"/>
 
         <StackPanel Grid.Row="1" Margin="0 10 0 0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button IsEnabled="{Binding NotFirstImage}" Width="25" Height="20" Margin="0 0 10 0" Command="{Binding PreviousImageCommand}">&lt;</Button>

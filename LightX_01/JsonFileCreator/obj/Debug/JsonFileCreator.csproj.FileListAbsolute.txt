@@ -21,11 +21,9 @@ G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Newtonsoft.Json.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\GalaSoft.MvvmLight.pdb
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\GalaSoft.MvvmLight.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\CameraControl.Devices.pdb
-G:\LightX\LightX_01\JsonFileCreator\bin\Debug\CameraControl.Devices.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\websocket-sharp.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\PortableDeviceLib.pdb
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Canon.Eos.Framework.pdb
-G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Canon.Eos.Framework.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Accord.Video.DirectShow.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Rssdp.Native.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Accord.Video.xml
@@ -65,8 +63,7 @@ C:\Users\macham\Documents\Programs\LightX\LightX_01\JsonFileCreator\obj\Debug\Js
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csprojAssemblyReference.cache
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csproj.CoreCompileInputs.cache
 G:\LightX\LightX_01\JsonFileCreator\obj\Debug\JsonFileCreator.csproj.CopyComplete
-G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Magick.NET-Q16-AnyCPU.dll
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\WriteableBitmapEx.Wpf.dll
-G:\LightX\LightX_01\JsonFileCreator\bin\Debug\Magick.NET-Q16-AnyCPU.xml
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\WriteableBitmapEx.Wpf.pdb
 G:\LightX\LightX_01\JsonFileCreator\bin\Debug\WriteableBitmapEx.Wpf.xml
+G:\LightX\LightX_01\JsonFileCreator\bin\Debug\LibRawTester.dll

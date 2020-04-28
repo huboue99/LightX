@@ -16,5 +16,8 @@ namespace LightX_01.Classes
 
         [DllImport("LibRawTester.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int extractThumb([In,Out] IntPtr rawData, int dataLength);
+
+        [DllImport("LibRawTester.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int extractThumbFromFile([Out] IntPtr rawData, string path);
     }
 }

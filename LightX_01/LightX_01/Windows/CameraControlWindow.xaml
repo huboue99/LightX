@@ -7,11 +7,13 @@
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
         xmlns:command="http://www.galasoft.ch/mvvmlight"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:LightX_01"
         mc:Ignorable="d"
-        Keyboard.KeyDown="KeyDownEventHandler" Keyboard.KeyUp="KeyUpEventHandler"
         Icon="../LightXLogo.ico"
+        Loaded="LiveViewWindow_Loaded" Closing="LiveViewWindow_Closing"
         Height="670" Width="740" Topmost="False" WindowState="Normal">
+        <!--Keyboard.KeyDown="KeyDownEventHandler" Keyboard.KeyUp="KeyUpEventHandler"-->
 
     <Window.Style>
         <Style TargetType="{x:Type Window}">
@@ -29,6 +31,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -53,7 +56,14 @@
             <Image Source="{Binding OverlayBitmap, UpdateSourceTrigger=PropertyChanged}" Stretch="Uniform" IsEnabled="{Binding LiveViewEnabled}"/>
         </Grid>
 
-        <Grid Grid.Row="2" Margin="0 10">
+        <!--<CheckBox Grid.Row="2" Name="ManualModeCheckBox" Content="Enable manual settings" HorizontalAlignment="Right"/>-->
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
+            <CheckBox VerticalAlignment="Center" Content="Auto burst control" IsChecked="{Binding IsAutoBurstControl, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsThreeState="False" Margin="0 0 10 0"/>
+            <CheckBox Name="CheckBoxCustomBurst" VerticalAlignment="Center" Content="Custom burst" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" IsThreeState="False" Margin="0 0 10 0"/>
+            <xctk:IntegerUpDown Name="BurstUpDownControl"  Width="60" FormatString="G" Value="{Binding BurstNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ClipValueToMinMax="True" Minimum="1" Maximum="9"/>
+        </StackPanel>
+
+        <Grid Grid.Row="3" Margin="0 10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -94,6 +104,6 @@
             </StackPanel>
         </Grid>
 
-        <Button Grid.Row="3" IsEnabled="{Binding DeviceManager.SelectedCameraDevice.IsConnected}" Focusable="False" IsDefault="False" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
+        <Button Grid.Row="4" IsEnabled="{Binding DeviceManager.SelectedCameraDevice.IsConnected}" Focusable="False" IsDefault="False" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
     </Grid>
 </Window>
