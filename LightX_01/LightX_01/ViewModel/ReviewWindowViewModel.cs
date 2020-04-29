@@ -63,7 +63,7 @@ namespace LightX_01.ViewModel
             get { return _currentImage; }
             set
             {
-                if (value != null && value != string.Empty)
+                if (!string.IsNullOrEmpty(value))
                 {
                 _currentImage = string.Empty;
                 _currentImage = value;
@@ -205,7 +205,10 @@ namespace LightX_01.ViewModel
         public void NextImage()
         {
             if(NotLastImage)
-                CurrentImage = _images[++CurrentImageIndex] + ".jpeg";
+                if (!string.IsNullOrEmpty(_images[++CurrentImageIndex]))
+                    CurrentImage = _images[CurrentImageIndex] + ".jpeg";
+                else
+                    MessageBox.Show("CurrentImage is trying to read an empty path.");
             //CurrentImageIndex++;
             GC.Collect();
         }
@@ -221,7 +224,10 @@ namespace LightX_01.ViewModel
         public void PreviousImage()
         {
             if(NotFirstImage)
-                CurrentImage = _images[--CurrentImageIndex] + ".jpeg";
+                if (!string.IsNullOrEmpty(_images[--CurrentImageIndex]))
+                    CurrentImage = _images[CurrentImageIndex] + ".jpeg";
+                else
+                    MessageBox.Show("CurrentImage is trying to read an empty path.");
             //CurrentImageIndex--;
             GC.Collect();
         }
@@ -263,7 +269,12 @@ namespace LightX_01.ViewModel
             //images.CopyTo(_images, 0);
             _images = images;
             CurrentImageIndex = 0;
-            CurrentImage = _images[_currentImageIndex] + ".jpeg";
+            if(!string.IsNullOrEmpty(_images[_currentImageIndex]))
+                CurrentImage = _images[_currentImageIndex] + ".jpeg";
+            else
+            {
+                MessageBox.Show("CurrentImage is trying to read an empty path.");
+            }
             _currentComment = comment;
 
             ImageCount = images.Length.ToString();

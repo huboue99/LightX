@@ -526,8 +526,6 @@ namespace LightX_01.ViewModel
                 }
 
                 (cameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
-                //cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.NumericValues[0]); // "AF-S"
-                //cameraDevice.LiveViewFocusMode.SetValue(cameraDevice.LiveViewFocusMode.NumericValues[0]); // "AF-S"
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
 
             }
@@ -558,11 +556,9 @@ namespace LightX_01.ViewModel
                         case "Active D-Lighting":
                             propertyVal.SetValue(propertyVal.NumericValues[4]); // Not Performed
                             break;
-
                     }
                 }
                 cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.Values[0]); // "AF-S"
-                //cameraDevice.LiveViewFocusMode.SetValue(cameraDevice.LiveViewFocusMode.NumericValues[0]); // "AF-S"
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[3]); // "JPEG (BASIC)" = 0 / RAW = 3 / RAW + JPEG = 4
             }
             cameraDevice.ShutterSpeed.SetValue(_currentTestCameraSettings.ShutterSpeed);
@@ -809,13 +805,10 @@ namespace LightX_01.ViewModel
         private byte[] GetImageBuffer(object o)
         {
 
-            //if (CapturedImagesStreams == null)
-            //    CapturedImagesStreams = new ObservableCollection<Stream>();
             PhotoCapturedEventArgs eventArgs = o as PhotoCapturedEventArgs;
 
             if (eventArgs == null)
                 return null;
-            //Stream memStream = new MemoryStream();
 
             try
             {
@@ -1377,11 +1370,36 @@ namespace LightX_01.ViewModel
                     SaveTestResults(objReviewWindow.SelectedImages, imageArray);
                     _testIndex++;
                     FetchCurrentTest();
-                    //FetchCurrentTest();
                     break;
                 default:
                     if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
                         (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
+                    // deleting temp files
+                    foreach (string temp in imageArray)
+                    {
+                        _lowPriorityTasks.Add(Task.Run(() =>
+                        {
+                            bool retry;
+                            do
+                            {
+                                retry = false;
+                                try
+                                {
+                                    Console.WriteLine("Deleting {0} + .jpeg + .cr3...", Path.GetFileName(temp));
+                                    if (File.Exists(temp + ".cr3"))
+                                        File.Delete(temp + ".cr3");
+                                    if (File.Exists(temp + ".jpeg"))
+                                        File.Delete(temp + ".jpeg");
+                                    File.Delete(temp);
+                                }
+                                catch (IOException exception)
+                                {
+                                    Thread.Sleep(1000);
+                                    retry = true;
+                                }
+                            } while (retry);
+                        }));
+                    }
                     ZoomOutEvent();
                     break;
             }
@@ -1497,9 +1515,11 @@ namespace LightX_01.ViewModel
                             {
                                 if (File.Exists(temp + ".cr3"))
                                 {
+                                    Console.WriteLine("Moving {0} to {1}...", Path.GetFileName(temp +".cr3"), path);
                                     File.Move(temp + ".cr3", path);
                                     _currentTestResults.ResultsImages.Add(path);
                                 }
+                                Console.WriteLine("Deleting {0} + .jpeg...", Path.GetFileName(temp));
                                 if (File.Exists(temp + ".jpeg"))
                                     File.Delete(temp + ".jpeg");
                                 File.Delete(temp);
@@ -1528,6 +1548,7 @@ namespace LightX_01.ViewModel
                             retry = false;
                             try
                             {
+                                Console.WriteLine("Deleting {0} + .jpeg + .cr3...", Path.GetFileName(temp));
                                 if (File.Exists(temp + ".cr3"))
                                     File.Delete(temp + ".cr3");
                                 if (File.Exists(temp + ".jpeg"))
@@ -1617,9 +1638,9 @@ namespace LightX_01.ViewModel
             //int height = 4480;
             //int rawStride = (width * pf.BitsPerPixel + 7) / 8;
 
-            Console.WriteLine("Extracting thumbnail to ptr : {0}", address);
+            Console.WriteLine("Extracting thumbnail to {0}", address);
             int size = LibrawClass.extractThumb(address, rawData.Length);
-            Console.WriteLine("Thumbnail of size {0} extracted to ptr : {1}", size, address);
+            Console.WriteLine("Thumbnail ({0}) extracted to {1}", size, address);
 
             byte[] result = new byte[size];
             rawDataHandle.Free();
@@ -1644,8 +1665,7 @@ namespace LightX_01.ViewModel
 
             
             CapturedImages.Add(fileName);
-            Console.WriteLine("{0}.jpeg added to the list of thumbnails", fileName);
-            //Thread.Sleep(5);
+            Console.WriteLine("{0}.jpeg added to the list of thumbnails", Path.GetFileName(fileName));
         }
 
         private void ProcessImageFromFile(string path)
@@ -1664,15 +1684,14 @@ namespace LightX_01.ViewModel
             //int height = 4480;
             //int rawStride = (width * pf.BitsPerPixel + 7) / 8;
 
-            Console.WriteLine("Extracting thumbnail to ptr : {0}", address);
+            Console.WriteLine("Extracting thumbnail to {0}", address);
             int size = LibrawClass.extractThumbFromFile(address, path + ".cr3");
-            Console.WriteLine("Thumbnail of size {0} extracted to ptr : {1}", size, address);
+            Console.WriteLine("Thumbnail ({0}) extracted to {1}", size, address);
 
             byte[] result = new byte[size];
             rawDataHandle.Free();
             Marshal.Copy(address, result, 0, size);
 
-            //var fileName = Path.GetTempFileName();
             File.WriteAllBytes(path + ".jpeg", result);
 
             BitmapImage image = new BitmapImage();
@@ -1685,8 +1704,7 @@ namespace LightX_01.ViewModel
 
 
             CapturedImages.Add(path);
-            Console.WriteLine("{0}.jpeg added to the list of thumbnails", path);
-            //Thread.Sleep(5);
+            Console.WriteLine("{0}.jpeg added to the list of thumbnails", Path.GetFileName(path));
         }
 
         private static BitmapImage Bs2bi(BitmapSource bs)
@@ -1827,7 +1845,6 @@ namespace LightX_01.ViewModel
             Thread thread = new Thread(StartupThread);
             thread.Name = "Startup";
             thread.Start();
-            //StartupThread(); // initial setup of camera
         }
     }
 }
