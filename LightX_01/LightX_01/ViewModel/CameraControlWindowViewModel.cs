@@ -527,7 +527,6 @@ namespace LightX_01.ViewModel
 
                 (cameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
-
             }
             else if (cameraDevice is NikonBase)
             {
