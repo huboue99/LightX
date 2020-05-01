@@ -40,6 +40,7 @@ namespace LightX_01.ViewModel
         private CameraSettings _currentTestCameraSettings;
         private BitmapImage _currentLiveViewImage;
         private bool _liveViewEnabled;
+        private bool _captureEnabled = false;
         private string _lastZoom;
         private double _subZoomDivider = 1;
         private double _lastSubZoomDivider = 1;
@@ -179,6 +180,19 @@ namespace LightX_01.ViewModel
                 {
                     _liveViewEnabled = value;
                     RaisePropertyChanged(() => LiveViewEnabled);
+                }
+            }
+        }
+
+        public bool CaptureEnabled
+        {
+            get { return _captureEnabled; }
+            set
+            {
+                if (value != _captureEnabled)
+                {
+                    _captureEnabled = value;
+                    RaisePropertyChanged(() => CaptureEnabled);
                 }
             }
         }
@@ -509,7 +523,6 @@ namespace LightX_01.ViewModel
         {
             if (cameraDevice is CanonSDKBase)
             {
-
                 foreach (var propertyVal in cameraDevice.AdvancedProperties)
                 {
                     switch (propertyVal.Name)
@@ -524,6 +537,8 @@ namespace LightX_01.ViewModel
                             break;
                     }
                 }
+
+                
 
                 (cameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
@@ -566,11 +581,15 @@ namespace LightX_01.ViewModel
             _subZoomDivider = 1;
             _roiXY = null; // will reset the focus point to the center of the image;
             RaisePropertyChanged(() => BurstNumber);
+
+            CaptureEnabled = true;
             Console.WriteLine("Camera settings applied");
         }
 
         private void CaptureInThread()
         {
+            
+            CaptureEnabled = false;
             if (DeviceManager.SelectedCameraDevice is NikonBase)
             {
                 if (_liveViewEnabled)
@@ -634,54 +653,58 @@ namespace LightX_01.ViewModel
             if (DeviceManager.SelectedCameraDevice is NikonBase)
                 return;
 
-            if (!IsAutoBurstControl)
+            if (CaptureEnabled)
             {
-                try
+                CaptureEnabled = false;
+                if (!IsAutoBurstControl)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    try
                     {
-                        _liveViewTimer.Stop();
-                        Console.WriteLine("Shutter pressed");
-                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).CapturePhotoBurstNoAf();
-                        //CameraControlWindow currentWindow = null;
-                        //foreach (Window window in System.Windows.Application.Current.Windows)
-                        //{
-                        //    if (window.GetType() == typeof(CameraControlWindow))
-                        //    {
-                        //        currentWindow = (window as CameraControlWindow);
-                        //    }
-                        //}
-                        //while (!Keyboard.IsKeyUp(Key.C)) { currentWindow.Activate(); } //Thread.Sleep(2); }
-                        //Console.WriteLine("Shutter released");
-                        //(DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
-                        //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
-                        //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
-                    });
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            _liveViewTimer.Stop();
+                            Console.WriteLine("Shutter pressed");
+                            (DeviceManager.SelectedCameraDevice as CanonSDKBase).CapturePhotoBurstNoAf();
+                            //CameraControlWindow currentWindow = null;
+                            //foreach (Window window in System.Windows.Application.Current.Windows)
+                            //{
+                            //    if (window.GetType() == typeof(CameraControlWindow))
+                            //    {
+                            //        currentWindow = (window as CameraControlWindow);
+                            //    }
+                            //}
+                            //while (!Keyboard.IsKeyUp(Key.C)) { currentWindow.Activate(); } //Thread.Sleep(2); }
+                            //Console.WriteLine("Shutter released");
+                            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
+                            //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
+                        });
+                    }
+                    catch (COMException comException)
+                    {
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
+                        DeviceManager.SelectedCameraDevice.IsBusy = false;
+                        ErrorCodes.GetException(comException);
+                    }
+                    catch (DeviceException exception)
+                    {
+                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
+                        DeviceManager.SelectedCameraDevice.IsBusy = false;
+                    }
+                    catch
+                    {
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
+                        DeviceManager.SelectedCameraDevice.IsBusy = false;
+                        throw;
+                    }
                 }
-                catch (COMException comException)
-                {
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
-                    DeviceManager.SelectedCameraDevice.IsBusy = false;
-                    ErrorCodes.GetException(comException);
-                }
-                catch (DeviceException exception)
-                {
-                    System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
-                    DeviceManager.SelectedCameraDevice.IsBusy = false;
-                }
-                catch
-                {
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
-                    DeviceManager.SelectedCameraDevice.IsBusy = false;
-                    throw;
-                }
+                else
+                    CaptureInThread();
             }
-            else
-                CaptureInThread();
         }
 
         public void StopBurstCapture()
@@ -694,6 +717,7 @@ namespace LightX_01.ViewModel
                 {
                     Console.WriteLine("Shutter released");
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
+                    Thread.Sleep(20);
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
                 }
@@ -1369,8 +1393,10 @@ namespace LightX_01.ViewModel
                     SaveTestResults(objReviewWindow.SelectedImages, imageArray);
                     _testIndex++;
                     FetchCurrentTest();
+                    CaptureEnabled = true;
                     break;
                 default:
+                    CaptureEnabled = true;
                     if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
                         (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
                     // deleting temp files

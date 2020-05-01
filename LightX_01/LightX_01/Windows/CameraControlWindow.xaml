@@ -104,6 +104,6 @@
             </StackPanel>
         </Grid>
 
-        <Button Grid.Row="4" IsEnabled="{Binding DeviceManager.SelectedCameraDevice.IsConnected}" Focusable="False" IsDefault="False" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
+        <Button Grid.Row="4" IsEnabled="{Binding CaptureEnabled}" Focusable="False" IsDefault="False" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
     </Grid>
 </Window>
