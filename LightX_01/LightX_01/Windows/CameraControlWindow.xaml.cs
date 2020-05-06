@@ -72,7 +72,7 @@ namespace LightX_01
         {
             switch (e.KeyPressed)
             {
-                case Key.C:
+                case Key.F9:
                     if (_shutterIsPressed)
                     {
                         _shutterIsPressed = false;
@@ -93,7 +93,7 @@ namespace LightX_01
         {
             switch (e.KeyPressed)
             {
-                case Key.C:
+                case Key.F9:
                     if (!_shutterIsPressed)
                     {
                         _shutterIsPressed = true;

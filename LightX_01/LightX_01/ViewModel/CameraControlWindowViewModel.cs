@@ -49,6 +49,7 @@ namespace LightX_01.ViewModel
         private ObservableCollection<int> ROIXYMAX;
         private ObservableCollection<int> _currentRoiXYLimits;
         private WriteableBitmap _overlayBitmap;
+        private string _fileExtension;
         private volatile int _remainingBurst = 0;
         private int _totalBurstNumber = 0;
         private bool _isAutoBurstControl = true;
@@ -205,6 +206,8 @@ namespace LightX_01.ViewModel
                 if (value != Int32.Parse(_currentTestCameraSettings.BurstNumber))
                 {
                     _currentTestCameraSettings.BurstNumber = value.ToString();
+                    if (DeviceManager.SelectedCameraDevice is NikonBase)
+                        DeviceManager.SelectedCameraDevice.AdvancedProperties[2].SetValue(_currentTestCameraSettings.BurstNumber);
                     RaisePropertyChanged(() => BurstNumber);
                 }
             }
@@ -307,13 +310,11 @@ namespace LightX_01.ViewModel
                 _zoomHasChanged = false;
             }
 
-            if (true)
-            {
-                if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0] && _subZoomDivider == 1)
-                    OverlayBitmap = DrawFocusPoint(liveViewData);
-                else
-                    OverlayBitmap = null;
-            }
+
+            if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0] && _subZoomDivider == 1)
+                OverlayBitmap = DrawFocusPoint(liveViewData);
+            else
+                OverlayBitmap = null;
                 
             try
             {
@@ -476,15 +477,16 @@ namespace LightX_01.ViewModel
                 //GetImageStream(eventArgs, stream);
                 SaveImageToFile(eventArgs, fileName);
             }
-                GC.KeepAlive(eventArgs);
-                GC.KeepAlive(sender);
+
+            GC.KeepAlive(eventArgs);
+            GC.KeepAlive(sender);
             //byte[] buffer = (stream as MemoryStream).ToArray();
             //stream.Close();
             //_tasks.Add(new Task(() => ProcessImage(stream)));
             
             _tasks.Add(new Task(() => ProcessImageFromFile(fileName)));
 
-            if (_remainingBurst == 0)
+            if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0) )
             {
                 foreach (Task task in _tasks)
                 {
@@ -537,10 +539,9 @@ namespace LightX_01.ViewModel
                             break;
                     }
                 }
-
-                
-
+                _fileExtension = ".cr3";
                 (cameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
+                cameraDevice.IsoNumber.SetValue(_currentTestCameraSettings.Iso);
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
             }
             else if (cameraDevice is NikonBase)
@@ -556,7 +557,7 @@ namespace LightX_01.ViewModel
                             propertyVal.SetValue(propertyVal.NumericValues[1]); // "Continuous high-speed shooting (CH)"
                             break;
                         case "Auto Iso":
-                            propertyVal.SetValue(propertyVal.NumericValues[1]); // Auto Iso OFF = 0 // ON = 1
+                            propertyVal.SetValue(propertyVal.NumericValues[0]); // Auto Iso OFF = 0 // ON = 1
                             break;
                         case "Flash":
                             propertyVal.SetValue(propertyVal.NumericValues[0]); // Flash prohibited = 0 / Normal synch = 2 / slow synch = 3
@@ -572,6 +573,7 @@ namespace LightX_01.ViewModel
                             break;
                     }
                 }
+                _fileExtension = ".NEF";
                 cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.Values[0]); // "AF-S"
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[3]); // "JPEG (BASIC)" = 0 / RAW = 3 / RAW + JPEG = 4
             }
@@ -650,8 +652,11 @@ namespace LightX_01.ViewModel
 
         public void StartBurstCapture()
         {
+
+            Console.WriteLine("Shutter pressed");
+
             if (DeviceManager.SelectedCameraDevice is NikonBase)
-                return;
+                CaptureInThread();
 
             if (CaptureEnabled)
             {
@@ -663,7 +668,6 @@ namespace LightX_01.ViewModel
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
                         {
                             _liveViewTimer.Stop();
-                            Console.WriteLine("Shutter pressed");
                             (DeviceManager.SelectedCameraDevice as CanonSDKBase).CapturePhotoBurstNoAf();
                             //CameraControlWindow currentWindow = null;
                             //foreach (Window window in System.Windows.Application.Current.Windows)
@@ -709,13 +713,15 @@ namespace LightX_01.ViewModel
 
         public void StopBurstCapture()
         {
+            Console.WriteLine("Shutter released");
+
             if (DeviceManager.SelectedCameraDevice is NikonBase)
                 return;
+
             if(!IsAutoBurstControl)
             {
                 try
                 {
-                    Console.WriteLine("Shutter released");
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
                     Thread.Sleep(20);
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
@@ -777,7 +783,7 @@ namespace LightX_01.ViewModel
                 eventArgs.CameraDevice.IsBusy = true;
 
                 Console.WriteLine("Download of {0} started...", eventArgs.FileName);
-                eventArgs.CameraDevice.TransferFile(eventArgs.Handle, path + ".cr3");
+                eventArgs.CameraDevice.TransferFile(eventArgs.Handle, path + _fileExtension);
                 GC.KeepAlive(eventArgs);
                 //memStream.Position = 0;
                 Console.WriteLine("Download of {0} finished", eventArgs.FileName);
@@ -1410,12 +1416,13 @@ namespace LightX_01.ViewModel
                                 retry = false;
                                 try
                                 {
-                                    Console.WriteLine("Deleting {0} + .jpeg + .cr3...", Path.GetFileName(temp));
-                                    if (File.Exists(temp + ".cr3"))
-                                        File.Delete(temp + ".cr3");
+                                    Console.WriteLine("Deleting {0} + .jpeg + {1}...", Path.GetFileName(temp), _fileExtension);
+                                    if (File.Exists(temp + _fileExtension))
+                                        File.Delete(temp + _fileExtension);
                                     if (File.Exists(temp + ".jpeg"))
                                         File.Delete(temp + ".jpeg");
-                                    File.Delete(temp);
+                                    if (!string.IsNullOrEmpty(temp))
+                                        File.Delete(temp);
                                 }
                                 catch (IOException exception)
                                 {
@@ -1448,7 +1455,9 @@ namespace LightX_01.ViewModel
                 }
             });
             _liveViewTimer.Start();
-            //StartLiveViewInThread();
+
+            if (DeviceManager.SelectedCameraDevice is NikonBase)
+                StartLiveViewInThread();
         }
 
         private void CloseApplication(CancelEventArgs e)
@@ -1511,21 +1520,22 @@ namespace LightX_01.ViewModel
             // create filenames, folder and save selected images
             _currentTestResults.ResultsImages = new List<string>();
             string fileName01 = CurrentExam.TestList[_testIndex];
-            string folderName = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5}h{6}", 
+            string folderName = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5}h{6}\\{7}", 
                 Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), 
                 "LightX", 
                 CurrentExam.Patient.LastName, 
                 CurrentExam.Patient.FirstName, 
                 CurrentExam.ExamDate.ToLongDateString(), 
                 CurrentExam.ExamDate.Hour.ToString(), 
-                CurrentExam.ExamDate.Minute.ToString());
+                CurrentExam.ExamDate.Minute.ToString(),
+                _currentTestResults.TestTitle);
 
             int index = 0;
             for (int i = 0; i < selectedImages.Count; ++i)
                 
                 if (selectedImages[i])
                 {
-                    string path = string.Format("{0}\\{1}_{2,2:D2}.cr3", folderName, fileName01, index);  // add path to the folder (Nom_Prenom_timestamp)
+                    string path = string.Format("{0}\\{1}_{2,2:D2}{3}", folderName, fileName01, index, _fileExtension);  // add path to the folder (Nom_Prenom_timestamp)
                     // check the folder of filename, if not found create it
                     if (!Directory.Exists(Path.GetDirectoryName(path)))
                         Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -1538,16 +1548,17 @@ namespace LightX_01.ViewModel
                             retry = false;
                             try
                             {
-                                if (File.Exists(temp + ".cr3"))
+                                if (File.Exists(temp + _fileExtension))
                                 {
-                                    Console.WriteLine("Moving {0} to {1}...", Path.GetFileName(temp +".cr3"), path);
-                                    File.Move(temp + ".cr3", path);
+                                    Console.WriteLine("Moving {0} to {1}...", Path.GetFileName(temp + _fileExtension), path);
+                                    File.Move(temp + _fileExtension, path);
                                     _currentTestResults.ResultsImages.Add(path);
                                 }
                                 Console.WriteLine("Deleting {0} + .jpeg...", Path.GetFileName(temp));
                                 if (File.Exists(temp + ".jpeg"))
                                     File.Delete(temp + ".jpeg");
-                                File.Delete(temp);
+                                if (!string.IsNullOrEmpty(temp))
+                                    File.Delete(temp);
                             }
                             catch (IOException exception)
                             {
@@ -1573,12 +1584,13 @@ namespace LightX_01.ViewModel
                             retry = false;
                             try
                             {
-                                Console.WriteLine("Deleting {0} + .jpeg + .cr3...", Path.GetFileName(temp));
-                                if (File.Exists(temp + ".cr3"))
-                                    File.Delete(temp + ".cr3");
+                                Console.WriteLine("Deleting {0} + .jpeg + {1}...", Path.GetFileName(temp), _fileExtension);
+                                if (File.Exists(temp + _fileExtension))
+                                    File.Delete(temp + _fileExtension);
                                 if (File.Exists(temp + ".jpeg"))
                                     File.Delete(temp + ".jpeg");
-                                File.Delete(temp);
+                                if (!string.IsNullOrEmpty(temp))
+                                    File.Delete(temp);
                             }
                             catch (IOException exception)
                             {
@@ -1674,7 +1686,7 @@ namespace LightX_01.ViewModel
             var fileName = Path.GetTempFileName();
             _lowPriorityTasks.Add(new Task(() =>
             {
-                File.WriteAllBytes(fileName + ".cr3", (stream as MemoryStream).ToArray());
+                File.WriteAllBytes(fileName + _fileExtension, (stream as MemoryStream).ToArray());
                 stream.Close();
                 stream.Dispose();
             }));
@@ -1710,7 +1722,7 @@ namespace LightX_01.ViewModel
             //int rawStride = (width * pf.BitsPerPixel + 7) / 8;
 
             Console.WriteLine("Extracting thumbnail to {0}", address);
-            int size = LibrawClass.extractThumbFromFile(address, path + ".cr3");
+            int size = LibrawClass.extractThumbFromFile(address, path + _fileExtension);
             Console.WriteLine("Thumbnail ({0}) extracted to {1}", size, address);
 
             byte[] result = new byte[size];
@@ -1719,13 +1731,13 @@ namespace LightX_01.ViewModel
 
             File.WriteAllBytes(path + ".jpeg", result);
 
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            image.UriSource = new Uri(path + ".jpeg");
-            image.CacheOption = BitmapCacheOption.None;
-            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            image.EndInit();
-            image.Freeze();
+            //BitmapImage image = new BitmapImage();
+            //image.BeginInit();
+            //image.UriSource = new Uri(path + ".jpeg");
+            //image.CacheOption = BitmapCacheOption.None;
+            //image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            //image.EndInit();
+            //image.Freeze();
 
 
             CapturedImages.Add(path);
