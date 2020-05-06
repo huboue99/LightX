@@ -1,6 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
@@ -263,11 +264,22 @@ namespace LightX_01.ViewModel
 
 
         //public ReviewWindowViewModel(ObservableCollection<BitmapImage> images, string comment)
-        public ReviewWindowViewModel(string[] images, string comment)
+        public ReviewWindowViewModel(List<string> images, string comment)
         {
             //_images = new BitmapImage[images.Count];
             //images.CopyTo(_images, 0);
-            _images = images;
+
+            // remove all the empty string or without path (sometimes happen)
+            for (int i = 0; i < images.Count; ++i)
+            {
+                if (images[i] == ".jpeg" || string.IsNullOrEmpty(images[i]))
+                {
+                    images.RemoveAt(i);
+                    Console.WriteLine("A bad path has been removed from the review images list.");
+                }
+            }
+
+            _images = images.ToArray();
             CurrentImageIndex = 0;
             if(!string.IsNullOrEmpty(_images[_currentImageIndex]))
                 CurrentImage = _images[_currentImageIndex] + ".jpeg";
@@ -277,15 +289,15 @@ namespace LightX_01.ViewModel
             }
             _currentComment = comment;
 
-            ImageCount = images.Length.ToString();
-            ImageIsSelectable = images.Length > 1;
-            SelectedImages = new ObservableCollection<bool>(Enumerable.Repeat(false, images.Length).ToArray());
-            //GC.Collect();
+            ImageCount = images.Count.ToString();
+            ImageIsSelectable = images.Count > 1;
+            SelectedImages = new ObservableCollection<bool>(Enumerable.Repeat(false, images.Count).ToArray());
+
             if (!ImageIsSelectable)
                 SelectedImages[0] = true;
 
-            // weird caching for first image, so do a "refresh" by using previous command
-            PreviousImage();
+            // weird caching issue for first image, so do a "refresh" by using previous command
+            //PreviousImage();
         }
     }
 }

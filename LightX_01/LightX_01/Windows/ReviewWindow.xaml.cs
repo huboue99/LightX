@@ -1,4 +1,5 @@
 ﻿using LightX_01.ViewModel;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,7 +34,7 @@ namespace LightX_01
         }
 
         //public ReviewWindow(ObservableCollection<BitmapImage> images, string comment)
-        public ReviewWindow(string[] images, string comment)
+        public ReviewWindow(List<string> images, string comment)
         {
             _reviewWindowViewModel = new ReviewWindowViewModel(images, comment);
             InitializeComponent();

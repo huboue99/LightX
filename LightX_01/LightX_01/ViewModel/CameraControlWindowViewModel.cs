@@ -54,7 +54,8 @@ namespace LightX_01.ViewModel
         private int _totalBurstNumber = 0;
         private bool _isAutoBurstControl = true;
         //public ObservableCollection<BitmapImage> CapturedImages { get; set; }
-        public ObservableCollection<string> CapturedImages { get; set; }
+        //public ObservableCollection<string> CapturedImages { get; set; }
+        public List<string> CapturedImages { get; set; }
         //public BitmapImage[] CapturedImages { get; set; }
         //public ObservableCollection<Stream> CapturedImagesStreams { get; set; }
 
@@ -1345,7 +1346,7 @@ namespace LightX_01.ViewModel
                     _liveViewTimer.Stop();
                     // wait for last get live view image
                     Thread.Sleep(500);
-                    DeviceManager.SelectedCameraDevice.StopLiveView();
+                     DeviceManager.SelectedCameraDevice.StopLiveView();
                 }
                 catch (DeviceException exception)
                 {
@@ -1387,16 +1388,16 @@ namespace LightX_01.ViewModel
 
         private void ShowReviewWindow()
         {
-            string[] imageArray = new string[CapturedImages.Count];
-            CapturedImages.CopyTo(imageArray, 0);
-            ReviewWindow objReviewWindow = new ReviewWindow(imageArray, _currentTestResults.Comments);
+            //List<string> imageArray;
+            //CapturedImages.CopyTo(imageArray, 0);
+            ReviewWindow objReviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
             bool? isAccepted = objReviewWindow.ShowDialog();
             _currentTestResults.Comments = objReviewWindow.Comment;
             switch (isAccepted)
             {
                 case true:
                     CloseCurrentGuideWindow();
-                    SaveTestResults(objReviewWindow.SelectedImages, imageArray);
+                    SaveTestResults(objReviewWindow.SelectedImages, CapturedImages);
                     _testIndex++;
                     FetchCurrentTest();
                     CaptureEnabled = true;
@@ -1406,7 +1407,7 @@ namespace LightX_01.ViewModel
                     if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
                         (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
                     // deleting temp files
-                    foreach (string temp in imageArray)
+                    foreach (string temp in CapturedImages)
                     {
                         _lowPriorityTasks.Add(Task.Run(() =>
                         {
@@ -1505,7 +1506,7 @@ namespace LightX_01.ViewModel
 
         #region DataAccess
 
-        private void SaveTestResults(ObservableCollection<bool> selectedImages, string[] imagesPath)
+        private void SaveTestResults(ObservableCollection<bool> selectedImages, List<string> imagesPath)
         {
             // get Applied camera settings
             _currentTestResults.CamSettings = new CameraSettings()
@@ -1662,7 +1663,7 @@ namespace LightX_01.ViewModel
         private void ProcessImage(Stream stream)
         {
             if (CapturedImages == null)
-                CapturedImages = new ObservableCollection<string>();
+                CapturedImages = new List<string>();
 
             byte[] rawData = new byte[stream.Length];
             stream.Read(rawData, 0, (int)stream.Length);
@@ -1708,7 +1709,7 @@ namespace LightX_01.ViewModel
         private void ProcessImageFromFile(string path)
         {
             if (CapturedImages == null)
-                CapturedImages = new ObservableCollection<string>();
+                CapturedImages = new List<string>();
 
             byte[] rawData = new byte[5000000];
             //stream.Read(rawData, 0, (int)stream.Length);
