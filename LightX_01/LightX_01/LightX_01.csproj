@@ -149,8 +149,9 @@
     <Compile Include="Classes\CameraSettings.cs" />
     <Compile Include="Classes\LibrawClass.cs" />
     <Compile Include="Classes\LowLevelKeyboardListener.cs" />
+    <Compile Include="Classes\ReviewImage.cs" />
     <Compile Include="Classes\TestResults.cs" />
-    <Compile Include="Classes\UriToCachedImageConverter.cs" />
+    <Compile Include="Classes\Converters.cs" />
     <Compile Include="Windows\ReviewWindow.xaml.cs">
       <DependentUpon>ReviewWindow.xaml</DependentUpon>
     </Compile>
