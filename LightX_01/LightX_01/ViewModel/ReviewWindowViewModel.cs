@@ -4,11 +4,9 @@ using LightX_01.Classes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 
 namespace LightX_01.ViewModel
 {
@@ -16,13 +14,10 @@ namespace LightX_01.ViewModel
     {
         #region Fields
         // Main data holders
-        private string[] _images;
-        protected string _currentImage;
         private ObservableCollection<ReviewImage> _reviewImages;
         private string _currentComment;
 
         // General purpose vars
-        public string ImageCount { get; set; }
         public bool ImageIsSelectable { get; set; } = true;
         
         // Command definitions
@@ -86,7 +81,6 @@ namespace LightX_01.ViewModel
         #endregion Properties
 
         #region RelayCommands
-
         public ICommand ConfirmCommand
         {
             get
@@ -164,7 +158,6 @@ namespace LightX_01.ViewModel
             ReviewImages[0].IsActive = true;
             _currentComment = comment;
 
-            ImageCount = images.Count.ToString();
             ImageIsSelectable = images.Count > 1;
 
             if (!ImageIsSelectable)

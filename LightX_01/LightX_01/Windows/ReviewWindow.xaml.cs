@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 
 namespace LightX_01
 {
@@ -27,6 +26,13 @@ namespace LightX_01
                 return selectedImages;
             }
         }
+        private void Image_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+                _reviewWindowViewModel.SelectImageEvent(sender as Image);
+            else
+                _reviewWindowViewModel.ActiveImageEvent(sender as Image);
+        }
 
         public ReviewWindow(List<string> images, string comment)
         {
@@ -35,14 +41,6 @@ namespace LightX_01
             DataContext = _reviewWindowViewModel;
 
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        }
-
-        private void Image_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (e.ClickCount == 2)
-                _reviewWindowViewModel.SelectImageEvent(sender as Image);
-            else
-                _reviewWindowViewModel.ActiveImageEvent(sender as Image);
         }
     }
 }
