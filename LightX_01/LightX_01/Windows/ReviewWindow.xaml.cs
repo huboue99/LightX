@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
-
 namespace LightX_01
 {
     public partial class ReviewWindow : Window
@@ -18,10 +17,6 @@ namespace LightX_01
             get { return _reviewWindowViewModel.CurrentComment; }
         }
 
-        //public ObservableCollection<bool> SelectedImages
-        //{
-        //    get { return _reviewWindowViewModel.SelectedImages; }
-        //}
         public ObservableCollection<bool> SelectedImages
         {
             get
@@ -33,18 +28,6 @@ namespace LightX_01
             }
         }
 
-        private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            Image image = sender as Image;
-
-            BitmapImage newImage = new BitmapImage();
-            newImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            newImage.UriSource = (image.Source as BitmapImage).UriSource;
-
-            image.Source = newImage;
-        }
-
-        //public ReviewWindow(ObservableCollection<BitmapImage> images, string comment)
         public ReviewWindow(List<string> images, string comment)
         {
             _reviewWindowViewModel = new ReviewWindowViewModel(images, comment);
