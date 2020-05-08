@@ -15,34 +15,23 @@ namespace LightX_01.ViewModel
     public class ReviewWindowViewModel : ViewModelBase
     {
         #region Fields
-
         // Main data holders
-        //private readonly ObservableCollection<BitmapImage> _images;
-        //private readonly BitmapImage[] _images;
-        //private readonly ObservableCollection<string> _images;
         private string[] _images;
         protected string _currentImage;
-        private ObservableCollection<bool> _selectedImages;
         private ObservableCollection<ReviewImage> _reviewImages;
         private string _currentComment;
 
         // General purpose vars
-        private int _activeImageIndex = 0;
-        private bool _notLastImage;
-        private bool _notFirstImage;
         public string ImageCount { get; set; }
         public bool ImageIsSelectable { get; set; } = true;
         
         // Command definitions
-        private RelayCommand _nextImageCommand;
-        private RelayCommand _previousImageCommand;
         private ICommand _confirmCommand;
         private ICommand _cancelCommand;
 
         #endregion Fields
 
         #region Properties
-
         public string CurrentComment
         {
             get { return _currentComment; }
@@ -58,10 +47,6 @@ namespace LightX_01.ViewModel
 
         internal void SelectImageEvent(Image image)
         {
-            //int index = Images.ToList().FindIndex(a => a.Contains(image.DataContext as string));
-            //SelectedImages[index] = !SelectedImages[index];
-            //RaisePropertyChanged(() => SelectedImages);
-
             foreach (ReviewImage reviewImage in ReviewImages)
             {
                 if (reviewImage.Image.Contains((image.DataContext as ReviewImage).Image))
@@ -85,53 +70,6 @@ namespace LightX_01.ViewModel
             RaisePropertyChanged(() => ReviewImages);
         }
 
-        //public BitmapImage CurrentImage
-        //{
-        //    get { return _images[_currentImageIndex]; }
-        //}
-
-        public string CurrentImage
-        {
-            //get { return _images[_currentImageIndex] + ".jpeg"; }
-            get { return _currentImage; }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                _currentImage = string.Empty;
-                _currentImage = value;
-                RaisePropertyChanged(() => CurrentImage);
-                }
-                else
-                {
-                    MessageBox.Show("CurrentImage is trying to read an empty path.");
-                }
-            }
-        }
-
-        public string[] Images
-        {
-            get { return _images; }
-            set
-            {
-                _images = value;
-                RaisePropertyChanged(() => Images);
-            }
-        }
-
-        //public ObservableCollection<bool> SelectedImages
-        //{
-        //    get { return _selectedImages; }
-        //    set
-        //    {
-        //        if (value != _selectedImages)
-        //        {
-        //            _selectedImages = value;
-        //            RaisePropertyChanged(() => SelectedImages);
-        //        }
-        //    }
-        //}
-
         public ObservableCollection<ReviewImage> ReviewImages
         {
             get { return _reviewImages; }
@@ -144,49 +82,6 @@ namespace LightX_01.ViewModel
                 }
             }
         }
-
-        //public int ActiveImageIndex
-        //{
-        //    get { return _activeImageIndex; }
-        //    set
-        //    {
-        //        if (value != _activeImageIndex)
-        //        {
-        //            _activeImageIndex = value;
-        //            RaisePropertyChanged(() => ActiveImageIndex);
-        //            //CurrentImage = _images[_currentImageIndex] + ".jpeg";
-        //            RaisePropertyChanged(() => ReviewImages);
-        //            //RaisePropertyChanged(() => NotLastImage);
-        //            //RaisePropertyChanged(() => NotFirstImage);
-        //        }
-        //    }
-        //}
-
-        //public bool NotLastImage
-        //{
-        //    get { return (_activeImageIndex < ReviewImages.Count - 1); }
-        //    set
-        //    {
-        //        if (value != _notLastImage)
-        //        {
-        //            _notLastImage = value;
-        //            RaisePropertyChanged(() => NotLastImage);
-        //        }
-        //    }
-        //}
-
-        //public bool NotFirstImage
-        //{
-        //    get { return (_activeImageIndex > 0); }
-        //    set
-        //    {
-        //        if (value != _notFirstImage)
-        //        {
-        //            _notFirstImage = value;
-        //            RaisePropertyChanged(() => NotFirstImage);
-        //        }
-        //    }
-        //}
 
         #endregion Properties
 
@@ -216,59 +111,9 @@ namespace LightX_01.ViewModel
             }
         }
 
-        //public RelayCommand NextImageCommand
-        //{
-        //    get
-        //    {
-        //        if(_nextImageCommand == null)
-        //            _nextImageCommand = new RelayCommand(NextImage, true);
-        //        return _nextImageCommand;
-        //    }
-        //}
-
-        //public RelayCommand PreviousImageCommand
-        //{
-        //    get
-        //    {
-        //        if (_previousImageCommand == null)
-        //            _previousImageCommand = new RelayCommand(PreviousImage, true);
-        //        return _previousImageCommand;
-        //    }
-        //}
-
         #endregion RelayCommands
 
         #region Actions
-        //public void NextImage()
-        //{
-        //    if(NotLastImage)
-        //        if (!string.IsNullOrEmpty(ReviewImages[++CurrentImageIndex].Image))
-        //            CurrentImage = ReviewImages[CurrentImageIndex].Image + ".jpeg";
-        //        else
-        //            MessageBox.Show("CurrentImage is trying to read an empty path.");
-        //    //CurrentImageIndex++;
-        //    GC.Collect();
-        //}
-
-        //public BitmapImage NImage()
-        //{
-        //    if (NotLastImage)
-        //        return _images[++CurrentImageIndex];
-        //    else
-        //        return CurrentImage;
-        //}
-
-        //public void PreviousImage()
-        //{
-        //    if(NotFirstImage)
-        //        if (!string.IsNullOrEmpty(ReviewImages[--CurrentImageIndex].Image))
-        //            CurrentImage = ReviewImages[CurrentImageIndex].Image + ".jpeg";
-        //        else
-        //            MessageBox.Show("CurrentImage is trying to read an empty path.");
-        //    //CurrentImageIndex--;
-        //    GC.Collect();
-        //}
-
         private void ConfirmImage(Window currentWindow)
         {
             bool oneIsSelected = false;
@@ -298,13 +143,8 @@ namespace LightX_01.ViewModel
 
         #endregion Actions
 
-
-        //public ReviewWindowViewModel(ObservableCollection<BitmapImage> images, string comment)
         public ReviewWindowViewModel(List<string> images, string comment)
         {
-            //_images = new BitmapImage[images.Count];
-            //images.CopyTo(_images, 0);
-
             // remove all the empty string or without path (sometimes happen)
             for (int i = 0; i < images.Count; ++i)
             {
@@ -315,7 +155,6 @@ namespace LightX_01.ViewModel
                 }
             }
 
-            //_images = images.ToArray();
             ReviewImages = new ObservableCollection<ReviewImage>();
             foreach(string image in images)
             {
@@ -323,18 +162,13 @@ namespace LightX_01.ViewModel
             }
 
             ReviewImages[0].IsActive = true;
-            //CurrentImage = ReviewImages[_currentImageIndex].Image + ".jpeg";
             _currentComment = comment;
 
             ImageCount = images.Count.ToString();
             ImageIsSelectable = images.Count > 1;
-            //SelectedImages = new ObservableCollection<bool>(Enumerable.Repeat(false, images.Count).ToArray());
 
             if (!ImageIsSelectable)
                 ReviewImages[0].IsSelected = true;
-
-            // weird caching issue for first image, so do a "refresh" by using previous command
-            //PreviousImage();
         }
     }
 }

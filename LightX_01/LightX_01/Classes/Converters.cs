@@ -48,7 +48,6 @@ namespace LightX_01.Classes
                 }
             }
 
-
             if (!string.IsNullOrEmpty(image))
             {
                 BitmapImage bi = new BitmapImage();
@@ -94,18 +93,6 @@ namespace LightX_01.Classes
         }
 
         public object[] ConvertBack(object value, Type[] targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException("Two way conversion is not supported.");
-        }
-    }
-
-    class ImageIsSelectedConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return "Hidden";
-        }
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException("Two way conversion is not supported.");
         }

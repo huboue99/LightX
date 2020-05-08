@@ -3,6 +3,5 @@
         <super:UriToCachedImageConverter x:Key="uriToImageConv"/>
         <super:ReviewImagesToCachedImageConverter x:Key="reviewImagesToImageConv"/>
         <super:ReviewImageSizeConverter x:Key="reviewImageSizeConverter"/>
-        <super:ImageIsSelectedConverter x:Key="imageIsSelectedConverter"/>
     </Application.Resources>
 </Application>
