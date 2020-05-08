@@ -27,7 +27,7 @@ namespace LightX_01.ViewModel
         private string _currentComment;
 
         // General purpose vars
-        private int _currentImageIndex = 0;
+        private int _activeImageIndex = 0;
         private bool _notLastImage;
         private bool _notFirstImage;
         public string ImageCount { get; set; }
@@ -65,9 +65,23 @@ namespace LightX_01.ViewModel
             foreach (ReviewImage reviewImage in ReviewImages)
             {
                 if (reviewImage.Image.Contains((image.DataContext as ReviewImage).Image))
+                {
                     reviewImage.IsSelected = !reviewImage.IsSelected;
+                    break;
+                }
             }
-            RaisePropertyChanged(() => CurrentImageIsSelected);
+            RaisePropertyChanged(() => ReviewImages);
+        }
+
+        internal void ActiveImageEvent(Image image)
+        {
+            foreach (ReviewImage reviewImage in ReviewImages)
+            {
+                if (reviewImage.Image.Contains((image.DataContext as ReviewImage).Image))
+                    reviewImage.IsActive = true;
+                else
+                    reviewImage.IsActive = false;
+            }
             RaisePropertyChanged(() => ReviewImages);
         }
 
@@ -105,19 +119,18 @@ namespace LightX_01.ViewModel
             }
         }
 
-        public ObservableCollection<bool> SelectedImages
-        {
-            get { return _selectedImages; }
-            set
-            {
-                if (value != _selectedImages)
-                {
-                    _selectedImages = value;
-                    RaisePropertyChanged(() => SelectedImages);
-                    RaisePropertyChanged(() => CurrentImageIsSelected);
-                }
-            }
-        }
+        //public ObservableCollection<bool> SelectedImages
+        //{
+        //    get { return _selectedImages; }
+        //    set
+        //    {
+        //        if (value != _selectedImages)
+        //        {
+        //            _selectedImages = value;
+        //            RaisePropertyChanged(() => SelectedImages);
+        //        }
+        //    }
+        //}
 
         public ObservableCollection<ReviewImage> ReviewImages
         {
@@ -132,70 +145,48 @@ namespace LightX_01.ViewModel
             }
         }
 
-        public int CurrentImageIndex
-        {
-            get { return _currentImageIndex; }
-            set
-            {
-                if (value != _currentImageIndex)
-                {
-                    _currentImageIndex = value;
-                    RaisePropertyChanged(() => CurrentImageIndex);
-                    //CurrentImage = _images[_currentImageIndex] + ".jpeg";
-                    RaisePropertyChanged(() => CurrentImageIndexString);
-                    RaisePropertyChanged(() => CurrentImageIsSelected);
-                    RaisePropertyChanged(() => ReviewImages);
-                    RaisePropertyChanged(() => NotLastImage);
-                    RaisePropertyChanged(() => NotFirstImage);
-                }
-            }
-        }
+        //public int ActiveImageIndex
+        //{
+        //    get { return _activeImageIndex; }
+        //    set
+        //    {
+        //        if (value != _activeImageIndex)
+        //        {
+        //            _activeImageIndex = value;
+        //            RaisePropertyChanged(() => ActiveImageIndex);
+        //            //CurrentImage = _images[_currentImageIndex] + ".jpeg";
+        //            RaisePropertyChanged(() => ReviewImages);
+        //            //RaisePropertyChanged(() => NotLastImage);
+        //            //RaisePropertyChanged(() => NotFirstImage);
+        //        }
+        //    }
+        //}
 
-        public string CurrentImageIndexString
-        {
-            get { return (_currentImageIndex + 1).ToString(); }
-        }
+        //public bool NotLastImage
+        //{
+        //    get { return (_activeImageIndex < ReviewImages.Count - 1); }
+        //    set
+        //    {
+        //        if (value != _notLastImage)
+        //        {
+        //            _notLastImage = value;
+        //            RaisePropertyChanged(() => NotLastImage);
+        //        }
+        //    }
+        //}
 
-        public bool CurrentImageIsSelected
-        {
-            get { return ReviewImages[_currentImageIndex].IsSelected; }
-            set
-            {
-                if (value != ReviewImages[_currentImageIndex].IsSelected)
-                {
-                    ReviewImages[_currentImageIndex].IsSelected = value;
-                    //RaisePropertyChanged(() => SelectedImages);
-                    RaisePropertyChanged(() => CurrentImageIsSelected);
-                    RaisePropertyChanged(() => ReviewImages);
-                }
-            }
-        }
-
-        public bool NotLastImage
-        {
-            get { return (_currentImageIndex < ReviewImages.Count - 1); }
-            set
-            {
-                if (value != _notLastImage)
-                {
-                    _notLastImage = value;
-                    RaisePropertyChanged(() => NotLastImage);
-                }
-            }
-        }
-
-        public bool NotFirstImage
-        {
-            get { return (_currentImageIndex > 0); }
-            set
-            {
-                if (value != _notFirstImage)
-                {
-                    _notFirstImage = value;
-                    RaisePropertyChanged(() => NotFirstImage);
-                }
-            }
-        }
+        //public bool NotFirstImage
+        //{
+        //    get { return (_activeImageIndex > 0); }
+        //    set
+        //    {
+        //        if (value != _notFirstImage)
+        //        {
+        //            _notFirstImage = value;
+        //            RaisePropertyChanged(() => NotFirstImage);
+        //        }
+        //    }
+        //}
 
         #endregion Properties
 
@@ -225,39 +216,39 @@ namespace LightX_01.ViewModel
             }
         }
 
-        public RelayCommand NextImageCommand
-        {
-            get
-            {
-                if(_nextImageCommand == null)
-                    _nextImageCommand = new RelayCommand(NextImage, true);
-                return _nextImageCommand;
-            }
-        }
+        //public RelayCommand NextImageCommand
+        //{
+        //    get
+        //    {
+        //        if(_nextImageCommand == null)
+        //            _nextImageCommand = new RelayCommand(NextImage, true);
+        //        return _nextImageCommand;
+        //    }
+        //}
 
-        public RelayCommand PreviousImageCommand
-        {
-            get
-            {
-                if (_previousImageCommand == null)
-                    _previousImageCommand = new RelayCommand(PreviousImage, true);
-                return _previousImageCommand;
-            }
-        }
+        //public RelayCommand PreviousImageCommand
+        //{
+        //    get
+        //    {
+        //        if (_previousImageCommand == null)
+        //            _previousImageCommand = new RelayCommand(PreviousImage, true);
+        //        return _previousImageCommand;
+        //    }
+        //}
 
         #endregion RelayCommands
 
         #region Actions
-        public void NextImage()
-        {
-            if(NotLastImage)
-                if (!string.IsNullOrEmpty(ReviewImages[++CurrentImageIndex].Image))
-                    CurrentImage = ReviewImages[CurrentImageIndex].Image + ".jpeg";
-                else
-                    MessageBox.Show("CurrentImage is trying to read an empty path.");
-            //CurrentImageIndex++;
-            GC.Collect();
-        }
+        //public void NextImage()
+        //{
+        //    if(NotLastImage)
+        //        if (!string.IsNullOrEmpty(ReviewImages[++CurrentImageIndex].Image))
+        //            CurrentImage = ReviewImages[CurrentImageIndex].Image + ".jpeg";
+        //        else
+        //            MessageBox.Show("CurrentImage is trying to read an empty path.");
+        //    //CurrentImageIndex++;
+        //    GC.Collect();
+        //}
 
         //public BitmapImage NImage()
         //{
@@ -267,16 +258,16 @@ namespace LightX_01.ViewModel
         //        return CurrentImage;
         //}
 
-        public void PreviousImage()
-        {
-            if(NotFirstImage)
-                if (!string.IsNullOrEmpty(ReviewImages[--CurrentImageIndex].Image))
-                    CurrentImage = ReviewImages[CurrentImageIndex].Image + ".jpeg";
-                else
-                    MessageBox.Show("CurrentImage is trying to read an empty path.");
-            //CurrentImageIndex--;
-            GC.Collect();
-        }
+        //public void PreviousImage()
+        //{
+        //    if(NotFirstImage)
+        //        if (!string.IsNullOrEmpty(ReviewImages[--CurrentImageIndex].Image))
+        //            CurrentImage = ReviewImages[CurrentImageIndex].Image + ".jpeg";
+        //        else
+        //            MessageBox.Show("CurrentImage is trying to read an empty path.");
+        //    //CurrentImageIndex--;
+        //    GC.Collect();
+        //}
 
         private void ConfirmImage(Window currentWindow)
         {
@@ -328,16 +319,11 @@ namespace LightX_01.ViewModel
             ReviewImages = new ObservableCollection<ReviewImage>();
             foreach(string image in images)
             {
-                ReviewImages.Add(new ReviewImage() { Image = image, IsSelected = false });
+                ReviewImages.Add(new ReviewImage() { Image = image });
             }
 
-            CurrentImageIndex = 0;
-            if(!string.IsNullOrEmpty(ReviewImages[_currentImageIndex].Image))
-                CurrentImage = ReviewImages[_currentImageIndex].Image + ".jpeg";
-            else
-            {
-                MessageBox.Show("CurrentImage is trying to read an empty path.");
-            }
+            ReviewImages[0].IsActive = true;
+            //CurrentImage = ReviewImages[_currentImageIndex].Image + ".jpeg";
             _currentComment = comment;
 
             ImageCount = images.Count.ToString();

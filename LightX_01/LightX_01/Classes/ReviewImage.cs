@@ -6,7 +6,8 @@ namespace LightX_01.Classes
         #region Fields
 
         private string _image;
-        private bool _isSelected;
+        private bool _isSelected = false;
+        private bool _isActive = false;
 
         #endregion Fields
 
@@ -34,6 +35,19 @@ namespace LightX_01.Classes
                 {
                     _isSelected = value;
                     OnPropertyChanged("IsSelected");
+                }
+            }
+        }
+
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set
+            {
+                if (value != _isActive)
+                {
+                    _isActive = value;
+                    OnPropertyChanged("IsActive");
                 }
             }
         }

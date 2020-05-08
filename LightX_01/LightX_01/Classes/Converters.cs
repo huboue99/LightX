@@ -31,6 +31,43 @@ namespace LightX_01.Classes
         }
     }
 
+    class ReviewImagesToCachedImageConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value == null)
+                return null;
+
+            string image = ((ObservableCollection<ReviewImage>)value)[0].Image;
+            foreach (ReviewImage reviewImage in (ObservableCollection<ReviewImage>)value)
+            {
+                if (reviewImage.IsActive)
+                {
+                    image = reviewImage.Image;
+                    break;
+                }
+            }
+
+
+            if (!string.IsNullOrEmpty(image))
+            {
+                BitmapImage bi = new BitmapImage();
+                bi.BeginInit();
+                bi.UriSource = new Uri(image + ".jpeg");
+                bi.CacheOption = BitmapCacheOption.OnLoad;
+                bi.EndInit();
+                return bi;
+            }
+
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException("Two way conversion is not supported.");
+        }
+    }
+
     class ReviewImageSizeConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -40,7 +77,7 @@ namespace LightX_01.Classes
             else if ((double)values[0] <= 0.0)
                 return 0;
 
-            int marginSize = 3;
+            int marginSize = 5;
             double containerWidth = (double)values[0];
 
             int numberOfImages = ((LightX_01.ViewModel.ReviewWindowViewModel)(values[1])).ReviewImages.Count;

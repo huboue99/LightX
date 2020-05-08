@@ -56,7 +56,10 @@ namespace LightX_01
 
         private void Image_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            _reviewWindowViewModel.SelectImageEvent(sender as Image);
+            if (e.ClickCount == 2)
+                _reviewWindowViewModel.SelectImageEvent(sender as Image);
+            else
+                _reviewWindowViewModel.ActiveImageEvent(sender as Image);
         }
     }
 }
