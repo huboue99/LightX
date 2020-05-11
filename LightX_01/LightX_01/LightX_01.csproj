@@ -152,6 +152,10 @@
     <Compile Include="Classes\ReviewImage.cs" />
     <Compile Include="Classes\TestResults.cs" />
     <Compile Include="Classes\Converters.cs" />
+    <Compile Include="ViewModel\FinishWindowViewModel.cs" />
+    <Compile Include="Windows\FinishWindow.xaml.cs">
+      <DependentUpon>FinishWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\ReviewWindow.xaml.cs">
       <DependentUpon>ReviewWindow.xaml</DependentUpon>
     </Compile>
@@ -160,6 +164,10 @@
       <DependentUpon>CameraControlWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\CameraControlWindowViewModel.cs" />
+    <Page Include="Windows\FinishWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\ReviewWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

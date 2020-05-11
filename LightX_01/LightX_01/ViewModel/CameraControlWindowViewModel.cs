@@ -1399,6 +1399,8 @@ namespace LightX_01.ViewModel
                     CloseCurrentGuideWindow();
                     SaveTestResults(objReviewWindow.SelectedImages, CapturedImages);
                     _testIndex++;
+                    if (_testIndex == CurrentExam.TestList.Count)
+                        break;
                     FetchCurrentTest();
                     CaptureEnabled = true;
                     break;
@@ -1444,6 +1446,12 @@ namespace LightX_01.ViewModel
                                    
             objReviewWindow.Close();
 
+            if (_testIndex == CurrentExam.TestList.Count)
+            {
+                ShowFinishWindow();
+                return;
+            }
+
             // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
@@ -1459,6 +1467,24 @@ namespace LightX_01.ViewModel
 
             if (DeviceManager.SelectedCameraDevice is NikonBase)
                 StartLiveViewInThread();
+        }
+
+        private void ShowFinishWindow()
+        {
+            CameraControlWindow currentWindow;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(CameraControlWindow))
+                    {
+                        currentWindow = window as CameraControlWindow;
+                        (window as CameraControlWindow).Hide();
+                    }
+                }
+            });
+            FinishWindow objFinishWindow = new FinishWindow(CurrentExam);
+            objFinishWindow.Show();
         }
 
         private void CloseApplication(CancelEventArgs e)
@@ -1603,7 +1629,17 @@ namespace LightX_01.ViewModel
                 }
 
             Task.WaitAll(_lowPriorityTasks.ToArray());
-            // add _currentTestResults to _currentExam
+
+            // Save test informations to JSON file (comments, camera settings, ...)
+            _lowPriorityTasks.Add(Task.Run(() =>
+            {
+                using (StreamWriter file = File.CreateText($"{folderName}\\{fileName01}.json"))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(file, _currentTestResults);
+                }
+            }));
+            
             CurrentExam.Results.Add(_currentTestResults);
             imagesPath = null;
             _lowPriorityTasks.Clear();

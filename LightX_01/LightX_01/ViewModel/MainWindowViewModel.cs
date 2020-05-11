@@ -164,7 +164,7 @@ namespace LightX_01.ViewModel
                 // Create the Exam (patient, currentTime, testList)
                 Exam exam = new Exam() { Patient = CurrentPatient, TestList = testList };
 
-                // Open control and guide windows; close the patien info windows
+                // Open control and guide windows; close the patient info windows
                 CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
                 this.CloseWindow(window);
                 objCamControlWindow.Show();
