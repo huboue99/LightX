@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
@@ -14,10 +16,14 @@ namespace LightX_01.Classes
 
             if (!string.IsNullOrEmpty(value.ToString()))
             {
+                string path = value.ToString();
+                if (Path.GetExtension(path) != "jpeg")
+                    path = Path.ChangeExtension(path, ".jpeg");
+
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
-                bi.UriSource = new Uri(value.ToString() + ".jpeg");
-                bi.CacheOption = BitmapCacheOption.OnLoad;
+                bi.UriSource = new Uri(path);
+                bi.CacheOption = BitmapCacheOption.OnLoad; // must be loaded from cache if we want to be able to delete or move it right away.
                 bi.EndInit();
                 return bi;
             }
@@ -50,10 +56,12 @@ namespace LightX_01.Classes
 
             if (!string.IsNullOrEmpty(image))
             {
+                image = Path.ChangeExtension(image, ".jpeg");
+
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
-                bi.UriSource = new Uri(image + ".jpeg");
-                bi.CacheOption = BitmapCacheOption.OnLoad;
+                bi.UriSource = new Uri(image);
+                bi.CacheOption = BitmapCacheOption.OnLoad; // must be loaded from cache if we want to be able to delete or move it right away.
                 bi.EndInit();
                 return bi;
             }
@@ -90,6 +98,33 @@ namespace LightX_01.Classes
             double size = (int)(containerWidth / numPerRow) - marginSize * 2;
             
             return size;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException("Two way conversion is not supported.");
+        }
+    }
+
+    class ImageIsActiveConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (values == null)
+                return null;
+            string path = values[0] as string;
+            ObservableCollection<ReviewImage> reviewImages = (ObservableCollection<ReviewImage>)values[1];
+            foreach (ReviewImage reviewImage in reviewImages)
+            {
+                if (reviewImage.Image.Contains(path))
+                {
+                    if (reviewImage.IsActive)
+                        return System.Windows.Visibility.Visible;
+                    return System.Windows.Visibility.Collapsed;
+                }
+            }
+
+            return null;
         }
 
         public object[] ConvertBack(object value, Type[] targetType, object parameter, System.Globalization.CultureInfo culture)

@@ -23,5 +23,10 @@ namespace LightX_01
 
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
+
+        private void Image_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _finishWindowViewModel.ActiveImageEvent(sender as Image);
+        }
     }
 }

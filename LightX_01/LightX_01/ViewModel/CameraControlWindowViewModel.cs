@@ -471,6 +471,9 @@ namespace LightX_01.ViewModel
 
             //Stream stream = new MemoryStream();
             var fileName = Path.GetTempFileName();
+            File.Delete(fileName);
+            fileName = Path.ChangeExtension(fileName, null); // Remove the .tmp extension
+
             //byte[] buffer;
             lock (_locker) // Prevent program to start new transfer while another transfer is active.
             {
@@ -1424,8 +1427,6 @@ namespace LightX_01.ViewModel
                                         File.Delete(temp + _fileExtension);
                                     if (File.Exists(temp + ".jpeg"))
                                         File.Delete(temp + ".jpeg");
-                                    if (!string.IsNullOrEmpty(temp))
-                                        File.Delete(temp);
                                 }
                                 catch (IOException exception)
                                 {
@@ -1579,13 +1580,12 @@ namespace LightX_01.ViewModel
                                 {
                                     Console.WriteLine("Moving {0} to {1}...", Path.GetFileName(temp + _fileExtension), path);
                                     File.Move(temp + _fileExtension, path);
+                                    File.Move(temp + ".jpeg", Path.ChangeExtension(path,".jpeg"));
                                     _currentTestResults.ResultsImages.Add(path);
                                 }
-                                Console.WriteLine("Deleting {0} + .jpeg...", Path.GetFileName(temp));
-                                if (File.Exists(temp + ".jpeg"))
-                                    File.Delete(temp + ".jpeg");
-                                if (!string.IsNullOrEmpty(temp))
-                                    File.Delete(temp);
+                                //Console.WriteLine("Deleting {0} + .jpeg...", Path.GetFileName(temp));
+                                //if (File.Exists(temp + ".jpeg"))
+                                //    File.Delete(temp + ".jpeg");
                             }
                             catch (IOException exception)
                             {
@@ -1616,8 +1616,6 @@ namespace LightX_01.ViewModel
                                     File.Delete(temp + _fileExtension);
                                 if (File.Exists(temp + ".jpeg"))
                                     File.Delete(temp + ".jpeg");
-                                if (!string.IsNullOrEmpty(temp))
-                                    File.Delete(temp);
                             }
                             catch (IOException exception)
                             {
@@ -1721,6 +1719,8 @@ namespace LightX_01.ViewModel
             Marshal.Copy(address, result, 0, size);
 
             var fileName = Path.GetTempFileName();
+            File.Delete(fileName);
+            fileName = Path.ChangeExtension(fileName, null); // remove the .tmp extension
             _lowPriorityTasks.Add(new Task(() =>
             {
                 File.WriteAllBytes(fileName + _fileExtension, (stream as MemoryStream).ToArray());

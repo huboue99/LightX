@@ -4,6 +4,7 @@ using LightX_01.Classes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -55,12 +56,16 @@ namespace LightX_01.ViewModel
 
         internal void ActiveImageEvent(Image image)
         {
+            string path = Path.ChangeExtension((image.DataContext as ReviewImage).Image, null);
+
             foreach (ReviewImage reviewImage in ReviewImages)
             {
-                if (reviewImage.Image.Contains((image.DataContext as ReviewImage).Image))
+                if (reviewImage.Image.Contains(path))
                     reviewImage.IsActive = true;
-                else
+                else if (reviewImage.IsActive)
+                {
                     reviewImage.IsActive = false;
+                }
             }
             RaisePropertyChanged(() => ReviewImages);
         }
