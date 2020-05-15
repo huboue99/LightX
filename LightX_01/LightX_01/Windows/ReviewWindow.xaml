@@ -37,7 +37,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Image Margin="5" MinWidth="10" MinHeight="10" Width="175" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Image, Converter={StaticResource uriToImageConv}}" Stretch="Uniform"/>
+                                <Image Margin="5" MinWidth="150" Width="200" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Image, Converter={StaticResource uriToImageConv}}" Stretch="Uniform"/>
                                 <CheckBox HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="7" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 <Border IsHitTestVisible="False" BorderBrush="LightGreen" BorderThickness="2" Margin="3" Visibility="{Binding IsActive, Converter={StaticResource VisibleIfTrueConverter}, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>

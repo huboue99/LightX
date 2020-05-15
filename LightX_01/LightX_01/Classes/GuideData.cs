@@ -64,7 +64,8 @@ namespace LightX_01.Classes
     {
         #region Fields
 
-        private string _fileName;
+        //private string _fileName;
+        private Tests _id;
         private string _testTitle;
         private string _slitIntensity;
         private string _illumAngle;
@@ -77,15 +78,28 @@ namespace LightX_01.Classes
 
         #region Properties
 
-        public string FileName
+        //public string FileName
+        //{
+        //    get { return _fileName; }
+        //    set
+        //    {
+        //        if (value != _fileName)
+        //        {
+        //            _fileName = value;
+        //            OnPropertyChanged("FileName");
+        //        }
+        //    }
+        //}
+
+        public Tests Id
         {
-            get { return _fileName; }
+            get { return _id; }
             set
             {
-                if (value != _fileName)
+                if (value != _id)
                 {
-                    _fileName = value;
-                    OnPropertyChanged("FileName");
+                    _id = value;
+                    OnPropertyChanged("Id");
                 }
             }
         }

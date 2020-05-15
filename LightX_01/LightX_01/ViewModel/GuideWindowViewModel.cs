@@ -12,7 +12,7 @@ namespace LightX_01.ViewModel
     {
         #region Fields
 
-        private ObservableCollection<string> _testList;
+        private ObservableCollection<Tests> _testList;
         private GuideData _currentTest;
         private ParametersList _currentList;
         private RunList _currentTestsState;
@@ -100,7 +100,7 @@ namespace LightX_01.ViewModel
 
         #endregion DataFetching
 
-        public GuideWindowViewModel(GuideData test, ObservableCollection<string> testList, int i)
+        public GuideWindowViewModel(GuideData test, ObservableCollection<Tests> testList, int i)
         {
             _testList = testList;
             CurrentTest = test;

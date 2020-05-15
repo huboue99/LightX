@@ -23,7 +23,11 @@ namespace LightX_01.Classes
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
                 bi.UriSource = new Uri(path);
-                bi.CacheOption = BitmapCacheOption.OnLoad; // must be loaded from cache if we want to be able to delete or move it right away.
+                bi.DecodePixelWidth = 200;
+                // must be loaded from cache if we want to be able to delete or move it right away.
+                // but not useful if only wants to see them (like in the examReviewWindow)
+                bi.CacheOption = parameter == null ? BitmapCacheOption.OnLoad : BitmapCacheOption.None;
+                bi.CreateOptions = parameter == null ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
                 bi.EndInit();
                 return bi;
             }
@@ -61,12 +65,34 @@ namespace LightX_01.Classes
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
                 bi.UriSource = new Uri(image);
-                bi.CacheOption = BitmapCacheOption.OnLoad; // must be loaded from cache if we want to be able to delete or move it right away.
+                bi.CacheOption = parameter == null ? BitmapCacheOption.OnLoad : BitmapCacheOption.None;
+                bi.CreateOptions = parameter == null ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
                 bi.EndInit();
                 return bi;
             }
 
             return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException("Two way conversion is not supported.");
+        }
+    }
+
+    class TitleConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value == null)
+                return null;
+
+            Exam exam = value as Exam;
+            string title = "LightX";
+            if (exam.Patient != null)
+               title = $"LightX - {exam.Patient.FirstName} {exam.Patient.LastName} - {exam.ExamDate.Day:D2}/{exam.ExamDate.Month:D2}/{exam.ExamDate.Year} - {exam.ExamDate.Hour:D2}:{exam.ExamDate.Minute:D2}:{exam.ExamDate.Second:D2}";
+
+            return title;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

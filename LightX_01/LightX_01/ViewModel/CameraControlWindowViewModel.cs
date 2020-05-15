@@ -66,6 +66,7 @@ namespace LightX_01.ViewModel
         private int _testIndex = 0;
         private List<Task> _tasks = new List<Task>();
         private List<Task> _lowPriorityTasks = new List<Task>();
+        private FinishWindow _objFinishWindow;
 
         // Commands definition
         private RelayCommand _captureCommand;
@@ -201,7 +202,13 @@ namespace LightX_01.ViewModel
 
         public int BurstNumber
         {
-            get { return Int32.Parse(_currentTestCameraSettings.BurstNumber); }
+            get
+            {
+                if (_currentTestCameraSettings != null)
+                    return Int32.Parse(_currentTestCameraSettings.BurstNumber);
+                else
+                    return 0;
+            }
             set
             {
                 if (value != Int32.Parse(_currentTestCameraSettings.BurstNumber))
@@ -400,12 +407,15 @@ namespace LightX_01.ViewModel
                 SetRoiXY((int)(x * (double)ROIXYMAX[0]), (int)(y * (double)ROIXYMAX[1]));
         }
 
-        public void ZoomOutEvent()
+        public void ZoomOutEvent(bool canZoom)
         {
-            _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value;
-            _lastSubZoomDivider = _subZoomDivider;
-            SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
-            _subZoomDivider = 1;
+            if (canZoom)
+            {
+                _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value;
+                _lastSubZoomDivider = _subZoomDivider;
+                SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
+                _subZoomDivider = 1;
+            }
         }
 
         public void SetZoom(string desiredZoom = null)
@@ -422,13 +432,13 @@ namespace LightX_01.ViewModel
 
         void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
         {
-            ApplyCameraSettings(cameraDevice);
+            //ApplyCameraSettings(cameraDevice);
             if (LiveViewEnabled)
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    StartLiveViewInThread();
-                });
+                //System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                //{
+                //    StartLiveViewInThread();
+                //});
             }
         }
 
@@ -659,11 +669,15 @@ namespace LightX_01.ViewModel
 
             Console.WriteLine("Shutter pressed");
 
-            if (DeviceManager.SelectedCameraDevice is NikonBase)
-                CaptureInThread();
-
             if (CaptureEnabled)
             {
+
+                if (DeviceManager.SelectedCameraDevice is NikonBase)
+                {
+                    CaptureInThread();
+                    return;
+                }
+            
                 CaptureEnabled = false;
                 if (!IsAutoBurstControl)
                 {
@@ -1234,67 +1248,70 @@ namespace LightX_01.ViewModel
             } while (retry);
         }
 
-        public void MoveRoiXY(Key key)
+        public void MoveRoiXY(Key key, bool canMove)
         {
-            int stepSize;
-            bool retry;
-            switch (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value)
+            if(canMove)
             {
-                case "33%":
-                    stepSize = 150;
-                    break;
-                case "50%":
-                    stepSize = 100;
-                    break;
-                case "66%":
-                    stepSize = 50;
-                    break;
-                case "100%":
-                    stepSize = 25;
-                    break;
-                default: // case "All" + "25%"
-                    stepSize = 200;
-                    break;
-            }
+                int stepSize;
+                bool retry;
+                switch (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value)
+                {
+                    case "33%":
+                        stepSize = 150;
+                        break;
+                    case "50%":
+                        stepSize = 100;
+                        break;
+                    case "66%":
+                        stepSize = 50;
+                        break;
+                    case "100%":
+                        stepSize = 25;
+                        break;
+                    default: // case "All" + "25%"
+                        stepSize = 200;
+                        break;
+                }
 
-            do // to deal if you press the direction keys too quickly
-            {
-                retry = false;
-                try
+                do // to deal if you press the direction keys too quickly
                 {
-                    switch (key)
+                    retry = false;
+                    try
                     {
-                        case Key.Up:
-                            SetRoiXY(RoiXY[0], Clamp(RoiXY[1] - stepSize, _currentRoiXYLimits[2], _currentRoiXYLimits[3]));
-                            break;
-                        case Key.Down:
-                            SetRoiXY(RoiXY[0], Clamp(RoiXY[1] + stepSize, _currentRoiXYLimits[2], _currentRoiXYLimits[3]));
-                            break;
-                        case Key.Left:
-                            SetRoiXY(Clamp(RoiXY[0] - stepSize, _currentRoiXYLimits[0], _currentRoiXYLimits[1]), RoiXY[1]);
-                            break;
-                        case Key.Right:
-                            SetRoiXY(Clamp(RoiXY[0] + stepSize, _currentRoiXYLimits[0], _currentRoiXYLimits[1]), RoiXY[1]);
-                            break;
+                        switch (key)
+                        {
+                            case Key.Up:
+                                SetRoiXY(RoiXY[0], Clamp(RoiXY[1] - stepSize, _currentRoiXYLimits[2], _currentRoiXYLimits[3]));
+                                break;
+                            case Key.Down:
+                                SetRoiXY(RoiXY[0], Clamp(RoiXY[1] + stepSize, _currentRoiXYLimits[2], _currentRoiXYLimits[3]));
+                                break;
+                            case Key.Left:
+                                SetRoiXY(Clamp(RoiXY[0] - stepSize, _currentRoiXYLimits[0], _currentRoiXYLimits[1]), RoiXY[1]);
+                                break;
+                            case Key.Right:
+                                SetRoiXY(Clamp(RoiXY[0] + stepSize, _currentRoiXYLimits[0], _currentRoiXYLimits[1]), RoiXY[1]);
+                                break;
+                        }
                     }
-                }
-                catch (DeviceException exception)
-                {
-                    if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                    catch (DeviceException exception)
                     {
-                        // this may cause infinite loop
-                        Thread.Sleep(100);
-                        retry = true;
+                        if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
+                        {
+                            // this may cause infinite loop
+                            Thread.Sleep(100);
+                            retry = true;
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
+                        }
                     }
-                    else
-                    {
-                        System.Windows.MessageBox.Show("Error occurred :" + exception.Message);
-                    }
-                }
-            } while (retry);
+                } while (retry);
+            }
         }
 
-        private void StartLiveViewInThread()
+        public void StartLiveViewInThread()
         {
             Thread thread = new Thread(StartLiveView);
             thread.Name = "StartLiveView";
@@ -1402,8 +1419,11 @@ namespace LightX_01.ViewModel
                     CloseCurrentGuideWindow();
                     SaveTestResults(objReviewWindow.SelectedImages, CapturedImages);
                     _testIndex++;
-                    if (_testIndex == CurrentExam.TestList.Count)
+                    if (_testIndex >= CurrentExam.TestList.Count)
+                    {
+                        _testIndex = CurrentExam.TestList.Count;
                         break;
+                    }
                     FetchCurrentTest();
                     CaptureEnabled = true;
                     break;
@@ -1428,7 +1448,7 @@ namespace LightX_01.ViewModel
                                     if (File.Exists(temp + ".jpeg"))
                                         File.Delete(temp + ".jpeg");
                                 }
-                                catch (IOException exception)
+                                catch (IOException)
                                 {
                                     Thread.Sleep(1000);
                                     retry = true;
@@ -1436,7 +1456,7 @@ namespace LightX_01.ViewModel
                             } while (retry);
                         }));
                     }
-                    ZoomOutEvent();
+                    ZoomOutEvent(true);
                     break;
             }
             CapturedImages.Clear();
@@ -1447,7 +1467,7 @@ namespace LightX_01.ViewModel
                                    
             objReviewWindow.Close();
 
-            if (_testIndex == CurrentExam.TestList.Count)
+            if (_testIndex >= CurrentExam.TestList.Count)
             {
                 ShowFinishWindow();
                 return;
@@ -1480,12 +1500,52 @@ namespace LightX_01.ViewModel
                     if (window.GetType() == typeof(CameraControlWindow))
                     {
                         currentWindow = window as CameraControlWindow;
-                        (window as CameraControlWindow).Hide();
+                        currentWindow.Hide();
                     }
                 }
             });
-            FinishWindow objFinishWindow = new FinishWindow(CurrentExam);
-            objFinishWindow.Show();
+            if (_objFinishWindow == null)
+            {
+                _objFinishWindow = new FinishWindow(CurrentExam);
+                _objFinishWindow.NewPhotoEvent += ObjFinishWindow_NewPhotoEvent;
+            }
+
+            _objFinishWindow.Show();
+        }
+
+        private void ObjFinishWindow_NewPhotoEvent(TestResults test)
+        {
+            _objFinishWindow.Close();
+            _objFinishWindow = null;
+            if (test.Id != Tests.NewTest)
+            {
+                _currentTestResults = test;
+                FetchTest(test.Id, new ObservableCollection<Tests>() { test.Id }, 0);
+                CaptureEnabled = true;
+                StartLiveViewInThread();
+            }
+            else
+            {
+                _currentTestResults = test;
+                FetchTest(test.Id, new ObservableCollection<Tests>() { test.Id }, 0);
+                CaptureEnabled = true;
+                StartLiveViewInThread();
+            }
+
+
+            CameraControlWindow currentWindow;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(CameraControlWindow))
+                    {
+                        currentWindow = window as CameraControlWindow;
+                        currentWindow.Show();
+                    }
+                }
+            });
+
         }
 
         private void CloseApplication(CancelEventArgs e)
@@ -1495,17 +1555,25 @@ namespace LightX_01.ViewModel
             e.Cancel = result != MessageBoxResult.Yes;
             if (!e.Cancel)
             {
-                if (_liveViewTimer.Enabled)
-                {
-                    StopLiveView();
-                    if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
-                    {
-                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
-                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Close();
-                    }
-                }
-                System.Windows.Application.Current.Shutdown();
+                ClosingRoutine();
             }
+        }
+
+        public void ClosingRoutine()
+        {
+            Console.WriteLine("Closing LightX...");
+            if (_liveViewTimer.Enabled)
+            {
+                StopLiveView();
+                if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+                {
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
+                    //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Close();
+                }
+                DeviceManager.SelectedCameraDevice.Close();
+                DeviceManager.CloseAll();
+            }
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void CloseCurrentGuideWindow()
@@ -1546,27 +1614,35 @@ namespace LightX_01.ViewModel
             };
 
             // create filenames, folder and save selected images
-            _currentTestResults.ResultsImages = new List<string>();
-            string fileName01 = CurrentExam.TestList[_testIndex];
-            string folderName = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5}h{6}\\{7}", 
+            if(_currentTestResults.ResultsImages == null)
+                _currentTestResults.ResultsImages = new List<string>();
+            string fileName = _currentTestResults.Id.ToString();
+            //    CurrentExam.TestList[_testIndex].ToString();
+            string folderName = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5,2:D2}h{6,2:D2}\\{7}", 
                 Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), 
                 "LightX", 
                 CurrentExam.Patient.LastName, 
                 CurrentExam.Patient.FirstName, 
                 CurrentExam.ExamDate.ToLongDateString(), 
-                CurrentExam.ExamDate.Hour.ToString(), 
-                CurrentExam.ExamDate.Minute.ToString(),
+                CurrentExam.ExamDate.Hour, 
+                CurrentExam.ExamDate.Minute,
                 _currentTestResults.TestTitle);
 
-            int index = 0;
+            // check the folder of filename, if not found create it
+            if (!Directory.Exists(folderName))
+                Directory.CreateDirectory(folderName);
+
+            int index = -1;
             for (int i = 0; i < selectedImages.Count; ++i)
                 
                 if (selectedImages[i])
                 {
-                    string path = string.Format("{0}\\{1}_{2,2:D2}{3}", folderName, fileName01, index, _fileExtension);  // add path to the folder (Nom_Prenom_timestamp)
-                    // check the folder of filename, if not found create it
-                    if (!Directory.Exists(Path.GetDirectoryName(path)))
-                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    string path;
+                    do
+                    {
+                        path = string.Format("{0}\\{1}_{2,2:D2}{3}", folderName, fileName, ++index, _fileExtension);  // add path to the folder (Nom_Prenom_timestamp)
+                    } while (File.Exists(path));
+
                     string temp = imagesPath[i];
                     _lowPriorityTasks.Add(Task.Run(() =>
                     {
@@ -1587,7 +1663,7 @@ namespace LightX_01.ViewModel
                                 //if (File.Exists(temp + ".jpeg"))
                                 //    File.Delete(temp + ".jpeg");
                             }
-                            catch (IOException exception)
+                            catch (IOException)
                             {
                                 Thread.Sleep(1000);
                                 retry = true;
@@ -1617,7 +1693,7 @@ namespace LightX_01.ViewModel
                                 if (File.Exists(temp + ".jpeg"))
                                     File.Delete(temp + ".jpeg");
                             }
-                            catch (IOException exception)
+                            catch (IOException)
                             {
                                 Thread.Sleep(1000);
                                 retry = true;
@@ -1631,63 +1707,84 @@ namespace LightX_01.ViewModel
             // Save test informations to JSON file (comments, camera settings, ...)
             _lowPriorityTasks.Add(Task.Run(() =>
             {
-                using (StreamWriter file = File.CreateText($"{folderName}\\{fileName01}.json"))
+                using (StreamWriter file = File.CreateText($"{folderName}\\{fileName}.json"))
                 {
                     JsonSerializer serializer = new JsonSerializer();
                     serializer.Serialize(file, _currentTestResults);
                 }
             }));
             
-            CurrentExam.Results.Add(_currentTestResults);
+            if (CurrentExam.Results.Count < CurrentExam.TestList.Count)
+                CurrentExam.Results.Add(_currentTestResults);
+            else
+            {
+                int i = 0;
+                foreach(Tests test in CurrentExam.TestList)
+                {
+                    if (test == _currentTestResults.Id)
+                        break;
+                    ++i;
+                }
+                CurrentExam.Results[i] = _currentTestResults;
+            }
             imagesPath = null;
             _lowPriorityTasks.Clear();
         }
 
-
-
-        private void FetchCurrentTest()
+        public void FetchCurrentTest()
         {
-            GuideData currentTest;
-            //int i = _testIndex;
-            if(_testIndex == CurrentExam.TestList.Count)
-            {
-                Console.WriteLine("Error : FetchCurrentTest trying to access OutOfRange Args.");
-                return;
-            }
-            string path = $@"..\..\Resources\{CurrentExam.TestList[_testIndex]}.json";
-            using (StreamReader file = File.OpenText(path))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                currentTest = (GuideData)serializer.Deserialize(file, typeof(GuideData));
-            }
+            
+            Tests test = CurrentExam.TestList[_testIndex];
 
-            GuideWindow objGuideWindow = new GuideWindow(currentTest, CurrentExam.TestList, _testIndex);
-            if (_oldGuideWindowPosition.Count == 0)
-            {
-                // Initialize the new starting position
-                _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Left + objGuideWindow.Width / 4);
-                _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Height / 2 - objGuideWindow.Height / 2);
-            }
-
-            objGuideWindow.Left = _oldGuideWindowPosition[0];
-            objGuideWindow.Top = _oldGuideWindowPosition[1];
-
-            objGuideWindow.Show();
-
-            // apply recomended camera settings to camera
-            if (_currentTestCameraSettings == null)
-                _currentTestCameraSettings = new CameraSettings();
-
-            _currentTestCameraSettings = currentTest.CamSettings;
-            if (_testIndex != 0) // since DeviceManage is not declared yet in the first call of this function -> ok
-                ApplyCameraSettings(DeviceManager.SelectedCameraDevice);
+            string title = FetchTest(test, CurrentExam.TestList, _testIndex);
 
             if (_currentTestResults != null)
             {
                 _currentTestResults = null;
                 GC.Collect();
             }
-            _currentTestResults = new TestResults() { TestTitle = currentTest.TestTitle };
+            _currentTestResults = new TestResults() { TestTitle = title, Id = test };
+        }
+
+        public string FetchTest(Tests test, ObservableCollection<Tests> testList, int testIndex)
+        {
+            GuideData currentTest;
+            string path = $@"..\..\Resources\{test}.json";
+            if (File.Exists(path))
+            {
+                using (StreamReader file = File.OpenText(path))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    currentTest = (GuideData)serializer.Deserialize(file, typeof(GuideData));
+                }
+
+                GuideWindow objGuideWindow = new GuideWindow(currentTest, testList, testIndex);
+                if (_oldGuideWindowPosition.Count == 0)
+                {
+                    // Initialize the new starting position
+                    _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Left + objGuideWindow.Width / 4);
+                    _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Height / 2 - objGuideWindow.Height / 2);
+                }
+
+                objGuideWindow.Left = _oldGuideWindowPosition[0];
+                objGuideWindow.Top = _oldGuideWindowPosition[1];
+
+                objGuideWindow.Show();
+
+                // apply recomended camera settings to camera
+                if (_currentTestCameraSettings == null)
+                    _currentTestCameraSettings = new CameraSettings();
+
+                _currentTestCameraSettings = currentTest.CamSettings;
+                //if (_testIndex != 0) // since DeviceManage is not declared yet in the first call of this function -> ok
+                ApplyCameraSettings(DeviceManager.SelectedCameraDevice);
+
+                return currentTest.TestTitle;
+            }
+            else
+            {
+                return "New test";
+            }
         }
 
         #endregion DataAccess
@@ -1736,7 +1833,6 @@ namespace LightX_01.ViewModel
             image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
             image.EndInit();
             image.Freeze();
-
             
             CapturedImages.Add(fileName);
             Console.WriteLine("{0}.jpeg added to the list of thumbnails", Path.GetFileName(fileName));
@@ -1886,15 +1982,17 @@ namespace LightX_01.ViewModel
 
         #endregion ImageManipulation
 
-        public CameraControlWindowViewModel(Exam exam)
+
+        public CameraControlWindowViewModel()
         {
             Thread.CurrentThread.Name = "MainThread";
             SetLiveViewTimer();
 
-            CurrentExam = exam;
-            FetchCurrentTest();
+            CurrentExam = new Exam();
+            //FetchCurrentTest();
 
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            //System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            Task task = new Task(() => 
             {
                 try
                 {
@@ -1915,6 +2013,9 @@ namespace LightX_01.ViewModel
                     Log.Error("Unable to initialize device manager", exception);
                 }
             });
+            
+            task.Start();
+            Task.WaitAll(task);
 
             Thread thread = new Thread(StartupThread);
             thread.Name = "Startup";

@@ -15,7 +15,7 @@
     </Window.Style>
 
     <Grid Margin="15">
-        <TabControl x:Name="TabControl01" ItemsSource="{Binding CurrentExam.Results, UpdateSourceTrigger=PropertyChanged}">
+        <TabControl x:Name="TabControl01" MouseLeftButtonDown="TabControl01_MouseLeftButtonDown" ItemsSource="{Binding CurrentExam.Results, UpdateSourceTrigger=PropertyChanged}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
                     <Label Content="{Binding TestTitle}"/>
@@ -37,39 +37,54 @@
                             </Grid.ColumnDefinitions>
 
                             <ScrollViewer x:Name="ScrollViewer" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-                                <ItemsControl x:Name="WrapPanel"  ItemsSource="{Binding ResultsImages, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid>
-                                                <Image Margin="5" MinWidth="10" MinHeight="10" Width="175" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Converter={StaticResource uriToImageConv}}" Stretch="Uniform"/>
-                                                <Border IsHitTestVisible="False" BorderBrush="LightGreen" BorderThickness="2" Margin="3">
-                                                    <Border.Visibility>
-                                                        <MultiBinding Converter="{StaticResource imageIsActiveConverter}" UpdateSourceTrigger="PropertyChanged">
-                                                            <Binding Path=""/>
-                                                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}" Path="DataContext.ReviewImages"/>
-                                                        </MultiBinding>
-                                                    </Border.Visibility>
-                                                </Border>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Vertical"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
+                                <StackPanel Orientation="Vertical">
+                                    <ItemsControl x:Name="WrapPanel"  ItemsSource="{Binding ResultsImages, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Image Margin="5" MinWidth="150" Width="200" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Converter={StaticResource uriToImageConv}, ConverterParameter=1}" Stretch="Uniform"/>
+                                                    <Border IsHitTestVisible="False" BorderBrush="LightGreen" BorderThickness="2" Margin="3">
+                                                        <Border.Visibility>
+                                                            <MultiBinding Converter="{StaticResource imageIsActiveConverter}" UpdateSourceTrigger="PropertyChanged">
+                                                                <Binding Path=""/>
+                                                                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}" Path="DataContext.ReviewImages"/>
+                                                            </MultiBinding>
+                                                        </Border.Visibility>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Vertical"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                    <Button Margin="5" Width="200" Height="133" Click="NewPhotoButton_Click" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="+" FontSize="50" Foreground="Gray"/>
+                                    <!--<Grid Width="200" Height="100" Background="LightGray" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="+" FontSize="60" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Grid>-->
+                                </StackPanel>
+                                
                             </ScrollViewer>
 
                             <Grid Margin="5 0 0 0" Grid.Column="1">
                                 <Border Background="WhiteSmoke"/>
-                                <Image Margin="15" Stretch="Uniform" Source="{Binding DataContext.ReviewImages, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Converter={StaticResource reviewImagesToImageConv}, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Image Margin="15" Stretch="Uniform" Source="{Binding DataContext.ReviewImages, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Converter={StaticResource reviewImagesToImageConv}, ConverterParameter=1, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>
                         </Grid>
 
                         <TextBlock Grid.Row="1" Text="Commentaires supplémentaires :"/>
-                        
-                        <TextBox Grid.Row="2" Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments}"/>
+
+                        <Grid Grid.Row="2" VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <!--<ColumnDefinition Width="Auto"/>-->
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox Grid.Column="0" Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments}"/>
+                            <!--<Button Grid.Column="1" Content="New Photo" Width="90" Height="20" />-->
+                        </Grid>
                     </Grid>
 
 

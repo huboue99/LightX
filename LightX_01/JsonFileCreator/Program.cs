@@ -15,7 +15,8 @@ namespace JsonFileWriter
 
             GuideData Conjonctive = new GuideData()
             {
-                FileName = "Conjonctive.json",
+                //FileName = "Conjonctive.json",
+                Id = Tests.Conjonctive,
                 TestTitle = "Conjonctive",
                 SlitIntensity = "0",
                 IllumAngle = "-",
@@ -28,7 +29,8 @@ namespace JsonFileWriter
 
             GuideData VanHerick = new GuideData()
             {
-                FileName = "VanHerick.json",
+                //FileName = "VanHerick.json",
+                Id = Tests.VanHerick,
                 TestTitle = "Van Herick",
                 SlitIntensity = "10",
                 IllumAngle = "60°",
@@ -40,8 +42,9 @@ namespace JsonFileWriter
 
             GuideData Cornea = new GuideData()
             {
-                FileName = "Cornea.json",
-                TestTitle = "Conée",
+                //FileName = "Cornea.json",
+                Id = Tests.Cornea,
+                TestTitle = "Cornée",
                 SlitIntensity = "10",
                 IllumAngle = "45°",
                 DiffuseIntensity = "2",
@@ -52,7 +55,8 @@ namespace JsonFileWriter
 
             GuideData Anterior = new GuideData()
             {
-                FileName = "AnteriorChamber.json",
+                //FileName = "AnteriorChamber.json",
+                Id = Tests.AnteriorChamber,
                 TestTitle = "Chambre Antérieure",
                 SlitIntensity = "10",
                 IllumAngle = "40°",
@@ -64,7 +68,8 @@ namespace JsonFileWriter
 
             GuideData Lens = new GuideData()
             {
-                FileName = "Lens.json",
+                //FileName = "Lens.json",
+                Id = Tests.Lens,
                 TestTitle = "Cristallin",
                 SlitIntensity = "10",
                 IllumAngle = "40°",
@@ -76,7 +81,8 @@ namespace JsonFileWriter
 
             GuideData PupillaryMargin = new GuideData()
             {
-                FileName = "PupillaryMargin.json",
+                //FileName = "PupillaryMargin.json",
+                Id = Tests.PupillaryMargin,
                 TestTitle = "Marges Pupillaires",
                 SlitIntensity = "0",
                 IllumAngle = "40°",
@@ -88,7 +94,8 @@ namespace JsonFileWriter
 
             GuideData IrisTransillumination = new GuideData()
             {
-                FileName = "IrisTransillumination.json",
+                //FileName = "IrisTransillumination.json",
+                Id = Tests.IrisTransillumination,
                 TestTitle = "Transillumination de l'iris",
                 SlitIntensity = "10",
                 IllumAngle = "10°",
@@ -100,7 +107,8 @@ namespace JsonFileWriter
 
             GuideData Cobalt = new GuideData()
             {
-                FileName = "CobaltFilter.json",
+                //FileName = "CobaltFilter.json",
+                Id = Tests.CobaltFilter,
                 TestTitle = "Filtre Cobalt",
                 SlitIntensity = "5",
                 IllumAngle = "30°",
@@ -128,7 +136,7 @@ namespace JsonFileWriter
         {
             foreach (GuideData data in jsonData)
             {
-                using (StreamWriter file = File.CreateText($"{path}{data.FileName}"))
+                using (StreamWriter file = File.CreateText($"{path}{data.Id.ToString()}.json"))
                 {
                     JsonSerializer serializer = new JsonSerializer();
                     serializer.Serialize(file, data);

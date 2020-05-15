@@ -11,7 +11,7 @@ namespace LightX_01.Classes
         #region Fields
 
         private string _text;
-        private string _value;
+        private Tests _value;
         private bool _isSelected;
 
         #endregion Fields
@@ -23,7 +23,7 @@ namespace LightX_01.Classes
             get { return _text; }
         }
 
-        public string Value
+        public Tests Value
         {
             get { return _value; }
         }
@@ -47,7 +47,7 @@ namespace LightX_01.Classes
 
         // Constructor
 
-        public BoolStringClass(string text, string value, bool isSelected = true)
+        public BoolStringClass(string text, Tests value, bool isSelected = true)
         {
             _text = text;
             _value = value;

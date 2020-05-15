@@ -68,6 +68,7 @@ namespace LightX_01.ViewModel
                 }
             }
             RaisePropertyChanged(() => ReviewImages);
+            GC.Collect();
         }
 
         public ObservableCollection<ReviewImage> ReviewImages

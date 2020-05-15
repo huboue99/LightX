@@ -1,4 +1,5 @@
-﻿using LightX_01.ViewModel;
+﻿using LightX_01.Classes;
+using LightX_01.ViewModel;
 using System.Windows;
 
 namespace LightX_01
@@ -8,16 +9,25 @@ namespace LightX_01
     /// </summary>
     /// 
     
-    public partial class MainWindow : Window
+    public partial class PatientInfosWindow : Window
     {
-        private readonly MainWindowViewModel _mainWindowViewModel;
-        public MainWindow()
+        public Exam Exam
         {
-            _mainWindowViewModel = new MainWindowViewModel();
+            get { return _patientInfosWindowViewModel.Exam; }
+            set
+            {
+                _patientInfosWindowViewModel.Exam = value;
+            }
+        }
+
+        private readonly PatientInfosWindowViewModel _patientInfosWindowViewModel;
+        public PatientInfosWindow()
+        {
+            _patientInfosWindowViewModel = new PatientInfosWindowViewModel();
             
             InitializeComponent();
             FileNumber.Focus();
-            DataContext = _mainWindowViewModel;
+            DataContext = _patientInfosWindowViewModel;
             this.Title = "LightX - Nouvel Examen";
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }

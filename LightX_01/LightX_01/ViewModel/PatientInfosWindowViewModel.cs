@@ -9,11 +9,12 @@ using System.Windows.Input;
 
 namespace LightX_01.ViewModel
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class PatientInfosWindowViewModel : ViewModelBase
     {
         #region Fields
 
         private Patient _currentPatient;
+        private Exam _exam;
         private ObservableCollection<BoolStringClass> _currentTestListChoices;
         private bool _allSelectedChecked = true;
 
@@ -37,6 +38,19 @@ namespace LightX_01.ViewModel
                 {
                     _currentPatient = value;
                     RaisePropertyChanged(() => CurrentPatient);
+                }
+            }
+        }
+
+        public Exam Exam
+        {
+            get { return _exam; }
+            set
+            {
+                if (value != _exam)
+                {
+                    _exam = value;
+                    RaisePropertyChanged(() => Exam);
                 }
             }
         }
@@ -77,7 +91,7 @@ namespace LightX_01.ViewModel
             {
                 if (_closeWindowCommand == null)
                     _closeWindowCommand = new RelayCommand<Window>(
-                        param => CloseWindow(param)
+                        param => Cancel(param)
                         );
                 return _closeWindowCommand;
             }
@@ -90,7 +104,7 @@ namespace LightX_01.ViewModel
             {
                 if (_createNewExamCommand == null)
                     _createNewExamCommand = new RelayCommand<Window>(
-                        param => CreateNewExam(param)
+                        param => Confirm(param)
                         );
                 return _createNewExamCommand;
             }
@@ -110,6 +124,19 @@ namespace LightX_01.ViewModel
 
         #region Actions
 
+        private void Confirm(Window window)
+        {
+            CreateNewExam();
+            window.DialogResult = true;
+            CloseWindow(window);
+        }
+
+        private void Cancel(Window window)
+        {
+            window.DialogResult = false;
+            CloseWindow(window);
+        }
+
         private void CloseWindow(Window window)
         {
             if (window != null)
@@ -118,21 +145,19 @@ namespace LightX_01.ViewModel
             }
         }
 
-        private ObservableCollection<string> CreateTestList()
+        private ObservableCollection<Tests> CreateTestList()
         {
-            ObservableCollection<string> testList = new ObservableCollection<string>();
+            ObservableCollection<Tests> testList = new ObservableCollection<Tests>();
             foreach(BoolStringClass test in CurrentTestListChoices)
             {
                 if (test.IsSelected)
                     testList.Add(test.Value);
             }
 
-
-
             return testList;
         }
 
-        private void CreateNewExam(Window window)
+        private void CreateNewExam()
         {
             ///////////// TESTINGS /////////////////
             bool TESTING = true;
@@ -159,29 +184,33 @@ namespace LightX_01.ViewModel
                 CurrentPatient.FirstName.Trim();
                 CurrentPatient.LastName = CurrentPatient.LastName.Trim();
 
-                ObservableCollection<string> testList = CreateTestList();
+                ObservableCollection<Tests> testList = CreateTestList();
 
                 // Create the Exam (patient, currentTime, testList)
-                Exam exam = new Exam() { Patient = CurrentPatient, TestList = testList };
+                if (Exam == null)
+                    Exam = new Exam();
+
+                Exam.Patient = CurrentPatient;
+                Exam.TestList = testList;
 
                 // Open control and guide windows; close the patient info windows
-                CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
-                this.CloseWindow(window);
-                objCamControlWindow.Show();
+                //CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
+                //this.CloseWindow(window);
+                //objCamControlWindow.Show();
             }
         }
 
         private void CreateCheckBoxList()
         {
             _currentTestListChoices = new ObservableCollection<BoolStringClass>();
-            _currentTestListChoices.Add(new BoolStringClass("Conjonctive", "Conjonctive"));
-            _currentTestListChoices.Add(new BoolStringClass("Van Herick", "VanHerick"));
-            _currentTestListChoices.Add(new BoolStringClass("Cornée", "Cornea"));
-            _currentTestListChoices.Add(new BoolStringClass("Chambre Antérieure", "AnteriorChamber"));
-            _currentTestListChoices.Add(new BoolStringClass("Cristallin", "Lens"));
-            _currentTestListChoices.Add(new BoolStringClass("Marge Pupillaire", "PupillaryMargin"));
-            _currentTestListChoices.Add(new BoolStringClass("Transillumination de l'iris", "IrisTransillumination"));
-            _currentTestListChoices.Add(new BoolStringClass("Filtre Cobalt", "CobaltFilter"));
+            _currentTestListChoices.Add(new BoolStringClass("Conjonctive", Tests.Conjonctive));
+            _currentTestListChoices.Add(new BoolStringClass("Van Herick", Tests.VanHerick));
+            _currentTestListChoices.Add(new BoolStringClass("Cornée", Tests.Cornea));
+            _currentTestListChoices.Add(new BoolStringClass("Chambre Antérieure", Tests.AnteriorChamber));
+            _currentTestListChoices.Add(new BoolStringClass("Cristallin", Tests.Lens));
+            _currentTestListChoices.Add(new BoolStringClass("Marge Pupillaire", Tests.PupillaryMargin));
+            _currentTestListChoices.Add(new BoolStringClass("Transillumination de l'iris", Tests.IrisTransillumination));
+            _currentTestListChoices.Add(new BoolStringClass("Filtre Cobalt", Tests.CobaltFilter));
         }
 
         private void SelectAllClick()
@@ -221,7 +250,7 @@ namespace LightX_01.ViewModel
                 return 1; // All true
         }
 
-        public MainWindowViewModel()
+        public PatientInfosWindowViewModel()
         {
             CreateCheckBoxList();
             Genders = new ObservableCollection<string>() { "Homme", "Femme" };

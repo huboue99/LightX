@@ -9,7 +9,7 @@ namespace LightX_01.Classes
 
         private Patient _patient;
         private DateTime _examDate;
-        private ObservableCollection<string> _testList;
+        private ObservableCollection<Tests> _testList;
         private ObservableCollection<TestResults> _results;
         private string _generalComments;
 
@@ -43,7 +43,7 @@ namespace LightX_01.Classes
             }
         }
 
-        public ObservableCollection<string> TestList
+        public ObservableCollection<Tests> TestList
         {
             get { return _testList; }
             set
@@ -88,7 +88,7 @@ namespace LightX_01.Classes
         {
             // Default test list = ALL OF THEM
             if(_testList == null)
-                _testList = new ObservableCollection<string>() { "Conjonctive", "VanHerick", "Cornea", "AnteriorChamber", "Lens", "PupillaryMargin", "IrisTransillumination", "CobaltFilter" };
+                _testList = new ObservableCollection<Tests>() { Tests.Conjonctive, Tests.VanHerick, Tests.Cornea, Tests.AnteriorChamber, Tests.Lens, Tests.PupillaryMargin, Tests.IrisTransillumination, Tests.CobaltFilter };
             _results = new ObservableCollection<TestResults>();
             _examDate = DateTime.Now;
         }

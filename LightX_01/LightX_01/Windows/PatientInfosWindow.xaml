@@ -1,4 +1,4 @@
-﻿<Window x:Class="LightX_01.MainWindow"
+﻿<Window x:Class="LightX_01.PatientInfosWindow"
         x:Name="NewExamWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

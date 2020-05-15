@@ -24,8 +24,6 @@ namespace LightX_01
         [DllImport("user32.dll")]
         static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
 
-
-
         const uint MF_BYCOMMAND = 0x00000000;
         const uint MF_GRAYED = 0x00000001;
         const uint MF_ENABLED = 0x00000000;
@@ -36,7 +34,7 @@ namespace LightX_01
         const int WM_CLOSE = 0x10;
 
 
-        public GuideWindow(GuideData test, ObservableCollection<string> testList, int i)
+        public GuideWindow(GuideData test, ObservableCollection<Tests> testList, int i)
         {
             _guideWindowViewModel = new GuideWindowViewModel(test, testList, i);
             InitializeComponent();

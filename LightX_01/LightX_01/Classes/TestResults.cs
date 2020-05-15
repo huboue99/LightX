@@ -2,11 +2,25 @@
 
 namespace LightX_01.Classes
 {
+    public enum Tests
+    {
+        Conjonctive             = 0x00, 
+        VanHerick               = 0X01, 
+        Cornea                  = 0X02, 
+        AnteriorChamber         = 0X03, 
+        Lens                    = 0X04, 
+        PupillaryMargin         = 0X05, 
+        IrisTransillumination   = 0X06, 
+        CobaltFilter            = 0X07,
+        NewTest                 = 0x10
+    }
+
     public class TestResults : BaseClass
     {
         #region Fields
 
         private string _testTitle;
+        private Tests _id;
         private CameraSettings _camSettings;
         private string _comments;
         private List<string> _resultsImages;
@@ -24,6 +38,19 @@ namespace LightX_01.Classes
                 {
                     _testTitle = value;
                     OnPropertyChanged("TestTitle");
+                }
+            }
+        }
+
+        public Tests Id
+        {
+            get { return _id; }
+            set
+            {
+                if (value != _id)
+                {
+                    _id = value;
+                    OnPropertyChanged("Id");
                 }
             }
         }

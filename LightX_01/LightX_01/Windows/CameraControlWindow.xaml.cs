@@ -1,5 +1,6 @@
 ﻿using LightX_01.ViewModel;
 using LightX_01.Classes;
+using LightX_01;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -104,7 +105,7 @@ namespace LightX_01
                     if (!_zoomIsPressed)
                     {
                         _zoomIsPressed = true;
-                        _cameraControlWindowViewModel.ZoomOutEvent();
+                        _cameraControlWindowViewModel.ZoomOutEvent(_cameraControlWindowViewModel.CaptureEnabled);
                     }
                     break;
                 case Key.Up:
@@ -114,28 +115,46 @@ namespace LightX_01
                 case Key.Left:
                     goto case Key.Right;
                 case Key.Right:
-                    _cameraControlWindowViewModel.MoveRoiXY(e.KeyPressed);
+                    _cameraControlWindowViewModel.MoveRoiXY(e.KeyPressed, _cameraControlWindowViewModel.CaptureEnabled);
                     break;
             }
         }
 
         private void LiveViewWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _listener.UnHookKeyboard();
+            if(_listener != null)
+                _listener.UnHookKeyboard();
         }
 
-        public CameraControlWindow(Exam exam)
+        public CameraControlWindow()
         {
-            _cameraControlWindowViewModel = new CameraControlWindowViewModel(exam);
+            this.Hide();
+            _cameraControlWindowViewModel = new CameraControlWindowViewModel();
             InitializeComponent();
             DataContext = _cameraControlWindowViewModel;
             CheckBoxCustomBurst.IsChecked = true;
             BurstUpDownControl.IsEnabled = true;
 
-            this.Title = $"LightX - {exam.Patient.FirstName} {exam.Patient.LastName} - {exam.ExamDate.Day:D2}/{exam.ExamDate.Month:D2}/{exam.ExamDate.Year} - {exam.ExamDate.Hour:D2}:{exam.ExamDate.Minute:D2}:{exam.ExamDate.Second:D2}";
+            //this.Title = $"LightX - {exam.Patient.FirstName} {exam.Patient.LastName} - {exam.ExamDate.Day:D2}/{exam.ExamDate.Month:D2}/{exam.ExamDate.Year} - {exam.ExamDate.Hour:D2}:{exam.ExamDate.Minute:D2}:{exam.ExamDate.Second:D2}";
             //this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.Left = Screen.AllScreens[0].WorkingArea.Right - this.Width - this.Width / 4;
             this.Top = Screen.AllScreens[0].WorkingArea.Height / 2 - this.Height / 2;
+
+            PatientInfosWindow _patientInfosWindow = new PatientInfosWindow();
+            bool? isConfirm = _patientInfosWindow.ShowDialog();
+
+            switch (isConfirm)
+            {
+                case true:
+                    _cameraControlWindowViewModel.CurrentExam = _patientInfosWindow.Exam;
+                    _cameraControlWindowViewModel.FetchCurrentTest();
+                    _cameraControlWindowViewModel.StartLiveViewInThread();
+                    this.Show();
+                    break;
+                default:
+                    _cameraControlWindowViewModel.ClosingRoutine();
+                    break;
+            }
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)

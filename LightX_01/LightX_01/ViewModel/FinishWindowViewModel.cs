@@ -1,4 +1,5 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using LightX_01.Classes;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,9 @@ namespace LightX_01.ViewModel
 
         private Exam _currentExam;
         private ObservableCollection<ReviewImage> _reviewImages;
+
+        // Command definitions
+        //private RelayCommand _newPhotoCommand;
 
         #endregion Fields
 
@@ -50,6 +54,10 @@ namespace LightX_01.ViewModel
 
         #endregion Properties
 
+        #region RelayCommands
+
+        #endregion RelayCommands
+
         #region Actions
 
         internal void ActiveImageEvent(Image image)
@@ -74,12 +82,15 @@ namespace LightX_01.ViewModel
         {
             CurrentExam = exam;
             ReviewImages = new ObservableCollection<ReviewImage>();
+            if (CurrentExam.Results.Last().Id != Tests.NewTest)
+                CurrentExam.Results.Add(new TestResults() { TestTitle = "New test", Id = Tests.NewTest });
             foreach (TestResults result in exam.Results)
             {
-                foreach (string path in result.ResultsImages)
-                {
-                    ReviewImages.Add(new ReviewImage() { Image = path });
-                }
+                if (result.ResultsImages != null)
+                    foreach (string path in result.ResultsImages)
+                    {
+                        ReviewImages.Add(new ReviewImage() { Image = path });
+                    }
             }
             ReviewImages[0].IsActive = true;
         }
