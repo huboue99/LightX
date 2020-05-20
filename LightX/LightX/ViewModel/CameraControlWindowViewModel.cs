@@ -1499,15 +1499,26 @@ namespace LightX.ViewModel
             {
                 _objFinishWindow = new FinishWindow(CurrentExam);
                 _objFinishWindow.NewPhotoEvent += ObjFinishWindow_NewPhotoEvent;
+                _objFinishWindow.FinishWindowClosingEvent += ObjFinishWindow_FinishWindowClosingEvent;
             }
 
             _objFinishWindow.Show();
         }
 
+        private void ObjFinishWindow_FinishWindowClosingEvent(CancelEventArgs e)
+        {
+            if(CloseApplication(e))
+            {
+                _objFinishWindow.FinishWindowClosingEvent -= ObjFinishWindow_FinishWindowClosingEvent;
+            }
+        }
+
         private void ObjFinishWindow_NewPhotoEvent(TestResults test)
         {
-            _objFinishWindow.Close();
+            _objFinishWindow.NewPhotoEvent -= ObjFinishWindow_NewPhotoEvent;
+            _objFinishWindow.CloseWithoutEvent();
             _objFinishWindow = null;
+
             if (test.Id != Tests.NewTest)
             {
                 _currentTestResults = test;
@@ -1539,15 +1550,43 @@ namespace LightX.ViewModel
 
         }
 
-        private void CloseApplication(CancelEventArgs e)
+        private void CloseApplication()
         {
-            
             var result = System.Windows.MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
-            e.Cancel = result != MessageBoxResult.Yes;
-            if (!e.Cancel)
+            if (result == MessageBoxResult.Yes)
             {
                 ClosingRoutine();
             }
+        }
+
+        private bool CloseApplication(CancelEventArgs e)
+        {
+            if(_objFinishWindow == null)
+            {
+                var result = System.Windows.MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
+                e.Cancel = result != MessageBoxResult.Yes;
+                if (!e.Cancel)
+                {
+                    ClosingRoutine();
+                    return true;
+                }
+                else
+                    return false;
+            }
+            else if (_objFinishWindow.IsVisible)
+            {
+                var result = System.Windows.MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
+                e.Cancel = result != MessageBoxResult.Yes;
+                if (!e.Cancel)
+                {
+                    ClosingRoutine();
+                    return true;
+                }
+                else
+                    return false;
+            }
+            _objFinishWindow = null;
+            return false;
         }
 
         public void ClosingRoutine()

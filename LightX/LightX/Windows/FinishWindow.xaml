@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:LightX"
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
-        Title="Exam Review" Height="1000" Width="1200" MinHeight="500" MinWidth="500">
+        Title="Exam Review" Height="1000" Width="1200" MinHeight="500" MinWidth="500"
+        Closing="Window_Closing">
 
     <Window.Style>
         <Style TargetType="{x:Type Window}">
@@ -15,10 +16,10 @@
     </Window.Style>
 
     <Grid Margin="15">
-        <TabControl x:Name="TabControl01" MouseLeftButtonDown="TabControl01_MouseLeftButtonDown" ItemsSource="{Binding CurrentExam.Results, UpdateSourceTrigger=PropertyChanged}">
+        <TabControl x:Name="TabControl01" ItemsSource="{Binding CurrentExam.Results, UpdateSourceTrigger=PropertyChanged}">
             <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <Label Content="{Binding TestTitle}"/>
+                    <Label Content="{Binding TestTitle}" MouseLeftButtonDown="TabControl01_MouseLeftButtonDown"/>
                 </DataTemplate>
             </TabControl.ItemTemplate>
             <TabControl.ContentTemplate>
@@ -79,11 +80,11 @@
                         <Grid Grid.Row="2" VerticalAlignment="Center">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <!--<ColumnDefinition Width="Auto"/>-->
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             
                             <TextBox Grid.Column="0" Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments}"/>
-                            <!--<Button Grid.Column="1" Content="New Photo" Width="90" Height="20" />-->
+                            <Button Grid.Column="1" Content="Confirm" Width="90" Height="20" Click="Button_Click"/>
                         </Grid>
                     </Grid>
 
