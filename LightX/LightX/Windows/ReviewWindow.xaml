@@ -1,0 +1,76 @@
+﻿<Window x:Class="LightX.ReviewWindow"
+        x:Name="PhotoReviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LightX"
+        mc:Ignorable="d"
+        Icon="../LightXLogo.ico"
+        Title="Photo Review" Height="1000" Width="1200" MinHeight="500" MinWidth="500">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibleIfTrueConverter" />
+    </Window.Resources>
+    
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+
+    <Grid x:Name="WindowGrid" Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="200"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0 0 0 15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="200" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer x:Name="ScrollViewer" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                <ItemsControl x:Name="WrapPanel"  ItemsSource="{Binding ReviewImages, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Image Margin="5" MinWidth="150" Width="200" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Image, Converter={StaticResource uriToImageConv}}" Stretch="Uniform"/>
+                                <CheckBox HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="7" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Border IsHitTestVisible="False" BorderBrush="LightGreen" BorderThickness="2" Margin="3" Visibility="{Binding IsActive, Converter={StaticResource VisibleIfTrueConverter}, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Grid Margin="5 0 0 0" Grid.Column="1">
+                <Border Background="WhiteSmoke"/>
+                <Image Margin="15" Stretch="Uniform" Source="{Binding ReviewImages, Converter={StaticResource reviewImagesToImageConv}, UpdateSourceTrigger=PropertyChanged}"/>
+            </Grid>
+        </Grid>
+
+        <TextBlock Grid.Row="1" Text="Commentaires supplémentaires :"/>
+        
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="300"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0" Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding CurrentComment}"/>
+
+            <StackPanel Grid.Column="1" Width="160" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Content="Confirm" Width="90" Height="20" Command="{Binding ConfirmCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}"/>
+                <Button Content="Cancel" Width="90" Height="20" Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=PhotoReviewWindow}" Margin="0 15 0 0" IsCancel="True"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,67 @@
+﻿<Window x:Class="LightX.GuideWindow"
+        x:Name="NewGuideWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LightX"
+        mc:Ignorable="d"
+        Icon="../LightXLogo.ico"
+        Height="500" Width="740" MinHeight="500" MinWidth="500" Topmost="False" WindowState="Normal">
+    
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+    
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" MinHeight="200"/>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" FontSize="18" Content="{Binding CurrentTest.TestTitle}"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Vertical">
+                <ItemsControl  BorderBrush="Gray" BorderThickness="1" ItemsSource="{Binding CurrentList}" HorizontalContentAlignment="Stretch">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="5 1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="{Binding Value}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Label FontWeight="Bold" Content="Instructions :" Margin="0 5"/>
+                <TextBlock TextWrapping="Wrap" Text="{Binding CurrentTest.InstructionsNotes}" Margin="5 0 0 0"/>
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{Binding CurrentTestsState}" Grid.Column="1" Margin="25 0 0 0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <TextBlock FontWeight="Normal" Foreground="Gray">
+                                <ContentControl Content="{Binding}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <Image Grid.Row="2" MinWidth="300" Margin="0 20 0 0" Source="{Binding CurrentImage}" Stretch="Uniform" HorizontalAlignment="Center"/>
+    </Grid>
+</Window>

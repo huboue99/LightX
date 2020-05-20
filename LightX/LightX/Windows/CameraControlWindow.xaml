@@ -1,0 +1,110 @@
+﻿<Window x:Class="LightX.CameraControlWindow"
+        x:Name="LiveViewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
+        xmlns:command="http://www.galasoft.ch/mvvmlight"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:LightX"
+        mc:Ignorable="d"
+        Icon="../LightXLogo.ico"
+        Loaded="LiveViewWindow_Loaded" Closing="LiveViewWindow_Closing"
+        Height="670" Width="740" Topmost="False" WindowState="Normal"
+        Title="{Binding CurrentExam, Converter={StaticResource titleConverter}, UpdateSourceTrigger=PropertyChanged}">
+        <!--Keyboard.KeyDown="KeyDownEventHandler" Keyboard.KeyUp="KeyUpEventHandler"-->
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+    
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <cmd:EventToCommand Command="{Binding ClosingCommand}" PassEventArgsToCommand="True"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Margin="0 2" Text="Connected camera : "/>
+            <TextBlock Margin="0 2" Text="{Binding DeviceManager.SelectedCameraDevice.DisplayName, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Mouse.MouseDown="MouseLeftButtonDownEventHandler">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseWheel">
+                    <command:EventToCommand Command="{Binding ImageMouseWheelCommand}" PassEventArgsToCommand="True"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <Image Source="{Binding CurrentLiveViewImage}" Stretch="Uniform" IsEnabled="{Binding LiveViewEnabled}"/>
+            <Image Source="{Binding OverlayBitmap, UpdateSourceTrigger=PropertyChanged}" Stretch="Uniform" IsEnabled="{Binding LiveViewEnabled}"/>
+        </Grid>
+
+        <!--<CheckBox Grid.Row="2" Name="ManualModeCheckBox" Content="Enable manual settings" HorizontalAlignment="Right"/>-->
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
+            <CheckBox VerticalAlignment="Center" Content="Auto burst control" IsChecked="{Binding IsAutoBurstControl, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsThreeState="False" Margin="0 0 10 0"/>
+            <CheckBox Name="CheckBoxCustomBurst" VerticalAlignment="Center" Content="Custom burst" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" IsThreeState="False" Margin="0 0 10 0"/>
+            <xctk:IntegerUpDown Name="BurstUpDownControl"  Width="60" FormatString="G" Value="{Binding BurstNumber, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ClipValueToMinMax="True" Minimum="1" Maximum="9"/>
+        </StackPanel>
+
+        <Grid Grid.Row="3" Margin="0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel HorizontalAlignment="Center" Orientation="Vertical" Grid.Column="0">
+                <TextBlock Text="Shutter Speed"/>
+                <ComboBox IsEnabled="{Binding DeviceManager.SelectedCameraDevice.ShutterSpeed.IsEnabled}" Width="150" ItemsSource="{Binding DeviceManager.SelectedCameraDevice.ShutterSpeed.Values}" SelectedItem="{Binding DeviceManager.SelectedCameraDevice.ShutterSpeed.Value, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+            
+            <StackPanel HorizontalAlignment="Center" Orientation="Vertical" Grid.Column="1">
+                <TextBlock Text="Aperture"/>
+                <ComboBox IsEnabled="{Binding DeviceManager.SelectedCameraDevice.FNumber.IsEnabled}" Width="150" ItemsSource="{Binding DeviceManager.SelectedCameraDevice.FNumber.Values}" SelectedItem="{Binding DeviceManager.SelectedCameraDevice.FNumber.Value, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+            
+            <StackPanel HorizontalAlignment="Center" Orientation="Vertical" Grid.Column="2">
+                <TextBlock Text="ISO"/>
+                <ComboBox IsEnabled="{Binding DeviceManager.SelectedCameraDevice.IsoNumber.IsEnabled}" Width="150" ItemsSource="{Binding DeviceManager.SelectedCameraDevice.IsoNumber.Values}" SelectedItem="{Binding DeviceManager.SelectedCameraDevice.IsoNumber.Value, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+
+        <Button Grid.Row="4" IsEnabled="{Binding CaptureEnabled}" Focusable="False" IsDefault="False" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
+    </Grid>
+</Window>
