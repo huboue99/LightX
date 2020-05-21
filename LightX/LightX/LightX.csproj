@@ -57,11 +57,11 @@
     <ApplicationIcon>LightXLogo.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CameraControl.Devices, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="CameraControl.Devices, Version=2.1.2.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\digiCamControl\CameraControl.Devices\bin\Release\CameraControl.Devices.dll</HintPath>
     </Reference>
-    <Reference Include="Canon.Eos.Framework, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Canon.Eos.Framework, Version=2.1.2.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\digiCamControl\CameraControl.Devices\bin\Release\Canon.Eos.Framework.dll</HintPath>
     </Reference>
@@ -80,7 +80,7 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PortableDeviceLib, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="PortableDeviceLib, Version=2.1.2.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\digiCamControl\CameraControl.Devices\bin\Release\PortableDeviceLib.dll</HintPath>
     </Reference>
