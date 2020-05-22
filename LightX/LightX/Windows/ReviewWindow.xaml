@@ -33,11 +33,11 @@
             </Grid.ColumnDefinitions>
 
             <ScrollViewer x:Name="ScrollViewer" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-                <ItemsControl x:Name="WrapPanel"  ItemsSource="{Binding ReviewImages, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center">
+                <ItemsControl x:Name="WrapPanel"  ItemsSource="{Binding ReviewImages}" HorizontalAlignment="Center">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Image Margin="5" MinWidth="150" Width="200" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Image, Converter={StaticResource uriToImageConv}}" Stretch="Uniform"/>
+                                <Image Margin="5" MinWidth="150" Width="200" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Image, Converter={StaticResource uriToImageConv}, UpdateSourceTrigger=Explicit}" Stretch="Uniform"/>
                                 <CheckBox HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="7" IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                 <Border IsHitTestVisible="False" BorderBrush="LightGreen" BorderThickness="2" Margin="3" Visibility="{Binding IsActive, Converter={StaticResource VisibleIfTrueConverter}, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>

@@ -19,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace LightX.ViewModel
 {
@@ -53,6 +54,8 @@ namespace LightX.ViewModel
         // System and windows vars
         private List<double> _oldGuideWindowPosition = new List<double>(2);
         private System.Timers.Timer _liveViewTimer;
+        public System.Timers.Timer _burstTimer;
+        public bool _shutterGotReleased = false;
         private object _locker = new object();
         private int _testIndex = 0;
         private List<Task> _tasks = new List<Task>();
@@ -274,6 +277,20 @@ namespace LightX.ViewModel
             _liveViewTimer.AutoReset = true;
         }
 
+        private void SetBurstTimer()
+        {
+            _burstTimer = new System.Timers.Timer(9 * 135);
+            _burstTimer.Elapsed += _bustTimer_Tick;
+            _burstTimer.AutoReset = true;
+        }
+
+        private void _bustTimer_Tick(object sender, ElapsedEventArgs e)
+        {
+            Console.WriteLine("Max ammount of pictures reached.");
+            
+            StopBurstCapture();
+        }
+
         private void _liveViewTimer_Tick(object sender, EventArgs e)
         {
             LiveViewData liveViewData = null;
@@ -476,6 +493,7 @@ namespace LightX.ViewModel
             fileName = Path.ChangeExtension(fileName, null); // Remove the .tmp extension
 
             //byte[] buffer;
+
             lock (_locker) // Prevent program to start new transfer while another transfer is active.
             {
                 //PhotoCaptured(eventArgs);
@@ -485,10 +503,11 @@ namespace LightX.ViewModel
 
             GC.KeepAlive(eventArgs);
             GC.KeepAlive(sender);
+
             //byte[] buffer = (stream as MemoryStream).ToArray();
             //stream.Close();
             //_tasks.Add(new Task(() => ProcessImage(stream)));
-            
+
             _tasks.Add(new Task(() => ProcessImageFromFile(fileName)));
 
             if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0) )
@@ -624,6 +643,9 @@ namespace LightX.ViewModel
                         case 8:
                             delay = 135;
                             break;
+                        case 9:
+                            delay = 135;
+                            break;
                         default:
                             delay = 130;
                             break;
@@ -668,7 +690,8 @@ namespace LightX.ViewModel
                     CaptureInThread();
                     return;
                 }
-            
+
+                _shutterGotReleased = false;
                 CaptureEnabled = false;
                 if (!IsAutoBurstControl)
                 {
@@ -677,7 +700,9 @@ namespace LightX.ViewModel
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
                         {
                             _liveViewTimer.Stop();
+                            
                             (DeviceManager.SelectedCameraDevice as CanonSDKBase).CapturePhotoBurstNoAf();
+                            
                             //CameraControlWindow currentWindow = null;
                             //foreach (Window window in System.Windows.Application.Current.Windows)
                             //{
@@ -692,6 +717,7 @@ namespace LightX.ViewModel
                             //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
                             //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
                         });
+                        _burstTimer.Start();
                     }
                     catch (COMException comException)
                     {
@@ -722,13 +748,15 @@ namespace LightX.ViewModel
 
         public void StopBurstCapture()
         {
+            _burstTimer.Stop();
             Console.WriteLine("Shutter released");
 
             if (DeviceManager.SelectedCameraDevice is NikonBase)
                 return;
 
-            if(!IsAutoBurstControl)
+            if(!IsAutoBurstControl && !_shutterGotReleased)
             {
+                _shutterGotReleased = true;
                 try
                 {
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
@@ -1600,7 +1628,7 @@ namespace LightX.ViewModel
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
                     //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Close();
                 }
-                DeviceManager.SelectedCameraDevice.Close();
+                //DeviceManager.SelectedCameraDevice.Close();
                 DeviceManager.CloseAll();
             }
             System.Windows.Application.Current.Shutdown();
@@ -1704,7 +1732,6 @@ namespace LightX.ViewModel
                             }
                         } while (retry);
                     }));
-                    index++;
                 }
                 else
                 {
@@ -2017,12 +2044,13 @@ namespace LightX.ViewModel
         {
             Thread.CurrentThread.Name = "MainThread";
             SetLiveViewTimer();
+            SetBurstTimer();
 
             CurrentExam = new Exam();
             //FetchCurrentTest();
 
-            //System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            Task task = new Task(() => 
+            //Task task = new Task(() => 
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 try
                 {
@@ -2044,8 +2072,8 @@ namespace LightX.ViewModel
                 }
             });
             
-            task.Start();
-            Task.WaitAll(task);
+            //task.Start();
+            //Task.WaitAll(task);
 
             Thread thread = new Thread(StartupThread);
             thread.Name = "Startup";

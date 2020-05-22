@@ -77,7 +77,10 @@ namespace LightX
                     if (_shutterIsPressed)
                     {
                         _shutterIsPressed = false;
-                        _cameraControlWindowViewModel.StopBurstCapture();
+                        if (!_cameraControlWindowViewModel._shutterGotReleased)
+                            _cameraControlWindowViewModel.StopBurstCapture();
+                        else
+                            _cameraControlWindowViewModel._shutterGotReleased = false;
                     }
                     break;
                 case Key.Space:

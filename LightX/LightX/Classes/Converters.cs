@@ -27,7 +27,7 @@ namespace LightX.Classes
                 // must be loaded from cache if we want to be able to delete or move it right away.
                 // but not useful if only wants to see them (like in the examReviewWindow)
                 bi.CacheOption = parameter == null ? BitmapCacheOption.OnLoad : BitmapCacheOption.None;
-                bi.CreateOptions = parameter == null ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
+                //bi.CreateOptions = parameter == null ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
                 bi.EndInit();
                 return bi;
             }
@@ -66,7 +66,7 @@ namespace LightX.Classes
                 bi.BeginInit();
                 bi.UriSource = new Uri(image);
                 bi.CacheOption = parameter == null ? BitmapCacheOption.OnLoad : BitmapCacheOption.None;
-                bi.CreateOptions = parameter == null ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
+                //bi.CreateOptions = parameter == null ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
                 bi.EndInit();
                 return bi;
             }
