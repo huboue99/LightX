@@ -636,7 +636,7 @@ namespace LightX.ViewModel
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
-                    //Thread.Sleep(150);
+                    Thread.Sleep(150);
                 }
                 catch (COMException comException)
                 {
