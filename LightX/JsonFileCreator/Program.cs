@@ -43,8 +43,8 @@ namespace JsonFileWriter
                 TestTitle = "Cornée",
                 SlitIntensity = "10",
                 IllumAngle = "45°",
-                DiffuseIntensity = "2",
-                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/30", FNumber = "11.0", Iso = "400", BurstNumber = "3"},
+                DiffuseIntensity = "HIGH",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "8.0", Iso = "6400", BurstNumber = "2"},
                 InstructionsNotes = "On désir observer toutes anomalies, défauts, ammincicement en surface/à l'intérieur/derrière la cornée.",
                 ImagesPath = new List<string>() { @"..\..\Resources\01_00.png" }
             };
@@ -55,8 +55,8 @@ namespace JsonFileWriter
                 TestTitle = "Chambre Antérieure",
                 SlitIntensity = "10",
                 IllumAngle = "40°",
-                DiffuseIntensity = "2",
-                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "4" },
+                DiffuseIntensity = "OFF",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "5.6", Iso = "3200", BurstNumber = "4" },
                 InstructionsNotes = "On désir observer s'il y a présence de cellules et/ou de flares.  Désire que la prise de vue se fasse devant l'entrée de la pupille pour obtenir un arrière plan noir (meilleurs contraste).",
                 ImagesPath = new List<string>() { @"..\..\Resources\01_00.png" }
             };
@@ -67,8 +67,8 @@ namespace JsonFileWriter
                 TestTitle = "Cristallin",
                 SlitIntensity = "10",
                 IllumAngle = "40°",
-                DiffuseIntensity = "2",
-                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "5" },
+                DiffuseIntensity = "OFF",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "5.6", Iso = "1600", BurstNumber = "4" },
                 InstructionsNotes = "On désir observer s'il y a présence d'opacité ou changement de couleur dans le cristallin.",
                 ImagesPath = new List<string>() { @"..\..\Resources\01_00.png" }
             };
@@ -79,8 +79,8 @@ namespace JsonFileWriter
                 TestTitle = "Marges Pupillaires",
                 SlitIntensity = "0",
                 IllumAngle = "40°",
-                DiffuseIntensity = "2",
-                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "6" },
+                DiffuseIntensity = "LOW",
+                CamSettings = new CameraSettings() { Flash = "ON + 2 step", ShutterSpeed = "1/200", FNumber = "2.8", Iso = "100", BurstNumber = "1" },
                 InstructionsNotes = "On désir observer s'il y a présence d'irrégularité ou de dépôt sur la marge.",
                 ImagesPath = new List<string>() { @"..\..\Resources\01_00.png" }
             };
@@ -91,8 +91,8 @@ namespace JsonFileWriter
                 TestTitle = "Transillumination de l'iris",
                 SlitIntensity = "10",
                 IllumAngle = "10°",
-                DiffuseIntensity = "0",
-                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "7" },
+                DiffuseIntensity = "OFF",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/200", FNumber = "2.8", Iso = "6400", BurstNumber = "2" },
                 InstructionsNotes = "On désir observer s'il y a présence d'irrégularité ou de dépôt sur la marge.",
                 ImagesPath = new List<string>() { @"..\..\Resources\01_00.png" }
             };
@@ -103,8 +103,8 @@ namespace JsonFileWriter
                 TestTitle = "Filtre Cobalt",
                 SlitIntensity = "5",
                 IllumAngle = "30°",
-                DiffuseIntensity = "0",
-                CamSettings = new CameraSettings() { Flash = "ON", ShutterSpeed = "1/30", FNumber = "5.6", Iso = "200", BurstNumber = "8" },
+                DiffuseIntensity = "OFF",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "11.0", Iso = "6400", BurstNumber = "2" },
                 InstructionsNotes = "Administer les gouttes de fluorescéine au patient et laissez agir. On désir observer s'il y a présence d'abrasion/défaut dans la cornée.",
                 ImagesPath = new List<string>() { @"..\..\Resources\01_00.png" }
             };
