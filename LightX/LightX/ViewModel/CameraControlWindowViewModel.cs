@@ -1440,7 +1440,8 @@ namespace LightX.ViewModel
                     {
                         CloseCurrentGuideWindow();
                         ++_testIndex;
-                        FetchCurrentTest();
+                        if (_testIndex < CurrentExam.TestList.Count)
+                            FetchCurrentTest();
                     }
                     if (_testIndex >= CurrentExam.TestList.Count)
                     {

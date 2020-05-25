@@ -69,6 +69,19 @@ namespace LightX.ViewModel
             }
         }
 
+        public Instruction CurrentInstruction
+        {
+            get { return _currentInstruction; }
+            set
+            {
+                if (value != _currentInstruction)
+                {
+                    _currentInstruction = value;
+                    RaisePropertyChanged(() => CurrentInstruction);
+                }
+            }
+        }
+
         //public int TestIndex
         //{
         //    get { return _testIndex; }

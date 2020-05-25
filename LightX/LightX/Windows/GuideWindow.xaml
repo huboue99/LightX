@@ -46,7 +46,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
                 <Label FontWeight="Bold" Content="Instructions :" Margin="0 5"/>
-                <TextBlock TextWrapping="Wrap" Text="{Binding CurrentTest.InstructionsNotes}" Margin="5 0 0 0"/>
+                <TextBlock TextWrapping="Wrap" Text="{Binding CurrentInstruction.InstructionsNotes}" Margin="5 0 0 0"/>
             </StackPanel>
 
             <ItemsControl ItemsSource="{Binding CurrentTestsState}" Grid.Column="1" Margin="25 0 0 0">

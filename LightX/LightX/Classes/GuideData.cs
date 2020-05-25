@@ -162,7 +162,7 @@ namespace LightX.Classes
         //private string _fileName;
         private Tests _id;
         private string _testTitle;
-        private List<Instruction> _instructions;
+        private List<Instruction> _instructions = new List<Instruction>();
 
         #endregion Fields
 
