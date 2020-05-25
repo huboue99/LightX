@@ -12,12 +12,12 @@ namespace LightX.ViewModel
     {
         #region Fields
 
-        private ObservableCollection<Tests> _testList;
         private TestInstructions _currentTest;
+        private Instruction _currentInstruction;
         private ParametersList _currentList;
         private RunList _currentTestsState;
         private BitmapImage _currentImage;
-        private int _testIndex;
+        private int _instructionIndex = 0;
 
         #endregion Fields
 
@@ -69,24 +69,44 @@ namespace LightX.ViewModel
             }
         }
 
-        public int TestIndex
-        {
-            get { return _testIndex; }
-            set
-            {
-                if (value != _testIndex)
-                {
-                    _testIndex = value;
-                    RaisePropertyChanged(() => TestIndex);
-                }
-            }
-        }
+        //public int TestIndex
+        //{
+        //    get { return _testIndex; }
+        //    set
+        //    {
+        //        if (value != _testIndex)
+        //        {
+        //            _testIndex = value;
+        //            RaisePropertyChanged(() => TestIndex);
+        //        }
+        //    }
+        //}
 
         #endregion Properties
 
         #region Actions
 
+        public bool NextInstruction()
+        {
+            if(_instructionIndex < CurrentTest.Instructions.Count - 1)
+            {
+                ++_instructionIndex;
+                FetchAllData();
+                return true;
+            }
+            return false;
+        }
 
+        public bool PreviousInstruction()
+        {
+            if (_instructionIndex > 0)
+            {
+                --_instructionIndex;
+                FetchAllData();
+                return true;
+            }
+            return false;
+        }
 
         #endregion Actions
 
@@ -97,23 +117,23 @@ namespace LightX.ViewModel
             BitmapImage image = new BitmapImage();
             image.BeginInit();
             image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            image.UriSource = new Uri(CurrentTest.ImagesPath[0], UriKind.Relative);
+            image.UriSource = new Uri(_currentInstruction.ImagesPath[0], UriKind.Relative);
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.EndInit();
             CurrentImage = image;
         }
 
-        private void FetchCurrentTestList()
+        private void FetchCurrentTestList(ObservableCollection<Tests> testList, int testIndex)
         {
-            CurrentTestsState = new RunList(_testList);
-            CurrentTestsState[TestIndex].Foreground = Brushes.Black;
-            CurrentTestsState[TestIndex].FontWeight = FontWeights.Bold;
+            CurrentTestsState = new RunList(testList);
+            CurrentTestsState[testIndex].Foreground = Brushes.Black;
+            CurrentTestsState[testIndex].FontWeight = FontWeights.Bold;
         }
 
         private void FetchAllData()
         {
-            CurrentList = new ParametersList(CurrentTest);
-            FetchCurrentTestList();
+            _currentInstruction = CurrentTest.Instructions[_instructionIndex];
+            CurrentList = new ParametersList(_currentInstruction);
             FetchCurrentImage();
         }
 
@@ -121,9 +141,8 @@ namespace LightX.ViewModel
 
         public GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
-            _testList = testList;
             CurrentTest = test;
-            TestIndex = i;
+            FetchCurrentTestList(testList, i);
             FetchAllData();
         }
     }

@@ -33,6 +33,15 @@ namespace LightX
         const int WM_SHOWWINDOW = 0x00000018;
         const int WM_CLOSE = 0x10;
 
+        public bool NextInstruction()
+        {
+            return _guideWindowViewModel.NextInstruction();
+        }
+
+        public bool PreviousInstruction()
+        {
+            return _guideWindowViewModel.PreviousInstruction();
+        }
 
         public GuideWindow(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {

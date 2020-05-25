@@ -1435,15 +1435,18 @@ namespace LightX.ViewModel
             switch (isAccepted)
             {
                 case true:
-                    CloseCurrentGuideWindow();
                     SaveTestResults(objReviewWindow.SelectedImages, CapturedImages);
-                    _testIndex++;
+                    if(!NextInstructionGuideWindow())
+                    {
+                        CloseCurrentGuideWindow();
+                        ++_testIndex;
+                        FetchCurrentTest();
+                    }
                     if (_testIndex >= CurrentExam.TestList.Count)
                     {
                         _testIndex = CurrentExam.TestList.Count;
                         break;
                     }
-                    FetchCurrentTest();
                     CaptureEnabled = true;
                     break;
                 default:
@@ -1648,6 +1651,23 @@ namespace LightX.ViewModel
                     }
                 }
             });
+        }
+
+        private bool NextInstructionGuideWindow()
+        {
+            bool nextOK = false;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(GuideWindow))
+                    {
+                        nextOK = (window as GuideWindow).NextInstruction();
+                    }
+                }
+            });
+
+            return nextOK;
         }
 
         private void RefreshDisplay()

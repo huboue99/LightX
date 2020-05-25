@@ -44,11 +44,21 @@ namespace JsonFileWriter
             VanHerick.Instructions.Add(new Instruction()
             {
                 SlitIntensity = "10",
-                IllumAngle = "60°",
+                IllumAngle = "60° temporal",
                 DiffuseIntensity = "LOW",
                 CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "11.0", Iso = "3200", BurstNumber = "2"},
                 InstructionsNotes = "Faire le foyer sur la cornée.\nOn désir estimer l'espace entre la cornée et l'iris en terme d'épaisseur de cornée.",
                 ImagesPath = new List<string>() { @"..\..\Resources\01_00.png" }
+            });
+
+            VanHerick.Instructions.Add(new Instruction()
+            {
+                SlitIntensity = "10",
+                IllumAngle = "60° nasal",
+                DiffuseIntensity = "LOW",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "11.0", Iso = "3200", BurstNumber = "2" },
+                InstructionsNotes = "Faire le foyer sur la cornée.\nOn désir estimer l'espace entre la cornée et l'iris en terme d'épaisseur de cornée.",
+                ImagesPath = new List<string>() { @"..\..\Resources\02_00.png" }
             });
 
             #endregion VanHerick
