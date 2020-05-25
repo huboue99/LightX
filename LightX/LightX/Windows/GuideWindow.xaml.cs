@@ -34,7 +34,7 @@ namespace LightX
         const int WM_CLOSE = 0x10;
 
 
-        public GuideWindow(GuideData test, ObservableCollection<Tests> testList, int i)
+        public GuideWindow(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
             _guideWindowViewModel = new GuideWindowViewModel(test, testList, i);
             InitializeComponent();

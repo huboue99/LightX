@@ -1805,14 +1805,14 @@ namespace LightX.ViewModel
 
         public string FetchTest(Tests test, ObservableCollection<Tests> testList, int testIndex)
         {
-            GuideData currentTest;
+            TestInstructions currentTest;
             string path = $@"..\..\Resources\{test}.json";
             if (File.Exists(path))
             {
                 using (StreamReader file = File.OpenText(path))
                 {
                     JsonSerializer serializer = new JsonSerializer();
-                    currentTest = (GuideData)serializer.Deserialize(file, typeof(GuideData));
+                    currentTest = (TestInstructions)serializer.Deserialize(file, typeof(TestInstructions));
                 }
 
                 GuideWindow objGuideWindow = new GuideWindow(currentTest, testList, testIndex);
@@ -1832,7 +1832,7 @@ namespace LightX.ViewModel
                 if (_currentTestCameraSettings == null)
                     _currentTestCameraSettings = new CameraSettings();
 
-                _currentTestCameraSettings = currentTest.CamSettings;
+                _currentTestCameraSettings = currentTest.Instructions[0].CamSettings;
                 //if (_testIndex != 0) // since DeviceManage is not declared yet in the first call of this function -> ok
                 ApplyCameraSettings(DeviceManager.SelectedCameraDevice);
 

@@ -13,17 +13,17 @@ namespace LightX.ViewModel
         #region Fields
 
         private ObservableCollection<Tests> _testList;
-        private GuideData _currentTest;
+        private TestInstructions _currentTest;
         private ParametersList _currentList;
         private RunList _currentTestsState;
         private BitmapImage _currentImage;
-        private int TestIndex;
+        private int _testIndex;
 
         #endregion Fields
 
         #region Properties
 
-        public GuideData CurrentTest
+        public TestInstructions CurrentTest
         {
             get { return _currentTest; }
             set
@@ -69,7 +69,26 @@ namespace LightX.ViewModel
             }
         }
 
+        public int TestIndex
+        {
+            get { return _testIndex; }
+            set
+            {
+                if (value != _testIndex)
+                {
+                    _testIndex = value;
+                    RaisePropertyChanged(() => TestIndex);
+                }
+            }
+        }
+
         #endregion Properties
+
+        #region Actions
+
+
+
+        #endregion Actions
 
         #region DataFetching
 
@@ -100,7 +119,7 @@ namespace LightX.ViewModel
 
         #endregion DataFetching
 
-        public GuideWindowViewModel(GuideData test, ObservableCollection<Tests> testList, int i)
+        public GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
             _testList = testList;
             CurrentTest = test;

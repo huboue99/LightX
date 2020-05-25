@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
 
 namespace LightX.Classes
 {
@@ -46,7 +45,7 @@ namespace LightX.Classes
 
     public class ParametersList : ObservableCollection<Parameters>
     {
-        public ParametersList(GuideData data) : base()
+        public ParametersList(Instruction data) : base()
         {
             ObservableCollection<Parameters> list = new ObservableCollection<Parameters>();
             Add(new Parameters() { Name = "Intensité slit", Value = data.SlitIntensity });
@@ -60,13 +59,10 @@ namespace LightX.Classes
         }
     }
 
-    public class GuideData : BaseClass
+    public class Instruction : BaseClass
     {
         #region Fields
 
-        //private string _fileName;
-        private Tests _id;
-        private string _testTitle;
         private string _slitIntensity;
         private string _illumAngle;
         private string _diffuseIntensity;
@@ -77,45 +73,6 @@ namespace LightX.Classes
         #endregion Fields
 
         #region Properties
-
-        //public string FileName
-        //{
-        //    get { return _fileName; }
-        //    set
-        //    {
-        //        if (value != _fileName)
-        //        {
-        //            _fileName = value;
-        //            OnPropertyChanged("FileName");
-        //        }
-        //    }
-        //}
-
-        public Tests Id
-        {
-            get { return _id; }
-            set
-            {
-                if (value != _id)
-                {
-                    _id = value;
-                    OnPropertyChanged("Id");
-                }
-            }
-        }
-
-        public string TestTitle
-        {
-            get { return _testTitle; }
-            set
-            {
-                if (value != _testTitle)
-                {
-                    _testTitle = value;
-                    OnPropertyChanged("TestTitle");
-                }
-            }
-        }
 
         public string SlitIntensity
         {
@@ -197,4 +154,60 @@ namespace LightX.Classes
 
         #endregion Properties
     }
+
+    public class TestInstructions : BaseClass
+    {
+        #region Fields
+
+        //private string _fileName;
+        private Tests _id;
+        private string _testTitle;
+        private List<Instruction> _instructions;
+
+        #endregion Fields
+
+        #region Properties
+
+        public Tests Id
+        {
+            get { return _id; }
+            set
+            {
+                if (value != _id)
+                {
+                    _id = value;
+                    OnPropertyChanged("Id");
+                }
+            }
+        }
+
+        public string TestTitle
+        {
+            get { return _testTitle; }
+            set
+            {
+                if (value != _testTitle)
+                {
+                    _testTitle = value;
+                    OnPropertyChanged("TestTitle");
+                }
+            }
+        }
+
+        public List<Instruction> Instructions
+        {
+            get { return _instructions; }
+            set
+            {
+                if (value != _instructions)
+                {
+                    _instructions = value;
+                    OnPropertyChanged("Instructions");
+                }
+            }
+        }
+
+        #endregion Properties
+    }
 }
+
