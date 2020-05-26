@@ -19,6 +19,9 @@ namespace LightX
     {
         private readonly GuideWindowViewModel _guideWindowViewModel;
 
+        public delegate void NextInstructionEventHandler();
+        public event NextInstructionEventHandler NextInstructionEvent;
+
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
         [DllImport("user32.dll")]
@@ -86,6 +89,11 @@ namespace LightX
                 }
             }
             return IntPtr.Zero;
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            NextInstructionEvent();
         }
     }
 }

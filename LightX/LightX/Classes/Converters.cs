@@ -48,7 +48,9 @@ namespace LightX.Classes
             if (value == null)
                 return null;
 
-            string image = ((ObservableCollection<ReviewImage>)value)[0].Image;
+            string image = null;
+            if (((ObservableCollection<ReviewImage>)value).Count > 0)
+                image = ((ObservableCollection<ReviewImage>)value)[0].Image;
             foreach (ReviewImage reviewImage in (ObservableCollection<ReviewImage>)value)
             {
                 if (reviewImage.IsActive)

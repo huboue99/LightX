@@ -49,17 +49,20 @@
                 <TextBlock TextWrapping="Wrap" Text="{Binding CurrentInstruction.InstructionsNotes}" Margin="5 0 0 0"/>
             </StackPanel>
 
-            <ItemsControl ItemsSource="{Binding CurrentTestsState}" Grid.Column="1" Margin="25 0 0 0">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                            <TextBlock FontWeight="Normal" Foreground="Gray">
+            <StackPanel Orientation="Vertical" Grid.Column="1">
+                <Button Content="Skip instruction" Click="Button_Click" Width="100"/>
+                <ItemsControl ItemsSource="{Binding CurrentTestsState}" Margin="25 0 0 0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                <TextBlock FontWeight="Normal" Foreground="Gray">
                                 <ContentControl Content="{Binding}"/>
-                            </TextBlock>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </Grid>
 
         <Image Grid.Row="2" MinWidth="300" Margin="0 20 0 0" Source="{Binding CurrentImage}" Stretch="Uniform" HorizontalAlignment="Center"/>

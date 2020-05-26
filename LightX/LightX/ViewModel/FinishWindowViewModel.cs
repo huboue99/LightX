@@ -92,7 +92,9 @@ namespace LightX.ViewModel
                         ReviewImages.Add(new ReviewImage() { Image = path });
                     }
             }
-            ReviewImages[0].IsActive = true;
+            // if the opperator has only skipped all the tests.
+            if (ReviewImages.Count > 0)
+                ReviewImages[0].IsActive = true;
         }
     }
 }

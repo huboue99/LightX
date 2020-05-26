@@ -1648,6 +1648,7 @@ namespace LightX.ViewModel
                     {
                         _oldGuideWindowPosition[0] = (window as GuideWindow).Left;
                         _oldGuideWindowPosition[1] = (window as GuideWindow).Top;
+                        (window as GuideWindow).NextInstructionEvent -= ObjGuideWindow_NextInstructionEvent;
                         (window as GuideWindow).Close();
                     }
                 }
@@ -1837,6 +1838,7 @@ namespace LightX.ViewModel
                 }
 
                 GuideWindow objGuideWindow = new GuideWindow(currentTest, testList, testIndex);
+                objGuideWindow.NextInstructionEvent += ObjGuideWindow_NextInstructionEvent;
                 if (_oldGuideWindowPosition.Count == 0)
                 {
                     // Initialize the new starting position
@@ -1862,6 +1864,58 @@ namespace LightX.ViewModel
             else
             {
                 return "New test";
+            }
+        }
+
+        private void ObjGuideWindow_NextInstructionEvent()
+        {
+            if (!NextInstructionGuideWindow())
+                SkipCurrentTest();
+        }
+
+        private void SkipCurrentTest()
+        {
+            if (_currentTestResults.CamSettings == null)
+                SaveTestResults(new ObservableCollection<bool>(), new List<string>());
+
+            if (DeviceManager.SelectedCameraDevice is NikonBase)
+            {
+                if (_liveViewEnabled)
+                    StopLiveViewInThread();
+                Thread.Sleep(100); // wait for the liveView to stop
+            }
+            else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+            {
+                _liveViewTimer.Stop();
+                (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.PauseLiveview();
+            }
+            CloseCurrentGuideWindow();
+            ++_testIndex;
+            if (_testIndex < CurrentExam.TestList.Count)
+            {
+                FetchCurrentTest();
+                // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    foreach (Window window in System.Windows.Application.Current.Windows)
+                    {
+                        if (window.GetType() == typeof(CameraControlWindow))
+                        {
+                            (window as CameraControlWindow).Activate();
+                        }
+                    }
+                });
+                _liveViewTimer.Start();
+
+                if (DeviceManager.SelectedCameraDevice is NikonBase)
+                    StartLiveViewInThread();
+            }
+            else
+            {
+                _testIndex = CurrentExam.TestList.Count;
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                ShowFinishWindow();
             }
         }
 
