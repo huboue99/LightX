@@ -14,15 +14,26 @@ namespace LightX.Classes
             if (value == null)
                 return null;
 
+            
+
+
             if (!string.IsNullOrEmpty(value.ToString()))
             {
                 string path = value.ToString();
-                if (Path.GetExtension(path) != "jpeg")
-                    path = Path.ChangeExtension(path, ".jpeg");
+                Uri uri;
+                if (value is Uri)
+                    uri = new Uri(((Uri)value).OriginalString, UriKind.Relative);
+                else
+                {
+                    if (Path.GetExtension(path) != "jpeg")
+                        path = Path.ChangeExtension(path, ".jpeg");
+                    uri = new Uri(path);
+                }
+                
 
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
-                bi.UriSource = new Uri(path);
+                bi.UriSource = uri;
                 bi.DecodePixelWidth = 200;
                 // must be loaded from cache if we want to be able to delete or move it right away.
                 // but not useful if only wants to see them (like in the examReviewWindow)

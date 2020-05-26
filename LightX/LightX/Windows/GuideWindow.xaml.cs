@@ -38,12 +38,20 @@ namespace LightX
 
         public bool NextInstruction()
         {
-            return _guideWindowViewModel.NextInstruction();
+            bool b = false;
+            if(_guideWindowViewModel.NextInstruction())
+                b = true;
+            TabControlGuide.SelectedIndex = _guideWindowViewModel.InstructionIndex;
+            return b;
         }
 
         public bool PreviousInstruction()
         {
-            return _guideWindowViewModel.PreviousInstruction();
+            bool b = false;
+            if (_guideWindowViewModel.PreviousInstruction())
+                b = true;
+            TabControlGuide.SelectedIndex = _guideWindowViewModel.InstructionIndex;
+            return b;
         }
 
         public GuideWindow(TestInstructions test, ObservableCollection<Tests> testList, int i)

@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows.Media.Imaging;
 
 namespace LightX.Classes
 {
@@ -208,6 +211,74 @@ namespace LightX.Classes
         }
 
         #endregion Properties
+    }
+
+    public class GuideData : BaseClass
+    {
+        #region Fields
+
+        //private string _fileName;
+        private ParametersList _paramList;
+        private string _instructionsNotes;
+        private BitmapImage _image;
+        private int _id;
+
+        #endregion Fields
+
+        #region Properties
+
+        public ParametersList ParamList
+        {
+            get { return _paramList; }
+            set
+            {
+                if (value != _paramList)
+                {
+                    _paramList = value;
+                    OnPropertyChanged("ParamList");
+                }
+            }
+        }
+        public string InstructionsNotes
+        {
+            get { return _instructionsNotes; }
+            set
+            {
+                if (value != _instructionsNotes)
+                {
+                    _instructionsNotes = value;
+                    OnPropertyChanged("InstructionsNotes");
+                }
+            }
+        }
+        public BitmapImage Image
+        {
+            get { return _image; }
+            set
+            {
+                if (value != _image)
+                {
+                    _image = value;
+                    OnPropertyChanged("Image");
+                }
+            }
+        }
+
+        public int Id
+        {
+            get { return _id; }
+            set
+            {
+                if (value != _id)
+                {
+                    _id = value;
+                    OnPropertyChanged("Id");
+                }
+            }
+        }
+
+        #endregion Properties
+
     }
 }
 

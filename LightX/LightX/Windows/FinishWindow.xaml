@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:LightX"
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
-        Title="Exam Review" Height="1000" Width="1200" MinHeight="500" MinWidth="500"
+        Title="Exam Review" Height="1000" Width="1200" MinHeight="500" MinWidth="730"
         Closing="Window_Closing">
 
     <Window.Style>
@@ -26,15 +26,14 @@
                 <DataTemplate>
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="7*"/>
+                            <RowDefinition Height="1*" MinHeight="70"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0" Margin="0 0 0 15">
+                        <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" MinWidth="200" />
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
                             <ScrollViewer x:Name="ScrollViewer" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
@@ -75,17 +74,28 @@
                             </Grid>
                         </Grid>
 
-                        <TextBlock Grid.Row="1" Text="Commentaires supplémentaires :"/>
 
-                        <Grid Grid.Row="2" VerticalAlignment="Center">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <Grid Grid.Row="1" Margin="0 10 0 0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
                             
-                            <TextBox Grid.Column="0" Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments}"/>
-                            <Button Grid.Column="1" Content="Confirm" Width="90" Height="20" Click="Button_Click"/>
+                            <TextBlock Grid.Row="0" Text="Commentaires supplémentaires :"/>
+
+                            <Grid Grid.Row="1" VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Grid.Column="0" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments}"/>
+                                <Button Grid.Column="1" Content="Finish" FontSize="15" Width="90" Height="30" Click="Button_Click" Margin="15 0"/>
+                            </Grid>
                         </Grid>
+                        
+                            
+                        
                     </Grid>
 
 

@@ -1436,7 +1436,7 @@ namespace LightX.ViewModel
             {
                 case true:
                     SaveTestResults(objReviewWindow.SelectedImages, CapturedImages);
-                    if(!NextInstructionGuideWindow())
+                    if(!NextInstructionGuideWindow() || _testIndex >= CurrentExam.TestList.Count)
                     {
                         CloseCurrentGuideWindow();
                         ++_testIndex;
@@ -1551,21 +1551,10 @@ namespace LightX.ViewModel
             _objFinishWindow.CloseWithoutEvent();
             _objFinishWindow = null;
 
-            if (test.Id != Tests.NewTest)
-            {
-                _currentTestResults = test;
-                FetchTest(test.Id, new ObservableCollection<Tests>() { test.Id }, 0);
-                CaptureEnabled = true;
-                StartLiveViewInThread();
-            }
-            else
-            {
-                _currentTestResults = test;
-                FetchTest(test.Id, new ObservableCollection<Tests>() { test.Id }, 0);
-                CaptureEnabled = true;
-                StartLiveViewInThread();
-            }
-
+            _currentTestResults = test;
+            FetchTest(test.Id, new ObservableCollection<Tests>() { test.Id }, 0);
+            CaptureEnabled = true;
+            StartLiveViewInThread();
 
             CameraControlWindow currentWindow;
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -1869,7 +1858,7 @@ namespace LightX.ViewModel
 
         private void ObjGuideWindow_NextInstructionEvent()
         {
-            if (!NextInstructionGuideWindow())
+            //if (!NextInstructionGuideWindow())
                 SkipCurrentTest();
         }
 
@@ -1881,7 +1870,7 @@ namespace LightX.ViewModel
             if (DeviceManager.SelectedCameraDevice is NikonBase)
             {
                 if (_liveViewEnabled)
-                    StopLiveViewInThread();
+                    StopLiveView();
                 Thread.Sleep(100); // wait for the liveView to stop
             }
             else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)

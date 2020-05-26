@@ -18,40 +18,64 @@
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*" MinHeight="200"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Label Grid.Row="0" FontSize="18" Content="{Binding CurrentTest.TestTitle}"/>
+        <Label Grid.Row="0" FontSize="18" Content="{Binding TestTitle}"/>
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" MinWidth="110"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Vertical">
-                <ItemsControl  BorderBrush="Gray" BorderThickness="1" ItemsSource="{Binding CurrentList}" HorizontalContentAlignment="Stretch">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="5 1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="200"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Name}"/>
-                                <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="{Binding Value}"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <Label FontWeight="Bold" Content="Instructions :" Margin="0 5"/>
-                <TextBlock TextWrapping="Wrap" Text="{Binding CurrentInstruction.InstructionsNotes}" Margin="5 0 0 0"/>
-            </StackPanel>
+            <TabControl x:Name="TabControlGuide" Grid.Column="0" ItemsSource="{Binding CurrentTest}">
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <Label Content="{Binding Id}"/>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        
+                        <StackPanel Orientation="Vertical">
+                            <ItemsControl ItemsSource="{Binding ParamList}" HorizontalContentAlignment="Stretch">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        
+                                        <Grid Margin="5 1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Name}"/>
+                                            <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="{Binding Value}"/>
+                                        </Grid>
+                                        
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
 
-            <StackPanel Orientation="Vertical" Grid.Column="1">
-                <Button Content="Skip instruction" Click="Button_Click" Width="100"/>
-                <ItemsControl ItemsSource="{Binding CurrentTestsState}" Margin="25 0 0 0">
+                            <Label FontWeight="Bold" Content="Instructions :" Margin="0 5"/>
+                            <TextBlock TextWrapping="Wrap" Text="{Binding InstructionsNotes}" Margin="5 0 0 0"/>
+
+                            <Image Grid.Row="2" Margin="0 20 0 0" Source="{Binding Image}" Stretch="Uniform" HorizontalAlignment="Center"/>
+                            
+                        </StackPanel>
+                        
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+
+
+            <Grid Grid.Column="1" Margin="0 32 0 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <ItemsControl Grid.Row="0" ItemsSource="{Binding CurrentTestsState}" Margin="25 0 0 0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
@@ -62,9 +86,9 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </StackPanel>
-        </Grid>
 
-        <Image Grid.Row="2" MinWidth="300" Margin="0 20 0 0" Source="{Binding CurrentImage}" Stretch="Uniform" HorizontalAlignment="Center"/>
+                <Button Grid.Row="2" Content="Skip Test" Foreground="OrangeRed" FontWeight="Bold" Click="Button_Click" Width="100" Margin="15 0 0 15"/>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>

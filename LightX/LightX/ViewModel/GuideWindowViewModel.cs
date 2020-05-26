@@ -1,6 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
 using LightX.Classes;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
@@ -12,18 +13,16 @@ namespace LightX.ViewModel
     {
         #region Fields
 
-        private TestInstructions _currentTest;
-        private Instruction _currentInstruction;
-        private ParametersList _currentList;
+        private List<GuideData> _currentTest;
         private RunList _currentTestsState;
-        private BitmapImage _currentImage;
+        private string _testTitle;
         private int _instructionIndex = 0;
 
         #endregion Fields
 
         #region Properties
 
-        public TestInstructions CurrentTest
+        public List<GuideData> CurrentTest
         {
             get { return _currentTest; }
             set
@@ -33,13 +32,13 @@ namespace LightX.ViewModel
             }
         }
 
-        public ParametersList CurrentList
+        public string TestTitle
         {
-            get { return _currentList; }
+            get { return _testTitle; }
             set
             {
-                _currentList = value;
-                RaisePropertyChanged(() => CurrentList);
+                _testTitle = value;
+                RaisePropertyChanged(() => TestTitle);
             }
         }
 
@@ -56,44 +55,44 @@ namespace LightX.ViewModel
             }
         }
 
-        public BitmapImage CurrentImage
-        {
-            get { return _currentImage; }
-            set
-            {
-                if (value != _currentImage)
-                {
-                    _currentImage = value;
-                    RaisePropertyChanged(() => CurrentImage);
-                }
-            }
-        }
-
-        public Instruction CurrentInstruction
-        {
-            get { return _currentInstruction; }
-            set
-            {
-                if (value != _currentInstruction)
-                {
-                    _currentInstruction = value;
-                    RaisePropertyChanged(() => CurrentInstruction);
-                }
-            }
-        }
-
-        //public int TestIndex
+        //public BitmapImage CurrentImage
         //{
-        //    get { return _testIndex; }
+        //    get { return _currentImage; }
         //    set
         //    {
-        //        if (value != _testIndex)
+        //        if (value != _currentImage)
         //        {
-        //            _testIndex = value;
-        //            RaisePropertyChanged(() => TestIndex);
+        //            _currentImage = value;
+        //            RaisePropertyChanged(() => CurrentImage);
         //        }
         //    }
         //}
+
+        //public Instruction CurrentInstruction
+        //{
+        //    get { return _currentInstruction; }
+        //    set
+        //    {
+        //        if (value != _currentInstruction)
+        //        {
+        //            _currentInstruction = value;
+        //            RaisePropertyChanged(() => CurrentInstruction);
+        //        }
+        //    }
+        //}
+
+        public int InstructionIndex
+        {
+            get { return _instructionIndex; }
+            set
+            {
+                if (value != _instructionIndex)
+                {
+                    _instructionIndex = value;
+                    RaisePropertyChanged(() => InstructionIndex);
+                }
+            }
+        }
 
         #endregion Properties
 
@@ -101,10 +100,10 @@ namespace LightX.ViewModel
 
         public bool NextInstruction()
         {
-            if(_instructionIndex < CurrentTest.Instructions.Count - 1)
+            if(_instructionIndex < CurrentTest.Count - 1)
             {
-                ++_instructionIndex;
-                FetchAllData();
+                ++InstructionIndex;
+                //SelectTab(_instructionIndex);
                 return true;
             }
             return false;
@@ -114,8 +113,8 @@ namespace LightX.ViewModel
         {
             if (_instructionIndex > 0)
             {
-                --_instructionIndex;
-                FetchAllData();
+                --InstructionIndex;
+                //SelectTab(_instructionIndex);
                 return true;
             }
             return false;
@@ -125,15 +124,15 @@ namespace LightX.ViewModel
 
         #region DataFetching
 
-        private void FetchCurrentImage()
+        private BitmapImage FetchImage(string path)
         {
             BitmapImage image = new BitmapImage();
             image.BeginInit();
-            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            image.UriSource = new Uri(_currentInstruction.ImagesPath[0], UriKind.Relative);
+            //image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            image.UriSource = new Uri(path, UriKind.Relative);
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.EndInit();
-            CurrentImage = image;
+            return image;
         }
 
         private void FetchCurrentTestList(ObservableCollection<Tests> testList, int testIndex)
@@ -143,20 +142,26 @@ namespace LightX.ViewModel
             CurrentTestsState[testIndex].FontWeight = FontWeights.Bold;
         }
 
-        private void FetchAllData()
-        {
-            _currentInstruction = CurrentTest.Instructions[_instructionIndex];
-            CurrentList = new ParametersList(_currentInstruction);
-            FetchCurrentImage();
-        }
+        //private void FetchAllData()
+        //{
+        //    _currentInstruction = CurrentTest.Instructions[_instructionIndex];
+        //    CurrentList = new ParametersList(_currentInstruction);
+        //    FetchCurrentImage();
+        //}
 
         #endregion DataFetching
 
         public GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
-            CurrentTest = test;
+            TestTitle = test.TestTitle;
+            CurrentTest = new List<GuideData>();
+            int j = 1;
+            foreach (Instruction instruction in test.Instructions)
+            {
+                CurrentTest.Add(new GuideData() { ParamList = new ParametersList(instruction), InstructionsNotes = instruction.InstructionsNotes, Image = FetchImage(instruction.ImagesPath[0]), Id = j++ });
+            }
+
             FetchCurrentTestList(testList, i);
-            FetchAllData();
         }
     }
 }
