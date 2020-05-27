@@ -168,6 +168,25 @@ namespace LightX.ViewModel
             }
         }
 
+        internal void ReconnectCamera()
+        {
+            _liveViewTimer.Stop();
+            Console.WriteLine("Trying to reconnect to the camera...");
+            //if (_liveViewTimer.Enabled)
+            //DeviceManager.CloseAll();
+            //DeviceManager.SelectedCameraDevice.Close();
+            //DeviceManager.ConnectToCamera();
+            //Thread.Sleep(700);
+            //DeviceManager.SelectNextCamera();
+            //Thread.Sleep(700);
+
+            if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+            {
+                LiveViewEnabled = true;
+                StartLiveViewInThread();
+            }
+        }
+
         public bool LiveViewEnabled
         {
             get { return _liveViewEnabled; }
@@ -326,11 +345,20 @@ namespace LightX.ViewModel
                 _zoomHasChanged = false;
             }
 
-
-            if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0] && _subZoomDivider == 1)
-                OverlayBitmap = DrawFocusPoint(liveViewData);
-            else
-                OverlayBitmap = null;
+            try
+            {
+                if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value == DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0] && _subZoomDivider == 1)
+                    OverlayBitmap = DrawFocusPoint(liveViewData);
+                else
+                    OverlayBitmap = null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                _liveViewTimer.Stop();
+                return;
+            }
+            
                 
             try
             {
@@ -510,7 +538,9 @@ namespace LightX.ViewModel
 
             _tasks.Add(new Task(() => ProcessImageFromFile(fileName)));
 
-            if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0) )
+            Console.WriteLine($"_remainingBurst = {_remainingBurst}; _totalBurstNumber = {_totalBurstNumber}; _remainingBurst = {_remainingBurst};");
+            //if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0) )
+            if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _remainingBurst == 0) )
             {
                 foreach (Task task in _tasks)
                 {
@@ -538,6 +568,8 @@ namespace LightX.ViewModel
         void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
         {
             _liveViewTimer.Stop();
+            DeviceManager.SelectedCameraDevice = null;
+            LiveViewEnabled = false;
             RefreshDisplay();
         }
 
@@ -658,7 +690,7 @@ namespace LightX.ViewModel
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
-                    Thread.Sleep(150);
+                    //Thread.Sleep(150);
                 }
                 catch (COMException comException)
                 {

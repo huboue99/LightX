@@ -124,15 +124,20 @@ namespace LightX.ViewModel
 
         #region DataFetching
 
-        private BitmapImage FetchImage(string path)
+        private BitmapImage FetchImage(List<string> paths)
         {
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            //image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            image.UriSource = new Uri(path, UriKind.Relative);
-            image.CacheOption = BitmapCacheOption.OnLoad;
-            image.EndInit();
-            return image;
+            if (paths.Count != 0)
+            {
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                //image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                image.UriSource = new Uri(paths[0], UriKind.Relative);
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.EndInit();
+                return image;
+            }
+
+            return new BitmapImage();
         }
 
         private void FetchCurrentTestList(ObservableCollection<Tests> testList, int testIndex)
@@ -158,7 +163,7 @@ namespace LightX.ViewModel
             int j = 1;
             foreach (Instruction instruction in test.Instructions)
             {
-                CurrentTest.Add(new GuideData() { ParamList = new ParametersList(instruction), InstructionsNotes = instruction.InstructionsNotes, Image = FetchImage(instruction.ImagesPath[0]), Id = j++ });
+                CurrentTest.Add(new GuideData() { ParamList = new ParametersList(instruction), InstructionsNotes = instruction.InstructionsNotes, Image = FetchImage(instruction.ImagesPath), Id = j++ });
             }
 
             FetchCurrentTestList(testList, i);

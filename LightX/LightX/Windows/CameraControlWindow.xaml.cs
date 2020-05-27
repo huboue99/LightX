@@ -79,8 +79,6 @@ namespace LightX
                         _shutterIsPressed = false;
                         if (!_cameraControlWindowViewModel._shutterGotReleased)
                             _cameraControlWindowViewModel.StopBurstCapture();
-                        else
-                            _cameraControlWindowViewModel._shutterGotReleased = false;
                     }
                     break;
                 case Key.Space:
@@ -119,6 +117,9 @@ namespace LightX
                     goto case Key.Right;
                 case Key.Right:
                     _cameraControlWindowViewModel.MoveRoiXY(e.KeyPressed, _cameraControlWindowViewModel.CaptureEnabled);
+                    break;
+                case Key.F5:
+                    _cameraControlWindowViewModel.ReconnectCamera();
                     break;
             }
         }
