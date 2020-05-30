@@ -35,7 +35,7 @@ namespace LightX.ViewModel
         // Camera settings and results
         private CameraSettings _currentTestCameraSettings;
         private BitmapImage _currentLiveViewImage;
-        private bool _liveViewEnabled;
+        //private bool _liveViewEnabled;
         private bool _captureEnabled = false;
         private string _lastZoom;
         private double _subZoomDivider = 1;
@@ -180,25 +180,25 @@ namespace LightX.ViewModel
             //DeviceManager.SelectNextCamera();
             //Thread.Sleep(700);
 
-            if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+            if (DeviceManager.SelectedCameraDevice is CanonSDKBase || DeviceManager.SelectedCameraDevice is NikonBase)
             {
-                LiveViewEnabled = true;
+                //LiveViewEnabled = true;
                 StartLiveViewInThread();
             }
         }
 
-        public bool LiveViewEnabled
-        {
-            get { return _liveViewEnabled; }
-            set
-            {
-                if (value != _liveViewEnabled)
-                {
-                    _liveViewEnabled = value;
-                    RaisePropertyChanged(() => LiveViewEnabled);
-                }
-            }
-        }
+        //public bool LiveViewEnabled
+        //{
+        //    get { return _liveViewEnabled; }
+        //    set
+        //    {
+        //        if (value != _liveViewEnabled)
+        //        {
+        //            _liveViewEnabled = value;
+        //            RaisePropertyChanged(() => LiveViewEnabled);
+        //        }
+        //    }
+        //}
 
         public bool CaptureEnabled
         {
@@ -468,46 +468,53 @@ namespace LightX.ViewModel
 
         void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
         {
+            Console.WriteLine("Event CameraInitDone : {0}", cameraDevice.DeviceName);
             //ApplyCameraSettings(cameraDevice);
-            if (LiveViewEnabled)
-            {
-                //System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                //{
-                //    StartLiveViewInThread();
-                //});
-            }
+
+            if (_currentTestCameraSettings != null)
+                ApplyCameraSettings(cameraDevice, _currentTestCameraSettings);
+
+            if (CaptureEnabled)
+                StartLiveViewInThread(cameraDevice);
+
+            //if (LiveViewEnabled)
+            //{
+            //    //System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            //    //{
+            //    //    StartLiveViewInThread();
+            //    //});
+            //}
         }
 
         void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
         {
+            Console.WriteLine("Event CameraSelected : {0}", newcameraDevice.DeviceName);
+
             if (oldcameraDevice != newcameraDevice)
             {
-                LiveViewEnabled = newcameraDevice.GetCapability(CapabilityEnum.LiveView);
-                if (_liveViewTimer.Enabled && (oldcameraDevice is NikonBase || oldcameraDevice is CanonSDKBase))
-                {
-                    // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
-                    //oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
-                    //oldcameraDevice.CaptureCompleted -= SelectedCamera_CaptureCompleted;
-                    oldcameraDevice.CameraInitDone -= SelectedCamera_CameraInitDone;
-                    StopLiveViewInThread();
-                }
+                //LiveViewEnabled = newcameraDevice.GetCapability(CapabilityEnum.LiveView);
+                //if (_liveViewTimer.Enabled && (oldcameraDevice is NikonBase || oldcameraDevice is CanonSDKBase))
+                //{
+                //    // if oldcameraDevice still exist (not disconnected), need to remove handle of disconnection
+                //    //oldcameraDevice.CameraDisconnected -= SelectedCamera_CameraDisconnected;
+                //    //oldcameraDevice.CaptureCompleted -= SelectedCamera_CaptureCompleted;
+                //    oldcameraDevice.CameraInitDone -= SelectedCamera_CameraInitDone;
+                //    StopLiveViewInThread(oldcameraDevice);
+                //}
 
-                if (LiveViewEnabled && (newcameraDevice is CanonSDKBase))
-                {
-                    //newcameraDevice.CaptureCompleted += SelectedCamera_CaptureCompleted;
-                    //newcameraDevice.CompressionSetting.Value = newcameraDevice.CompressionSetting.Values[4];
-                    //newcameraDevice.CompressionSetting.SetValue(newcameraDevice.CompressionSetting.Values[4]);
-
-                    // Canon EOS R is too quick and already initialized when we get here
-                    SelectedCamera_CameraInitDone(newcameraDevice);
-                }
-                newcameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
+                //if (LiveViewEnabled && (newcameraDevice is CanonSDKBase))
+                //{
+                //    // Canon EOS R is too quick and already initialized when we get here
+                //    SelectedCamera_CameraInitDone(newcameraDevice);
+                //}
+                //newcameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
             }
         }
 
         void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
         {
-            RefreshDisplay();
+            Console.WriteLine("Event CameraConnected : {0}", cameraDevice.DeviceName);
+            cameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
         }
 
         void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
@@ -567,17 +574,18 @@ namespace LightX.ViewModel
 
         void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
         {
+            Console.WriteLine("Event CameraDisconnected : {0}", cameraDevice.DeviceName);
+            cameraDevice.CameraInitDone -= SelectedCamera_CameraInitDone;
             _liveViewTimer.Stop();
             DeviceManager.SelectedCameraDevice = null;
-            LiveViewEnabled = false;
-            RefreshDisplay();
+            //LiveViewEnabled = false;
         }
 
         #endregion EventHandlers
 
         #region CameraCommands
 
-        private void ApplyCameraSettings(ICameraDevice cameraDevice)
+        private void ApplyCameraSettings(ICameraDevice cameraDevice, CameraSettings cameraSettings)
         {
             if (cameraDevice is CanonSDKBase)
             {
@@ -597,7 +605,7 @@ namespace LightX.ViewModel
                 }
                 _fileExtension = ".cr3";
                 (cameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
-                cameraDevice.IsoNumber.SetValue(_currentTestCameraSettings.Iso);
+                cameraDevice.IsoNumber.SetValue(cameraSettings.Iso);
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
             }
             else if (cameraDevice is NikonBase)
@@ -607,7 +615,7 @@ namespace LightX.ViewModel
                     switch (propertyVal.Name)
                     {
                         case "Burst Number":
-                            propertyVal.SetValue(_currentTestCameraSettings.BurstNumber); // Burst de n photos = [n - 1]
+                            propertyVal.SetValue(cameraSettings.BurstNumber); // Burst de n photos = [n - 1]
                             break;
                         case "Still Capture Mode":
                             propertyVal.SetValue(propertyVal.NumericValues[1]); // "Continuous high-speed shooting (CH)"
@@ -633,9 +641,13 @@ namespace LightX.ViewModel
                 cameraDevice.FocusMode.SetValue(cameraDevice.FocusMode.Values[0]); // "AF-S"
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[3]); // "JPEG (BASIC)" = 0 / RAW = 3 / RAW + JPEG = 4
             }
-            cameraDevice.ShutterSpeed.SetValue(_currentTestCameraSettings.ShutterSpeed);
-            cameraDevice.FNumber.SetValue(_currentTestCameraSettings.FNumber);
-            SetZoom(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0]);
+
+            if (!(cameraDevice is CanonSDKBase || cameraDevice is NikonBase))
+                return; // if cameraDevice is FakeCamera
+
+            cameraDevice.ShutterSpeed.SetValue(cameraSettings.ShutterSpeed);
+            cameraDevice.FNumber.SetValue(cameraSettings.FNumber);
+            SetZoom(cameraDevice.LiveViewImageZoomRatio.Values[0]);
             _subZoomDivider = 1;
             _roiXY = null; // will reset the focus point to the center of the image;
             RaisePropertyChanged(() => BurstNumber);
@@ -646,13 +658,14 @@ namespace LightX.ViewModel
 
         private void CaptureInThread()
         {
-            
             CaptureEnabled = false;
             if (DeviceManager.SelectedCameraDevice is NikonBase)
             {
-                if (_liveViewEnabled)
+                if (_liveViewTimer.Enabled)
+                {
                     StopLiveViewInThread();
-                Thread.Sleep(100); // wait for the liveView to stop
+                    Thread.Sleep(100); // wait for the liveView to stop
+                }
                 new Thread(Capture).Start();
             }
             else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
@@ -1362,14 +1375,22 @@ namespace LightX.ViewModel
             }
         }
 
-        public void StartLiveViewInThread()
+        public void StartLiveViewInThread(ICameraDevice cameraDevice = null)
         {
-            Thread thread = new Thread(StartLiveView);
-            thread.Name = "StartLiveView";
-            thread.Start();
+            if (cameraDevice == null)
+                cameraDevice = DeviceManager.SelectedCameraDevice;
+
+            if (cameraDevice is NikonBase || cameraDevice is CanonSDKBase)
+            {
+                Thread thread = new Thread(() => StartLiveView(cameraDevice));
+                thread.Name = "StartLiveView";
+                thread.Start();
+            }
+            else
+                Console.WriteLine("Tried to start LiveView with a fake camera.");
         }
 
-        private void StartLiveView()
+        private void StartLiveView(ICameraDevice cameraDevice)
         {
             bool retry;
             do
@@ -1378,7 +1399,7 @@ namespace LightX.ViewModel
                 try
                 {
                     //while (DeviceManager.SelectedCameraDevice.IsBusy) { }
-                    DeviceManager.SelectedCameraDevice.StartLiveView();
+                    cameraDevice.StartLiveView();
                 }
                 catch (DeviceException exception)
                 {
@@ -1395,18 +1416,25 @@ namespace LightX.ViewModel
                 }
             } while (retry);
             _liveViewTimer.Start();
-            //DeviceManager.SelectedCameraDevice.IsBusy = false;
+            //cameraDevice.IsBusy = false;
         }
 
-        private void StopLiveViewInThread()
+        private void StopLiveViewInThread(ICameraDevice cameraDevice = null)
         {
-            Thread thread = new Thread(StopLiveView);
-            thread.Name = "StopLiveView";
-            thread.Start();
-            thread.Join();
+            if (cameraDevice == null)
+                cameraDevice = DeviceManager.SelectedCameraDevice;
+
+            if (cameraDevice is NikonBase || cameraDevice is CanonSDKBase)
+            {
+                Thread thread = new Thread(() => StopLiveView(cameraDevice));
+                thread.Name = "StartLiveView";
+                thread.Start();
+            }
+            else
+                Console.WriteLine("Tried to stop LiveView with a fake camera.");
         }
 
-        private void StopLiveView()
+        private void StopLiveView(ICameraDevice cameraDevice)
         {
             bool retry;
             do
@@ -1417,7 +1445,7 @@ namespace LightX.ViewModel
                     _liveViewTimer.Stop();
                     // wait for last get live view image
                     Thread.Sleep(500);
-                     DeviceManager.SelectedCameraDevice.StopLiveView();
+                     cameraDevice.StopLiveView();
                 }
                 catch (DeviceException exception)
                 {
@@ -1461,13 +1489,22 @@ namespace LightX.ViewModel
         {
             //List<string> imageArray;
             //CapturedImages.CopyTo(imageArray, 0);
+            CameraSettings cameraSettings = new CameraSettings()
+            {
+                BurstNumber = _totalBurstNumber.ToString(),
+                Flash = _currentTestCameraSettings.Flash,
+                FNumber = DeviceManager.SelectedCameraDevice.FNumber.Value,
+                ShutterSpeed = DeviceManager.SelectedCameraDevice.ShutterSpeed.Value,
+                Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
+            };
+
             ReviewWindow objReviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
             bool? isAccepted = objReviewWindow.ShowDialog();
             _currentTestResults.Comments = objReviewWindow.Comment;
             switch (isAccepted)
             {
                 case true:
-                    SaveTestResults(objReviewWindow.SelectedImages, CapturedImages);
+                    SaveTestResults(objReviewWindow.SelectedImages, CapturedImages, cameraSettings);
                     if(!NextInstructionGuideWindow() || _testIndex >= CurrentExam.TestList.Count)
                     {
                         CloseCurrentGuideWindow();
@@ -1539,10 +1576,11 @@ namespace LightX.ViewModel
                     }
                 }
             });
-            _liveViewTimer.Start();
 
             if (DeviceManager.SelectedCameraDevice is NikonBase)
                 StartLiveViewInThread();
+
+            _liveViewTimer.Start();
         }
 
         private void ShowFinishWindow()
@@ -1647,7 +1685,7 @@ namespace LightX.ViewModel
             Console.WriteLine("Closing LightX...");
             if (_liveViewTimer.Enabled)
             {
-                StopLiveView();
+                StopLiveView(DeviceManager.SelectedCameraDevice);
                 if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
                 {
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
@@ -1702,17 +1740,19 @@ namespace LightX.ViewModel
 
         #region DataAccess
 
-        private void SaveTestResults(ObservableCollection<bool> selectedImages, List<string> imagesPath)
+        private void SaveTestResults(ObservableCollection<bool> selectedImages, List<string> imagesPath, CameraSettings cameraSettings)
         {
             // get Applied camera settings
-            _currentTestResults.CamSettings = new CameraSettings()
-            {
-                BurstNumber = _totalBurstNumber.ToString(),
-                Flash = _currentTestCameraSettings.Flash,
-                FNumber = DeviceManager.SelectedCameraDevice.FNumber.Value,
-                ShutterSpeed = DeviceManager.SelectedCameraDevice.ShutterSpeed.Value,
-                Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
-            };
+            _currentTestResults.CamSettings = cameraSettings;
+
+            //_currentTestResults.CamSettings = new CameraSettings()
+            //{
+            //    BurstNumber = _totalBurstNumber.ToString(),
+            //    Flash = _currentTestCameraSettings.Flash,
+            //    FNumber = DeviceManager.SelectedCameraDevice.FNumber.Value,
+            //    ShutterSpeed = DeviceManager.SelectedCameraDevice.ShutterSpeed.Value,
+            //    Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
+            //};
 
             // create filenames, folder and save selected images
             if(_currentTestResults.ResultsImages == null)
@@ -1828,6 +1868,7 @@ namespace LightX.ViewModel
                 CurrentExam.Results[i] = _currentTestResults;
             }
             imagesPath = null;
+            //_currentTestResults = null;
             _lowPriorityTasks.Clear();
         }
 
@@ -1878,7 +1919,7 @@ namespace LightX.ViewModel
 
                 _currentTestCameraSettings = currentTest.Instructions[0].CamSettings;
                 //if (_testIndex != 0) // since DeviceManage is not declared yet in the first call of this function -> ok
-                ApplyCameraSettings(DeviceManager.SelectedCameraDevice);
+                ApplyCameraSettings(DeviceManager.SelectedCameraDevice, _currentTestCameraSettings);
 
                 return currentTest.TestTitle;
             }
@@ -1897,12 +1938,14 @@ namespace LightX.ViewModel
         private void SkipCurrentTest()
         {
             if (_currentTestResults.CamSettings == null)
-                SaveTestResults(new ObservableCollection<bool>(), new List<string>());
+                SaveTestResults(new ObservableCollection<bool>(), new List<string>(), new CameraSettings());
+
+            _currentTestResults = null;
 
             if (DeviceManager.SelectedCameraDevice is NikonBase)
             {
-                if (_liveViewEnabled)
-                    StopLiveView();
+                if (_liveViewTimer.Enabled)
+                    StopLiveView(DeviceManager.SelectedCameraDevice);
                 Thread.Sleep(100); // wait for the liveView to stop
             }
             else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
@@ -1926,10 +1969,11 @@ namespace LightX.ViewModel
                         }
                     }
                 });
-                _liveViewTimer.Start();
 
                 if (DeviceManager.SelectedCameraDevice is NikonBase)
                     StartLiveViewInThread();
+
+                _liveViewTimer.Start();
             }
             else
             {
