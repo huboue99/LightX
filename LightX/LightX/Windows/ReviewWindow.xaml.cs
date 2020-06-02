@@ -31,7 +31,11 @@ namespace LightX
             if (e.ClickCount == 2)
                 _reviewWindowViewModel.SelectImageEvent(sender as Image);
             else
-                _reviewWindowViewModel.ActiveImageEvent(sender as Image);
+            {
+                bool imageHasChanged = _reviewWindowViewModel.ActiveImageEvent(sender as Image);
+                if (imageHasChanged)
+                    border.Reset();
+            }
         }
 
         public ReviewWindow(List<string> images, string comment)

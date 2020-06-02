@@ -60,20 +60,35 @@ namespace LightX.ViewModel
 
         #region Actions
 
-        internal void ActiveImageEvent(Image image)
+        internal bool ActiveImageEvent(Image image)
         {
             string path = Path.ChangeExtension((image.DataContext as string), null);
-
+            bool imageHasChanged = false;
             foreach (ReviewImage reviewImage in ReviewImages)
             {
                 if (reviewImage.Image.Contains(path))
-                    reviewImage.IsActive = true;
-                else if(reviewImage.IsActive)
+                {
+                    if (!reviewImage.IsActive)
+                    {
+                        reviewImage.IsActive = true;
+                        imageHasChanged = true;
+                    }
+                    else
+                    {
+                        GC.Collect();
+                        return imageHasChanged;
+                    }
+                }
+                else if (reviewImage.IsActive)
                 {
                     reviewImage.IsActive = false;
                 }
             }
-            RaisePropertyChanged(() => ReviewImages);
+
+            if (imageHasChanged)
+                RaisePropertyChanged(() => ReviewImages);
+            GC.Collect();
+            return imageHasChanged;
         }
 
         #endregion Actions

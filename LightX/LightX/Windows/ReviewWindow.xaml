@@ -4,8 +4,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:LightX"
+        xmlns:command="http://www.galasoft.ch/mvvmlight"
+        xmlns:local="clr-namespace:LightX.Classes"
         mc:Ignorable="d"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         Icon="../LightXLogo.ico"
         Title="Photo Review" Height="1000" Width="1200" MinHeight="500" MinWidth="780">
 
@@ -51,8 +53,12 @@
             </ScrollViewer>
 
             <Grid Margin="5 0 0 0" Grid.Column="1">
-                <Border Background="WhiteSmoke"/>
-                <Image Margin="15" Stretch="Uniform" Source="{Binding ReviewImages, Converter={StaticResource reviewImagesToImageConv}, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <!--<Border Background="WhiteSmoke"/>-->
+
+                <local:ZoomBorder x:Name="border" ClipToBounds="True" Background="WhiteSmoke" >
+                    <Image x:Name="currentImage" Margin="15" Stretch="Uniform"  Source="{Binding ReviewImages, Converter={StaticResource reviewImagesToImageConv}, UpdateSourceTrigger=PropertyChanged}"/>
+                </local:ZoomBorder>
             </Grid>
         </Grid>
 

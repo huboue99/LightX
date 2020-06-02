@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:LightX"
+        xmlns:local="clr-namespace:LightX.Classes"
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
         Title="Exam Review" Height="1000" Width="1200" MinHeight="500" MinWidth="730"
@@ -24,13 +24,13 @@
             </TabControl.ItemTemplate>
             <TabControl.ContentTemplate>
                 <DataTemplate>
-                    <Grid>
+                    <Grid x:Name="Grid01">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="7*"/>
                             <RowDefinition Height="1*" MinHeight="70"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0">
+                        <Grid Grid.Row="0" x:Name="Grid02">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*"/>
@@ -70,10 +70,12 @@
 
                             <Grid Margin="5 0 0 0" Grid.Column="1">
                                 <Border Background="WhiteSmoke"/>
-                                <Image Margin="15" Stretch="Uniform" Source="{Binding DataContext.ReviewImages, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Converter={StaticResource reviewImagesToImageConv}, ConverterParameter=1, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <local:ZoomBorder x:Name="border" ClipToBounds="True" Background="WhiteSmoke">
+                                    <Image Margin="15" Stretch="Uniform" Source="{Binding DataContext.ReviewImages, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Converter={StaticResource reviewImagesToImageConv}, ConverterParameter=1, UpdateSourceTrigger=PropertyChanged}"/>
+                                </local:ZoomBorder>
                             </Grid>
                         </Grid>
-
 
                         <Grid Grid.Row="1" Margin="0 10 0 0">
                             <Grid.RowDefinitions>

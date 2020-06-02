@@ -54,21 +54,35 @@ namespace LightX.ViewModel
             RaisePropertyChanged(() => ReviewImages);
         }
 
-        internal void ActiveImageEvent(Image image)
+        internal bool ActiveImageEvent(Image image)
         {
             string path = Path.ChangeExtension((image.DataContext as ReviewImage).Image, null);
-
+            bool imageHasChanged = false;
             foreach (ReviewImage reviewImage in ReviewImages)
             {
                 if (reviewImage.Image.Contains(path))
-                    reviewImage.IsActive = true;
+                {
+                    if (!reviewImage.IsActive)
+                    {
+                        reviewImage.IsActive = true;
+                        imageHasChanged = true;
+                    }
+                    else
+                    {
+                        GC.Collect();
+                        return imageHasChanged;
+                    }
+                }
                 else if (reviewImage.IsActive)
                 {
                     reviewImage.IsActive = false;
                 }
             }
-            RaisePropertyChanged(() => ReviewImages);
+
+            if (imageHasChanged)
+                RaisePropertyChanged(() => ReviewImages);
             GC.Collect();
+            return imageHasChanged;
         }
 
         public ObservableCollection<ReviewImage> ReviewImages
@@ -114,6 +128,7 @@ namespace LightX.ViewModel
         #endregion RelayCommands
 
         #region Actions
+
         private void ConfirmImage(Window currentWindow)
         {
             bool oneIsSelected = false;
