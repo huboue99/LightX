@@ -16,6 +16,8 @@ namespace LightX
 
         private readonly FinishWindowViewModel _finishWindowViewModel;
 
+        private ZoomBorder loadedZoomBorder;
+
         public delegate void NewPhotoEventHandler(TestResults test);
         public event NewPhotoEventHandler NewPhotoEvent;
 
@@ -28,7 +30,9 @@ namespace LightX
 
             bool imageHasChanged = _finishWindowViewModel.ActiveImageEvent(sender as Image);
             if (imageHasChanged)
-                (TabControl01.SelectedContentTemplate.FindName("border", TabControl01) as ZoomBorder).Reset();
+                loadedZoomBorder.Reset();
+                //(TabControl01.Template.FindName("border", TabControl01) as ZoomBorder).Reset();
+                //(TabControl01.SelectedContentTemplate.FindName("border", TabControl01) as ZoomBorder).Reset();
                 
                 //((TabControl01.SelectedContent as TabControl).ContentTemplate.FindName("border", TabControl01.SelectedContent as TabControl) as ZoomBorder);
         }
@@ -69,6 +73,11 @@ namespace LightX
             if (_sendClosingEvent)
                 FinishWindowClosingEvent(e);
             _sendClosingEvent = true;
+        }
+
+        private void Border_Loaded(object sender, RoutedEventArgs e)
+        {
+            loadedZoomBorder = sender as ZoomBorder;
         }
     }
 }

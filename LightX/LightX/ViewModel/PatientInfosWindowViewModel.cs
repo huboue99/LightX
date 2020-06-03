@@ -204,13 +204,13 @@ namespace LightX.ViewModel
         {
             _currentTestListChoices = new ObservableCollection<BoolStringClass>();
             _currentTestListChoices.Add(new BoolStringClass("Conjonctive", Tests.Conjonctive));
+            _currentTestListChoices.Add(new BoolStringClass("Filtre Cobalt", Tests.CobaltFilter));
             _currentTestListChoices.Add(new BoolStringClass("Van Herick", Tests.VanHerick));
             _currentTestListChoices.Add(new BoolStringClass("Cornée", Tests.Cornea));
             _currentTestListChoices.Add(new BoolStringClass("Chambre Antérieure", Tests.AnteriorChamber));
             _currentTestListChoices.Add(new BoolStringClass("Cristallin", Tests.Lens));
             _currentTestListChoices.Add(new BoolStringClass("Marge Pupillaire", Tests.PupillaryMargin));
             _currentTestListChoices.Add(new BoolStringClass("Transillumination de l'iris", Tests.IrisTransillumination));
-            _currentTestListChoices.Add(new BoolStringClass("Filtre Cobalt", Tests.CobaltFilter));
         }
 
         private void SelectAllClick()

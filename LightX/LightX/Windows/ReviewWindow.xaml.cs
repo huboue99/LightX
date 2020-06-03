@@ -10,6 +10,7 @@ namespace LightX
     public partial class ReviewWindow : Window
     {
         private readonly ReviewWindowViewModel _reviewWindowViewModel;
+        private ZoomBorder loadedZoomBorder;
 
         public string Comment
         {
@@ -34,7 +35,7 @@ namespace LightX
             {
                 bool imageHasChanged = _reviewWindowViewModel.ActiveImageEvent(sender as Image);
                 if (imageHasChanged)
-                    border.Reset();
+                    loadedZoomBorder.Reset();
             }
         }
 
@@ -45,6 +46,11 @@ namespace LightX
             DataContext = _reviewWindowViewModel;
 
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+
+        private void Border_Loaded(object sender, RoutedEventArgs e)
+        {
+            loadedZoomBorder = sender as ZoomBorder;
         }
     }
 }

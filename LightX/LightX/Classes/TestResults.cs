@@ -5,13 +5,13 @@ namespace LightX.Classes
     public enum Tests
     {
         Conjonctive             = 0x00, 
-        VanHerick               = 0X01, 
-        Cornea                  = 0X02, 
-        AnteriorChamber         = 0X03, 
-        Lens                    = 0X04, 
-        PupillaryMargin         = 0X05, 
-        IrisTransillumination   = 0X06, 
-        CobaltFilter            = 0X07,
+        CobaltFilter            = 0X01,
+        VanHerick               = 0X02, 
+        Cornea                  = 0X03, 
+        AnteriorChamber         = 0X04, 
+        Lens                    = 0X05, 
+        PupillaryMargin         = 0X06, 
+        IrisTransillumination   = 0X07, 
         NewTest                 = 0x10
     }
 

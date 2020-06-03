@@ -33,6 +33,26 @@ namespace JsonFileWriter
 
             #endregion Conjonctive
 
+            #region Cobalt
+
+            TestInstructions Cobalt = new TestInstructions()
+            {
+                Id = Tests.CobaltFilter,
+                TestTitle = "Filtre Cobalt",
+            };
+
+            Cobalt.Instructions.Add(new Instruction()
+            {
+                SlitIntensity = "5 (Filtre cobalt)",
+                IllumAngle = "30°",
+                DiffuseIntensity = "OFF",
+                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "11.0", Iso = "6400", BurstNumber = "2" },
+                InstructionsNotes = "Faire le foyer sur la cornée et la conjonctive.\nAdminister les gouttes de fluorescéine au patient et laissez agir.\nOn désir observer s'il y a présence d'abrasion/défaut dans la cornée.",
+                ImagesPath = new List<string>()
+            });
+
+            #endregion Cobalt
+
             #region VanHerick
 
             TestInstructions VanHerick = new TestInstructions()
@@ -203,34 +223,15 @@ namespace JsonFileWriter
 
             #endregion Iris Transillumination
 
-            #region Cobalt
-
-            TestInstructions Cobalt = new TestInstructions()
-            {
-                Id = Tests.CobaltFilter,
-                TestTitle = "Filtre Cobalt",
-            };
-
-            Cobalt.Instructions.Add(new Instruction()
-            {
-                SlitIntensity = "5 (Filtre cobalt)",
-                IllumAngle = "30°",
-                DiffuseIntensity = "OFF",
-                CamSettings = new CameraSettings() { Flash = "OFF", ShutterSpeed = "1/100", FNumber = "11.0", Iso = "6400", BurstNumber = "2" },
-                InstructionsNotes = "Faire le foyer sur la cornée et la conjonctive.\nAdminister les gouttes de fluorescéine au patient et laissez agir.\nOn désir observer s'il y a présence d'abrasion/défaut dans la cornée.",
-                ImagesPath = new List<string>()
-            });
-
-            #endregion Cobalt
 
             jsonData.Add(Conjonctive);
+            jsonData.Add(Cobalt);
             jsonData.Add(VanHerick);
             jsonData.Add(Cornea);
             jsonData.Add(Anterior);
             jsonData.Add(Lens);
             jsonData.Add(PupillaryMargin);
             jsonData.Add(IrisTransillumination);
-            jsonData.Add(Cobalt);
 
             WriteJsonFiles(@"..\..\..\LightX\Resources\", jsonData);
         }

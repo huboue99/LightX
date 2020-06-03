@@ -156,9 +156,39 @@ namespace LightX.ViewModel
             currentWindow.Close();
         }
 
-        #endregion Actions
+        public void RefreshReviewImages(List<string> images, int activeIndex)
+        {
+            images = SanitizeImagePathList(images);
 
-        public ReviewWindowViewModel(List<string> images, string comment)
+            ReviewImages = new ObservableCollection<ReviewImage>();
+            foreach (string image in images)
+            {
+                ReviewImages.Add(new ReviewImage() { Image = image });
+            }
+
+            if (activeIndex < 0 || activeIndex >= ReviewImages.Count)
+            {
+                Console.WriteLine("The specified activeIndex value is out of bound.");
+                activeIndex = 0;
+            }
+
+            ReviewImages[activeIndex].IsActive = true;
+        }
+
+        public void RefreshReviewImages(List<string> images)
+        {
+            // keeps the same active image after the refresh
+            int activeIndex = 0;
+
+            while (!ReviewImages[activeIndex].IsActive && activeIndex < ReviewImages.Count - 1)
+            {
+                ++activeIndex;
+            }
+
+            RefreshReviewImages(images, activeIndex);
+        }
+
+        private List<string> SanitizeImagePathList(List<string> images)
         {
             // remove all the empty string or without path (sometimes happen)
             for (int i = 0; i < images.Count; ++i)
@@ -169,14 +199,15 @@ namespace LightX.ViewModel
                     Console.WriteLine("A bad path has been removed from the review images list.");
                 }
             }
+            return images;
+        }
 
-            ReviewImages = new ObservableCollection<ReviewImage>();
-            foreach(string image in images)
-            {
-                ReviewImages.Add(new ReviewImage() { Image = image });
-            }
+        #endregion Actions
 
-            ReviewImages[0].IsActive = true;
+        public ReviewWindowViewModel(List<string> images, string comment)
+        {
+            RefreshReviewImages(images, 0);
+            
             _currentComment = comment;
 
             ImageIsSelectable = images.Count > 1;

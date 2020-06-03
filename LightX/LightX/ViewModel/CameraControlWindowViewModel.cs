@@ -547,7 +547,7 @@ namespace LightX.ViewModel
 
             Console.WriteLine($"_remainingBurst = {_remainingBurst}; _totalBurstNumber = {_totalBurstNumber}; _remainingBurst = {_remainingBurst};");
             //if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0) )
-            if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _remainingBurst == 0) )
+            if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _remainingBurst == 0 && DeviceManager.SelectedCameraDevice is CanonSDKBase) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0 && DeviceManager.SelectedCameraDevice is NikonBase))
             {
                 foreach (Task task in _tasks)
                 {
@@ -1944,8 +1944,15 @@ namespace LightX.ViewModel
 
             if (DeviceManager.SelectedCameraDevice is NikonBase)
             {
-                if (_liveViewTimer.Enabled)
-                    StopLiveView(DeviceManager.SelectedCameraDevice);
+                try
+                {
+                    if (_liveViewTimer.Enabled)
+                        StopLiveView(DeviceManager.SelectedCameraDevice);
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine("Can't stop LiveView, infinite loop : {0}", exception.Message);
+                }
                 Thread.Sleep(100); // wait for the liveView to stop
             }
             else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)

@@ -56,7 +56,7 @@
 
                 <!--<Border Background="WhiteSmoke"/>-->
 
-                <local:ZoomBorder x:Name="border" ClipToBounds="True" Background="WhiteSmoke" >
+                <local:ZoomBorder x:Name="border" ClipToBounds="True" Background="WhiteSmoke" Loaded="Border_Loaded">
                     <Image x:Name="currentImage" Margin="15" Stretch="Uniform"  Source="{Binding ReviewImages, Converter={StaticResource reviewImagesToImageConv}, UpdateSourceTrigger=PropertyChanged}"/>
                 </local:ZoomBorder>
             </Grid>
