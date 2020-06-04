@@ -2,6 +2,7 @@
 using LightX.ViewModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -11,6 +12,10 @@ namespace LightX
     {
         private readonly ReviewWindowViewModel _reviewWindowViewModel;
         private ZoomBorder loadedZoomBorder;
+        private bool? _isAccepted = null;
+
+        public delegate void ReviewWindowClosingEventHandler(bool ? accepted);
+        public event ReviewWindowClosingEventHandler ReviewWindowClosingEvent;
 
         public string Comment
         {
@@ -57,6 +62,25 @@ namespace LightX
         private void Border_Loaded(object sender, RoutedEventArgs e)
         {
             loadedZoomBorder = sender as ZoomBorder;
+        }
+
+        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
+        {
+            _isAccepted = true;
+            this.Close();
+            //ReviewWindowClosingEvent(_isAccepted);
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            _isAccepted = false;
+            this.Close();
+            //ReviewWindowClosingEvent(_isAccepted);
+        }
+
+        private void PhotoReviewWindow_Closing(object sender, CancelEventArgs e)
+        {
+            ReviewWindowClosingEvent(_isAccepted);
         }
     }
 }

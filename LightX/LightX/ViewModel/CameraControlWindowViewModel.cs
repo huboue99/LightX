@@ -1502,6 +1502,28 @@ namespace LightX.ViewModel
         {
             //List<string> imageArray;
             //CapturedImages.CopyTo(imageArray, 0);
+            
+
+            _reviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
+            _reviewWindow.ReviewWindowClosingEvent += _reviewWindow_ReviewWindowClosingEvent;
+            _reviewWindow.Show();
+
+            // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(CameraControlWindow))
+                    {
+                        (window as CameraControlWindow).Activate();
+                    }
+                }
+            });
+
+        }
+
+        private void _reviewWindow_ReviewWindowClosingEvent(bool? isAccepted)
+        {
             CameraSettings cameraSettings = new CameraSettings()
             {
                 BurstNumber = _totalBurstNumber.ToString(),
@@ -1511,14 +1533,12 @@ namespace LightX.ViewModel
                 Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
             };
 
-            _reviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
-            bool? isAccepted = _reviewWindow.ShowDialog();
             _currentTestResults.Comments = _reviewWindow.Comment;
             switch (isAccepted)
             {
                 case true:
                     SaveTestResults(_reviewWindow.SelectedImages, CapturedImages, cameraSettings);
-                    if(!NextInstructionGuideWindow() || _testIndex >= CurrentExam.TestList.Count)
+                    if (!NextInstructionGuideWindow() || _testIndex >= CurrentExam.TestList.Count)
                     {
                         CloseCurrentGuideWindow();
                         ++_testIndex;
@@ -1570,7 +1590,7 @@ namespace LightX.ViewModel
             GC.WaitForPendingFinalizers();
             _totalBurstNumber = 0; // reset the burstNumber after review
 
-            _reviewWindow.Close();
+            //_reviewWindow.Close();
             _reviewWindow = null;
 
             if (_testIndex >= CurrentExam.TestList.Count)
