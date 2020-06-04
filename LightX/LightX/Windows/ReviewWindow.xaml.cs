@@ -27,6 +27,12 @@ namespace LightX
                 return selectedImages;
             }
         }
+
+        public void RefreshReviewImages(List<string> images)
+        {
+            _reviewWindowViewModel.RefreshReviewImages(images);
+        }
+
         private void Image_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)

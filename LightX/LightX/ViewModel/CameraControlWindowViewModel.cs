@@ -61,6 +61,7 @@ namespace LightX.ViewModel
         private List<Task> _tasks = new List<Task>();
         private List<Task> _lowPriorityTasks = new List<Task>();
         private FinishWindow _objFinishWindow;
+        private ReviewWindow _reviewWindow;
 
         // Commands definition
         private RelayCommand _captureCommand;
@@ -565,10 +566,19 @@ namespace LightX.ViewModel
                         task.Start();
                 }
 
+                if (DeviceManager.SelectedCameraDevice is NikonBase)
+                    StartLiveViewInThread();
+                _liveViewTimer.Start();
+
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     Thread.Sleep(10);
-                    ShowReviewWindow();
+                    CaptureEnabled = true;
+
+                    if (_reviewWindow == null)
+                        ShowReviewWindow();
+                    else
+                        _reviewWindow.RefreshReviewImages(CapturedImages);
                     //GC.KeepAlive(CapturedImages);
                 });
                 _tasks.Clear();
@@ -1501,13 +1511,13 @@ namespace LightX.ViewModel
                 Iso = DeviceManager.SelectedCameraDevice.IsoNumber.Value
             };
 
-            ReviewWindow objReviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
-            bool? isAccepted = objReviewWindow.ShowDialog();
-            _currentTestResults.Comments = objReviewWindow.Comment;
+            _reviewWindow = new ReviewWindow(CapturedImages, _currentTestResults.Comments);
+            bool? isAccepted = _reviewWindow.ShowDialog();
+            _currentTestResults.Comments = _reviewWindow.Comment;
             switch (isAccepted)
             {
                 case true:
-                    SaveTestResults(objReviewWindow.SelectedImages, CapturedImages, cameraSettings);
+                    SaveTestResults(_reviewWindow.SelectedImages, CapturedImages, cameraSettings);
                     if(!NextInstructionGuideWindow() || _testIndex >= CurrentExam.TestList.Count)
                     {
                         CloseCurrentGuideWindow();
@@ -1559,8 +1569,9 @@ namespace LightX.ViewModel
             GC.Collect();
             GC.WaitForPendingFinalizers();
             _totalBurstNumber = 0; // reset the burstNumber after review
-                                   
-            objReviewWindow.Close();
+
+            _reviewWindow.Close();
+            _reviewWindow = null;
 
             if (_testIndex >= CurrentExam.TestList.Count)
             {
@@ -1580,10 +1591,10 @@ namespace LightX.ViewModel
                 }
             });
 
-            if (DeviceManager.SelectedCameraDevice is NikonBase)
-                StartLiveViewInThread();
+            //if (DeviceManager.SelectedCameraDevice is NikonBase)
+            //    StartLiveViewInThread();
 
-            _liveViewTimer.Start();
+            //_liveViewTimer.Start();
         }
 
         private void ShowFinishWindow()

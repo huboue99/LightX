@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         Icon="../LightXLogo.ico"
-        Title="Photo Review" Height="1000" Width="1200" MinHeight="500" MinWidth="780">
+        Title="Photo Review" Height="1000" Width="1200" MinHeight="500" MinWidth="780" Topmost="False">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="VisibleIfTrueConverter" />
