@@ -508,6 +508,9 @@ namespace LightX.ViewModel
                 //    SelectedCamera_CameraInitDone(newcameraDevice);
                 //}
                 //newcameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
+
+                if (newcameraDevice is CanonSDKBase)
+                    SelectedCamera_CameraInitDone(newcameraDevice);
             }
         }
 
@@ -1904,8 +1907,10 @@ namespace LightX.ViewModel
                 if (_oldGuideWindowPosition.Count == 0)
                 {
                     // Initialize the new starting position
-                    _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Left + objGuideWindow.Width / 4);
-                    _oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Height / 2 - objGuideWindow.Height / 2);
+                    //_oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Left + objGuideWindow.Width / 4);
+                    //_oldGuideWindowPosition.Add(Screen.AllScreens[0].WorkingArea.Height / 2 - objGuideWindow.Height / 2);
+                    _oldGuideWindowPosition.Add(5);
+                    _oldGuideWindowPosition.Add(15);
                 }
 
                 objGuideWindow.Left = _oldGuideWindowPosition[0];

@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:LightX"
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
-        Width="740" MinHeight="500" MinWidth="500" Topmost="False" WindowState="Normal">
+        Width="700" Height="710" MinHeight="500" MinWidth="500" Topmost="False" WindowState="Normal">
     
     <Window.Style>
         <Style TargetType="{x:Type Window}">

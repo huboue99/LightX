@@ -12,7 +12,7 @@
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
         Loaded="LiveViewWindow_Loaded" Closing="LiveViewWindow_Closing"
-        Height="670" Width="740" Topmost="False" WindowState="Normal"
+        Height="1387" Width="1849" Topmost="False" WindowState="Normal"
         Title="{Binding CurrentExam, Converter={StaticResource titleConverter}, UpdateSourceTrigger=PropertyChanged}">
         <!--Keyboard.KeyDown="KeyDownEventHandler" Keyboard.KeyUp="KeyUpEventHandler"-->
 
