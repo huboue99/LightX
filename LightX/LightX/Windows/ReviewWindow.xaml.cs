@@ -56,7 +56,9 @@ namespace LightX
             InitializeComponent();
             DataContext = _reviewWindowViewModel;
 
-            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            //this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            this.Left = 5;
+            this.Top = 1000;
         }
 
         private void Border_Loaded(object sender, RoutedEventArgs e)
