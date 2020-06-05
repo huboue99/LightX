@@ -48,7 +48,7 @@ namespace LightX.ViewModel
         private string _fileExtension;
         private volatile int _remainingBurst = 0;
         private int _totalBurstNumber = 0;
-        private bool _isAutoBurstControl = true;
+        private bool _isAutoBurstControl = false;
         public List<string> CapturedImages { get; set; }
 
         // System and windows vars
@@ -184,6 +184,7 @@ namespace LightX.ViewModel
             if (DeviceManager.SelectedCameraDevice is CanonSDKBase || DeviceManager.SelectedCameraDevice is NikonBase)
             {
                 //LiveViewEnabled = true;
+                ResetZoom();
                 StartLiveViewInThread();
             }
         }
@@ -462,8 +463,8 @@ namespace LightX.ViewModel
                 desiredZoom = _lastZoom;
                 _subZoomDivider = _lastSubZoomDivider;
             }
-            if(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != desiredZoom)
-                DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(desiredZoom);
+            if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != desiredZoom)
+                DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(desiredZoom, true);
             _zoomHasChanged = true;
         }
 
@@ -540,6 +541,12 @@ namespace LightX.ViewModel
                 SaveImageToFile(eventArgs, fileName);
             }
 
+
+            if (DeviceManager.SelectedCameraDevice is NikonBase)
+                StartLiveViewInThread();
+            _liveViewTimer.Start();
+            
+
             GC.KeepAlive(eventArgs);
             GC.KeepAlive(sender);
 
@@ -566,14 +573,13 @@ namespace LightX.ViewModel
                         task.Start();
                 }
 
-                if (DeviceManager.SelectedCameraDevice is NikonBase)
-                    StartLiveViewInThread();
-                _liveViewTimer.Start();
-
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     Thread.Sleep(10);
                     CaptureEnabled = true;
+
+                    SetZoom(_lastZoom);
+                    SetDepthOfField(true);
 
                     if (_reviewWindow == null)
                         ShowReviewWindow();
@@ -617,7 +623,7 @@ namespace LightX.ViewModel
                     }
                 }
                 _fileExtension = ".cr3";
-                (cameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
+                SetDepthOfField(true);
                 cameraDevice.IsoNumber.SetValue(cameraSettings.Iso);
                 cameraDevice.CompressionSetting.SetValue(cameraDevice.CompressionSetting.Values[8]); // "JPEG (Smalest)" = 6 / RAW = 8 / RAW + JPEG = 7
             }
@@ -660,8 +666,13 @@ namespace LightX.ViewModel
 
             cameraDevice.ShutterSpeed.SetValue(cameraSettings.ShutterSpeed);
             cameraDevice.FNumber.SetValue(cameraSettings.FNumber);
-            SetZoom(cameraDevice.LiveViewImageZoomRatio.Values[0]);
-            _subZoomDivider = 1;
+            if (_lastZoom != null)
+                SetZoom(_lastZoom);
+            else
+                SetZoom(cameraDevice.LiveViewImageZoomRatio.Values[0]);
+
+            _subZoomDivider = _lastSubZoomDivider;
+
             _roiXY = null; // will reset the focus point to the center of the image;
             RaisePropertyChanged(() => BurstNumber);
 
@@ -672,6 +683,10 @@ namespace LightX.ViewModel
         private void CaptureInThread()
         {
             CaptureEnabled = false;
+
+            _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value;
+            _lastSubZoomDivider = _subZoomDivider;
+
             if (DeviceManager.SelectedCameraDevice is NikonBase)
             {
                 if (_liveViewTimer.Enabled)
@@ -714,7 +729,7 @@ namespace LightX.ViewModel
                         burst--;
                     } while (burst != 0);
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
+                    SetDepthOfField(false);
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
                     //Thread.Sleep(150);
                 }
@@ -753,6 +768,9 @@ namespace LightX.ViewModel
                 CaptureEnabled = false;
                 if (!IsAutoBurstControl)
                 {
+                    _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value;
+                    _lastSubZoomDivider = _subZoomDivider;
+
                     try
                     {
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -819,7 +837,7 @@ namespace LightX.ViewModel
                 {
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).ResetShutterButton();
                     Thread.Sleep(20);
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
+                    SetDepthOfField(false);
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.ResumeLiveview();
                 }
                 catch (Exception exception)
@@ -1554,8 +1572,8 @@ namespace LightX.ViewModel
                     break;
                 default:
                     CaptureEnabled = true;
-                    if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
-                        (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = true;
+                    SetDepthOfField(true);
+                    
                     // deleting temp files
                     foreach (string temp in CapturedImages)
                     {
@@ -1617,6 +1635,20 @@ namespace LightX.ViewModel
             //_liveViewTimer.Start();
         }
 
+        private void SetDepthOfField(bool isOn)
+        {
+            try
+            {
+                if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = isOn;
+            }
+            catch
+            {
+                Console.WriteLine("Could not set the DepthOfFieldPreview.");
+            }
+            
+        }
+
         private void ShowFinishWindow()
         {
             CameraControlWindow currentWindow;
@@ -1658,6 +1690,7 @@ namespace LightX.ViewModel
             _currentTestResults = test;
             FetchTest(test.Id, new ObservableCollection<Tests>() { test.Id }, 0);
             CaptureEnabled = true;
+            ResetZoom();
             StartLiveViewInThread();
 
             CameraControlWindow currentWindow;
@@ -1720,12 +1753,7 @@ namespace LightX.ViewModel
             if (_liveViewTimer.Enabled)
             {
                 StopLiveView(DeviceManager.SelectedCameraDevice);
-                if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
-                {
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
-                    //(DeviceManager.SelectedCameraDevice as CanonSDKBase).Close();
-                }
-                //DeviceManager.SelectedCameraDevice.Close();
+                SetDepthOfField(false);
                 DeviceManager.CloseAll();
             }
             System.Windows.Application.Current.Shutdown();
@@ -1955,6 +1983,7 @@ namespace LightX.ViewModel
 
                 _currentTestCameraSettings = currentTest.Instructions[0].CamSettings;
                 //if (_testIndex != 0) // since DeviceManage is not declared yet in the first call of this function -> ok
+                ResetZoom();
                 ApplyCameraSettings(DeviceManager.SelectedCameraDevice, _currentTestCameraSettings);
 
                 return currentTest.TestTitle;
@@ -1963,6 +1992,14 @@ namespace LightX.ViewModel
             {
                 return "New test";
             }
+        }
+
+        private void ResetZoom()
+        {
+            _subZoomDivider = 1;
+            _lastSubZoomDivider = 1;
+            _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0];
+            SetZoom();
         }
 
         private void ObjGuideWindow_NextInstructionEvent()

@@ -6,7 +6,7 @@ namespace LightX.Classes
         #region Fields
 
         private string _image;
-        private bool _isSelected = false;
+        private bool _isSelected = true;
         private bool _isActive = false;
 
         #endregion Fields

@@ -18,6 +18,8 @@ namespace LightX
 
         private ZoomBorder loadedZoomBorder;
 
+        private bool TestHasChanged = false;
+
         public delegate void NewPhotoEventHandler(TestResults test);
         public event NewPhotoEventHandler NewPhotoEvent;
 
@@ -29,8 +31,11 @@ namespace LightX
             //_finishWindowViewModel.ActiveImageEvent(sender as Image);
 
             bool imageHasChanged = _finishWindowViewModel.ActiveImageEvent(sender as Image);
-            if (imageHasChanged)
+            if (TestHasChanged)
+            {
                 loadedZoomBorder.Reset();
+                TestHasChanged = false;
+            }
                 //(TabControl01.Template.FindName("border", TabControl01) as ZoomBorder).Reset();
                 //(TabControl01.SelectedContentTemplate.FindName("border", TabControl01) as ZoomBorder).Reset();
                 
@@ -39,6 +44,7 @@ namespace LightX
 
         private void TabControl01_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            TestHasChanged = true;
             GC.Collect();
         }
 

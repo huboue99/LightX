@@ -10,7 +10,8 @@
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         Icon="../LightXLogo.ico"
         Closing="PhotoReviewWindow_Closing"
-        Title="Photo Review" Height="1000" Width="1200" MinHeight="500" MinWidth="780" Topmost="False">
+        Title="Photo Review" Height="1000" Width="1200" MinHeight="500" MinWidth="780" Topmost="False"
+        Keyboard.KeyDown="PhotoReviewWindow_KeyDown">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="VisibleIfTrueConverter" />
@@ -81,7 +82,7 @@
 
                 <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="15 0">
                     <Button Content="Confirm" Width="90" Height="20" Click="ConfirmButton_Click" CommandParameter="{Binding ElementName=PhotoReviewWindow}"/>
-                    <Button Content="Cancel" Width="90" Height="20" Click="CancelButton_Click" CommandParameter="{Binding ElementName=PhotoReviewWindow}" Margin="0 15 0 0" IsCancel="True"/>
+                    <Button Content="Cancel" Width="90" Height="20" Click="CancelButton_Click" CommandParameter="{Binding ElementName=PhotoReviewWindow}" Margin="0 15 0 0"/>
                 </StackPanel>
             </Grid>
         </Grid>

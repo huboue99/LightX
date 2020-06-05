@@ -175,8 +175,11 @@ namespace LightX.ViewModel
                 ///////////////////////////////////
                 if (TESTING)
                 {
-                    CurrentPatient.FirstName = "John";
-                    CurrentPatient.LastName = "Smith";
+                    if (string.IsNullOrEmpty(CurrentPatient.FirstName) && string.IsNullOrEmpty(CurrentPatient.LastName))
+                        CurrentPatient.FirstName = "John";
+
+                    if (string.IsNullOrEmpty(CurrentPatient.LastName))
+                        CurrentPatient.LastName = "Smith";
                 }
                 //////////////////////////////////
 

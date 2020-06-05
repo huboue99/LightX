@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Controls;
 
 namespace LightX
@@ -45,8 +46,8 @@ namespace LightX
             else
             {
                 bool imageHasChanged = _reviewWindowViewModel.ActiveImageEvent(sender as Image);
-                if (imageHasChanged)
-                    loadedZoomBorder.Reset();
+                //if (imageHasChanged)
+                //    loadedZoomBorder.Reset();
             }
         }
 
@@ -83,6 +84,14 @@ namespace LightX
         private void PhotoReviewWindow_Closing(object sender, CancelEventArgs e)
         {
             ReviewWindowClosingEvent(_isAccepted);
+        }
+
+        private void PhotoReviewWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key is Key.F1)
+            {
+                _reviewWindowViewModel.SelectAllImages();
+            }
         }
     }
 }

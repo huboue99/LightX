@@ -113,6 +113,29 @@ namespace LightX.ViewModel
             }
         }
 
+        internal void SelectAllImages()
+        {
+            bool b = true;
+            if (AreAllImagesSelected())
+                b = false;
+
+            foreach (ReviewImage reviewImage in ReviewImages)
+            {
+                reviewImage.IsSelected = b;
+            }
+            RaisePropertyChanged(() => ReviewImages);
+        }
+
+        private bool AreAllImagesSelected()
+        {
+            bool b = true;
+            foreach (ReviewImage reviewImage in ReviewImages)
+            {
+                b &= reviewImage.IsSelected;
+            }
+            return b;
+        }
+
         public ICommand CancelCommand
         {
             get
@@ -160,19 +183,28 @@ namespace LightX.ViewModel
         {
             images = SanitizeImagePathList(images);
 
-            ReviewImages = new ObservableCollection<ReviewImage>();
+            ObservableCollection<ReviewImage> reviewImg = new ObservableCollection<ReviewImage>();
             foreach (string image in images)
             {
-                ReviewImages.Add(new ReviewImage() { Image = image });
+                reviewImg.Add(new ReviewImage() { Image = image });
             }
 
-            if (activeIndex < 0 || activeIndex >= ReviewImages.Count)
+            if (activeIndex < 0 || activeIndex >= reviewImg.Count)
             {
                 Console.WriteLine("The specified activeIndex value is out of bound.");
                 activeIndex = 0;
             }
 
-            ReviewImages[activeIndex].IsActive = true;
+            if (ReviewImages != null)
+            {
+                for (int i = 0; i < ReviewImages.Count; ++i)
+                {
+                    reviewImg[i].IsSelected = ReviewImages[i].IsSelected;
+                }
+            }
+
+            reviewImg[activeIndex].IsActive = true;
+            ReviewImages = reviewImg;
         }
 
         public void RefreshReviewImages(List<string> images)
@@ -212,8 +244,8 @@ namespace LightX.ViewModel
 
             ImageIsSelectable = images.Count > 1;
 
-            if (!ImageIsSelectable)
-                ReviewImages[0].IsSelected = true;
+            //if (!ImageIsSelectable)
+            //    ReviewImages[0].IsSelected = true;
         }
     }
 }
