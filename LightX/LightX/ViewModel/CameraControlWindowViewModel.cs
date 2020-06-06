@@ -463,8 +463,17 @@ namespace LightX.ViewModel
                 desiredZoom = _lastZoom;
                 _subZoomDivider = _lastSubZoomDivider;
             }
-            if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != desiredZoom)
-                DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(desiredZoom, true);
+
+            try
+            {
+                if (DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value != desiredZoom)
+                    DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.SetValue(desiredZoom, true);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.Message);
+            }
+
             _zoomHasChanged = true;
         }
 
@@ -1675,6 +1684,18 @@ namespace LightX.ViewModel
 
         private void ObjFinishWindow_FinishWindowClosingEvent(CancelEventArgs e)
         {
+            foreach (TestResults testResult in _currentExam.Results)
+            {
+                if (testResult.ResultsImages != null)
+                {
+                    if (testResult.ResultsImages.Count > 0)
+                    {
+                        string path = Path.GetFullPath(testResult.ResultsImages[0]);
+                        SaveTestResultsToJson(testResult, path);
+                    }
+                }
+            }
+
             if(CloseApplication(e))
             {
                 _objFinishWindow.FinishWindowClosingEvent -= ObjFinishWindow_FinishWindowClosingEvent;
@@ -1906,14 +1927,11 @@ namespace LightX.ViewModel
 
             Task.WaitAll(_lowPriorityTasks.ToArray());
 
+
             // Save test informations to JSON file (comments, camera settings, ...)
             _lowPriorityTasks.Add(Task.Run(() =>
             {
-                using (StreamWriter file = File.CreateText($"{folderName}\\{fileName}.json"))
-                {
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(file, _currentTestResults);
-                }
+                SaveTestResultsToJson(_currentTestResults, $"{folderName}\\{fileName}.json");
             }));
             
             if (CurrentExam.Results.Count < CurrentExam.TestList.Count)
@@ -1932,6 +1950,15 @@ namespace LightX.ViewModel
             imagesPath = null;
             //_currentTestResults = null;
             _lowPriorityTasks.Clear();
+        }
+
+        private void SaveTestResultsToJson(TestResults testResults, string path)
+        {
+            using (StreamWriter file = File.CreateText(path))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, testResults);
+            }
         }
 
         public void FetchCurrentTest()
