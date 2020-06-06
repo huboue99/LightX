@@ -1998,8 +1998,9 @@ namespace LightX.ViewModel
         {
             _subZoomDivider = 1;
             _lastSubZoomDivider = 1;
-            _lastZoom = DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Values[0];
-            SetZoom();
+            _lastZoom = "All";
+            if (DeviceManager.ConnectedDevices.Count > 0)
+                SetZoom();
         }
 
         private void ObjGuideWindow_NextInstructionEvent()

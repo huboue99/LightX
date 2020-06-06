@@ -212,8 +212,8 @@ namespace LightX.ViewModel
             _currentTestListChoices.Add(new BoolStringClass("Cornée", Tests.Cornea));
             _currentTestListChoices.Add(new BoolStringClass("Chambre Antérieure", Tests.AnteriorChamber));
             _currentTestListChoices.Add(new BoolStringClass("Cristallin", Tests.Lens));
-            _currentTestListChoices.Add(new BoolStringClass("Marge Pupillaire", Tests.PupillaryMargin));
             _currentTestListChoices.Add(new BoolStringClass("Transillumination de l'iris", Tests.IrisTransillumination));
+            _currentTestListChoices.Add(new BoolStringClass("Marge Pupillaire", Tests.PupillaryMargin));
         }
 
         private void SelectAllClick()

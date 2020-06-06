@@ -223,6 +223,17 @@ namespace JsonFileWriter
 
             #endregion Iris Transillumination
 
+            #region Keywords
+            
+            List<string> keywords = new List<string>()
+            {
+                "Conjonctivite",
+                "Uveite",
+                "Cataracte",
+                "stuff"
+            };
+
+            #endregion Keywords
 
             jsonData.Add(Conjonctive);
             jsonData.Add(Cobalt);
@@ -234,6 +245,7 @@ namespace JsonFileWriter
             jsonData.Add(IrisTransillumination);
 
             WriteJsonFiles(@"..\..\..\LightX\Resources\", jsonData);
+            WriteJsonFiles(@"..\..\..\LightX\Resources\", keywords);
         }
 
         static void WriteJsonFiles(string path, List<TestInstructions> jsonData)
@@ -246,6 +258,16 @@ namespace JsonFileWriter
                     JsonSerializer serializer = new JsonSerializer();
                     serializer.Serialize(file, data);
                 }
+            }
+        }
+
+        static void WriteJsonFiles(string path, List<string> keywords)
+        {
+            using (StreamWriter file = File.CreateText($"{path}Keywords.json"))
+            {
+                Console.WriteLine("Writing Keywords.json to disk...");
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, keywords);
             }
         }
     }

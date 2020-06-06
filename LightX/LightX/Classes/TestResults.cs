@@ -10,8 +10,8 @@ namespace LightX.Classes
         Cornea                  = 0X03, 
         AnteriorChamber         = 0X04, 
         Lens                    = 0X05, 
-        PupillaryMargin         = 0X06, 
-        IrisTransillumination   = 0X07, 
+        IrisTransillumination   = 0X06, 
+        PupillaryMargin         = 0X07, 
         NewTest                 = 0x10
     }
 
