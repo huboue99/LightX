@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace LightX.Classes
@@ -13,6 +14,7 @@ namespace LightX.Classes
         private ObservableCollection<TestResults> _results;
         private string _resultsPath;
         private string _generalComments;
+        private List<string> _keywords;
 
         #endregion Fields
 
@@ -92,6 +94,19 @@ namespace LightX.Classes
                 {
                     _generalComments = value;
                     OnPropertyChanged("GeneralComments");
+                }
+            }
+        }
+
+        public List<string> Keywords
+        {
+            get { return _keywords; }
+            set
+            {
+                if (value != _keywords)
+                {
+                    _keywords = value;
+                    OnPropertyChanged("Keywords");
                 }
             }
         }

@@ -15,6 +15,8 @@ namespace LightX.ViewModel
 
         private Patient _currentPatient;
         private Exam _exam;
+        private bool[] _genders;
+        private List<string> _keywords;
         private ObservableCollection<BoolStringClass> _currentTestListChoices;
         private bool _allSelectedChecked = true;
 
@@ -23,7 +25,7 @@ namespace LightX.ViewModel
         private ICommand _createNewExamCommand;
         private ICommand _selectAllClickCommand;
 
-        public ObservableCollection<string> Genders { get; set; }
+        //public ObservableCollection<string> Genders { get; set; }
 
         #endregion Fields
 
@@ -55,6 +57,19 @@ namespace LightX.ViewModel
             }
         }
 
+        public bool[] Genders
+        {
+            get { return _genders; }
+            set
+            {
+                if (value != _genders)
+                {
+                    _genders = value;
+                    RaisePropertyChanged(() => Genders);
+                }
+            }
+        }
+
         public ObservableCollection<BoolStringClass> CurrentTestListChoices
         {
             get { return _currentTestListChoices; }
@@ -64,6 +79,19 @@ namespace LightX.ViewModel
                 {
                     _currentTestListChoices = value;
                     RaisePropertyChanged(() => CurrentTestListChoices);
+                }
+            }
+        }
+
+        public List<string> Keywords
+        {
+            get { return _keywords; }
+            set
+            {
+                if (value != _keywords)
+                {
+                    _keywords = value;
+                    RaisePropertyChanged(() => Keywords);
                 }
             }
         }
@@ -267,8 +295,9 @@ namespace LightX.ViewModel
         public PatientInfosWindowViewModel()
         {
             CreateCheckBoxList();
-            Genders = new ObservableCollection<string>() { "Homme", "Femme" };
-            _currentPatient = new Patient() { Gender = Genders[0] };
+            Keywords = new List<string>() { "Aaaaaa", "Bbbbb", "Cccccc", "Dddddd", "Eeeeee", "Ffffff", "Ggggggg", "Hhhhhhh", "Iiiiiii", "Jjjjjjj", "Kkkkkkkk", "Lllllll", "Mmmmmm", "Nnnnnnn" };
+            //Genders = new ObservableCollection<string>() { "Homme", "Femme" };
+            _currentPatient = new Patient();
         }
     }
 }

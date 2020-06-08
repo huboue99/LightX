@@ -9,14 +9,14 @@
         xmlns:Sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
-        Title="LightX - Nouvel Examen" Height="485" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
+        Title="LightX - Nouvel Examen" Height="600" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
 
     
     
-    <Window.InputBindings>
-        <!--<KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>-->
+    <!--<Window.InputBindings>
+        --><!--<KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>--><!--
         <KeyBinding Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Return"/>
-    </Window.InputBindings>
+    </Window.InputBindings>-->
 
     <StackPanel Orientation="Vertical" Margin="10">
         <Label Content="Entrez les informations du patient :" Margin="25 0 0 0"/>
@@ -54,20 +54,45 @@
                 <!--<TextBox Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>-->
                 <DatePicker Height="22" Width="190" Text="" xml:lang="fr-CA" SelectedDate="{Binding CurrentPatient.BirthDate}" HorizontalAlignment="Left"/>
             </StackPanel>
-            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel Width="190" Orientation="Vertical" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Genre :"/>
-                <ComboBox Width="190" ItemsSource="{Binding Genders}" SelectedItem="{Binding CurrentPatient.Gender, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <RadioButton IsChecked="{Binding CurrentPatient.IsMale, Mode=TwoWay}" Content="Male" Margin="0 0 25 0"/>
+                    <RadioButton IsChecked="{Binding CurrentPatient.IsMale, Mode=TwoWay, Converter={StaticResource negateBooleanConverter}}" Content="Female"/>
+                </StackPanel>
                
             </StackPanel>
             <!--<Label Content="Nom :" Grid.Column="2" HorizontalAlignment="Right"/>-->
             <!--<TextBox Text="{Binding CurrentPatient.LastName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="3" TextWrapping="NoWrap" VerticalContentAlignment="Center" Width="190" HorizontalAlignment="Left"/>-->
         </Grid>
+
+        <Grid Margin="30 15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Keywords :"/>
+
+            <ItemsControl x:Name="WrapPanel" Grid.Row="1" ItemsSource="{Binding Keywords}" HorizontalAlignment="Stretch">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Button Content="{Binding}" Margin="0 0 3 3"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+            <TextBox Grid.Row="2"/>
+        </Grid>
+        
         <StackPanel Margin="0 15">
             <Button Content="Select All"  Command="{Binding SelectAllClickCommand}" Width="90" HorizontalAlignment="Left" Margin="30 0 0 5"/>
             <ListBox ItemsSource="{Binding CurrentTestListChoices}" Width="440">
@@ -84,7 +109,7 @@
         
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 5 0 0">
             <Button Name="ButtonCreate" Margin="15 0"  Content="Créer" Width="90" Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}"/>
-            <Button Name="ButtonClose" Margin="15 0" Content="Fermer" Width="90" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" IsCancel="True"/>
+            <Button Name="ButtonClose" Margin="15 0" Content="Fermer" Width="90" Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}"/>
         </StackPanel>
     </StackPanel>
 </Window>

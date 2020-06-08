@@ -10,7 +10,7 @@ namespace LightX.Classes
         private string _firstName;
         private string _lastName;
         private DateTime _birthdate;
-        private string _gender;
+        private bool _isMale = true;
         private string _fileNumber;
         private string _ramq;
 
@@ -57,15 +57,15 @@ namespace LightX.Classes
             }
         }
 
-        public string Gender
+        public bool IsMale
         {
-            get { return _gender; }
+            get { return _isMale; }
             set
             {
-                if (value != _gender)
+                if (value != _isMale)
                 {
-                    _gender = value;
-                    OnPropertyChanged("Gender");
+                    _isMale = value;
+                    OnPropertyChanged("IsMale");
                 }
             }
         }

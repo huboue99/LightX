@@ -5,5 +5,6 @@
         <super:ReviewImageSizeConverter x:Key="reviewImageSizeConverter"/>
         <super:ImageIsActiveConverter x:Key="imageIsActiveConverter"/>
         <super:TitleConverter x:Key="titleConverter"/>
+        <super:NegateBooleanConverter x:Key="negateBooleanConverter"/>
     </Application.Resources>
 </Application>
