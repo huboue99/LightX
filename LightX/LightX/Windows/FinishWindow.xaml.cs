@@ -44,6 +44,7 @@ namespace LightX
 
         private void TabControl01_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+
             TestHasChanged = true;
             GC.Collect();
         }
@@ -84,6 +85,11 @@ namespace LightX
         private void Border_Loaded(object sender, RoutedEventArgs e)
         {
             loadedZoomBorder = sender as ZoomBorder;
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ((sender as System.Windows.Controls.TextBox).DataContext as TestResults).Comments = (sender as System.Windows.Controls.TextBox).Text;
         }
     }
 }

@@ -11,6 +11,7 @@ namespace LightX.Classes
         private DateTime _examDate;
         private ObservableCollection<Tests> _testList;
         private ObservableCollection<TestResults> _results;
+        private string _resultsPath;
         private string _generalComments;
 
         #endregion Fields
@@ -65,6 +66,19 @@ namespace LightX.Classes
                 {
                     _results = value;
                     OnPropertyChanged("Results");
+                }
+            }
+        }
+
+        public string ResultsPath
+        {
+            get { return _resultsPath; }
+            set
+            {
+                if (value != _resultsPath)
+                {
+                    _resultsPath = value;
+                    OnPropertyChanged("ResultsPath");
                 }
             }
         }

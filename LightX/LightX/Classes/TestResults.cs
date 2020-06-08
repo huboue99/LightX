@@ -23,6 +23,7 @@ namespace LightX.Classes
         private Tests _id;
         private CameraSettings _camSettings;
         private string _comments;
+        private string _pathToImages;
         private List<string> _resultsImages;
 
         #endregion Fields
@@ -77,6 +78,19 @@ namespace LightX.Classes
                 {
                     _comments = value;
                     OnPropertyChanged("Comments");
+                }
+            }
+        }
+
+        public string PathToImages
+        {
+            get { return _pathToImages; }
+            set
+            {
+                if (value != _pathToImages)
+                {
+                    _pathToImages = value;
+                    OnPropertyChanged("PathToImages");
                 }
             }
         }

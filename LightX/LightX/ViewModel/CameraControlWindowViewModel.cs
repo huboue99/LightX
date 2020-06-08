@@ -625,7 +625,7 @@ namespace LightX.ViewModel
                             propertyVal.SetValue(propertyVal.Values[1]); //High-Speed Continuous shooting
                             break;
                         case "Flash":
-                            propertyVal.SetValue(propertyVal.Values[0]);
+                            //propertyVal.SetValue(propertyVal.Values[0]);
                             break;
                         default:
                             break;
@@ -1540,9 +1540,9 @@ namespace LightX.ViewModel
             {
                 foreach (Window window in System.Windows.Application.Current.Windows)
                 {
-                    if (window.GetType() == typeof(CameraControlWindow))
+                    if (window.GetType() == typeof(CameraControlWindow) || window.GetType() == typeof(GuideWindow))
                     {
-                        (window as CameraControlWindow).Activate();
+                        window.Activate();
                     }
                 }
             });
@@ -1686,14 +1686,7 @@ namespace LightX.ViewModel
         {
             foreach (TestResults testResult in _currentExam.Results)
             {
-                if (testResult.ResultsImages != null)
-                {
-                    if (testResult.ResultsImages.Count > 0)
-                    {
-                        string path = Path.GetFullPath(testResult.ResultsImages[0]);
-                        SaveTestResultsToJson(testResult, path);
-                    }
-                }
+                SaveTestResultsToJson(testResult);
             }
 
             if(CloseApplication(e))
@@ -1842,19 +1835,11 @@ namespace LightX.ViewModel
                 _currentTestResults.ResultsImages = new List<string>();
             string fileName = _currentTestResults.Id.ToString();
             //    CurrentExam.TestList[_testIndex].ToString();
-            string folderName = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5,2:D2}h{6,2:D2}\\{7}", 
-                Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), 
-                "LightX", 
-                CurrentExam.Patient.LastName, 
-                CurrentExam.Patient.FirstName, 
-                CurrentExam.ExamDate.ToLongDateString(), 
-                CurrentExam.ExamDate.Hour, 
-                CurrentExam.ExamDate.Minute,
-                _currentTestResults.TestTitle);
 
             // check the folder of filename, if not found create it
-            if (!Directory.Exists(folderName))
-                Directory.CreateDirectory(folderName);
+            if (!Directory.Exists(_currentTestResults.PathToImages))
+                Directory.CreateDirectory(_currentTestResults.PathToImages);
+
 
             int index = -1;
             for (int i = 0; i < selectedImages.Count; ++i)
@@ -1864,7 +1849,7 @@ namespace LightX.ViewModel
                     string path;
                     do
                     {
-                        path = string.Format("{0}\\{1}_{2,2:D2}{3}", folderName, fileName, ++index, _fileExtension);  // add path to the folder (Nom_Prenom_timestamp)
+                        path = string.Format("{0}\\{1}_{2,2:D2}{3}", _currentTestResults.PathToImages, fileName, ++index, _fileExtension);  // add path to the folder (Nom_Prenom_timestamp)
                     } while (File.Exists(path));
 
                     string temp = imagesPath[i];
@@ -1931,7 +1916,7 @@ namespace LightX.ViewModel
             // Save test informations to JSON file (comments, camera settings, ...)
             _lowPriorityTasks.Add(Task.Run(() =>
             {
-                SaveTestResultsToJson(_currentTestResults, $"{folderName}\\{fileName}.json");
+                SaveTestResultsToJson(_currentTestResults);
             }));
             
             if (CurrentExam.Results.Count < CurrentExam.TestList.Count)
@@ -1952,8 +1937,14 @@ namespace LightX.ViewModel
             _lowPriorityTasks.Clear();
         }
 
-        private void SaveTestResultsToJson(TestResults testResults, string path)
+        private void SaveTestResultsToJson(TestResults testResults)
         {
+            string path = $"{testResults.PathToImages}\\{testResults.Id.ToString()}.json";
+
+            // check the folder of filename, if not found create it
+            if (!Directory.Exists(testResults.PathToImages))
+                Directory.CreateDirectory(testResults.PathToImages);
+
             using (StreamWriter file = File.CreateText(path))
             {
                 JsonSerializer serializer = new JsonSerializer();
@@ -1973,7 +1964,13 @@ namespace LightX.ViewModel
                 _currentTestResults = null;
                 GC.Collect();
             }
-            _currentTestResults = new TestResults() { TestTitle = title, Id = test };
+
+            _currentTestResults = new TestResults()
+            {
+                TestTitle = title,
+                Id = test,
+                PathToImages = string.Format("{0}\\{1}", CurrentExam.ResultsPath, title)
+            };
         }
 
         public string FetchTest(Tests test, ObservableCollection<Tests> testList, int testIndex)
@@ -2038,57 +2035,62 @@ namespace LightX.ViewModel
 
         private void SkipCurrentTest()
         {
-            if (_currentTestResults.CamSettings == null)
-                SaveTestResults(new ObservableCollection<bool>(), new List<string>(), new CameraSettings());
-
-            _currentTestResults = null;
-
-            if (DeviceManager.SelectedCameraDevice is NikonBase)
-            {
-                try
-                {
-                    if (_liveViewTimer.Enabled)
-                        StopLiveView(DeviceManager.SelectedCameraDevice);
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine("Can't stop LiveView, infinite loop : {0}", exception.Message);
-                }
-                Thread.Sleep(100); // wait for the liveView to stop
-            }
-            else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
-            {
-                _liveViewTimer.Stop();
-                (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.PauseLiveview();
-            }
-            CloseCurrentGuideWindow();
-            ++_testIndex;
-            if (_testIndex < CurrentExam.TestList.Count)
-            {
-                FetchCurrentTest();
-                // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    foreach (Window window in System.Windows.Application.Current.Windows)
-                    {
-                        if (window.GetType() == typeof(CameraControlWindow))
-                        {
-                            (window as CameraControlWindow).Activate();
-                        }
-                    }
-                });
-
-                if (DeviceManager.SelectedCameraDevice is NikonBase)
-                    StartLiveViewInThread();
-
-                _liveViewTimer.Start();
-            }
+            if (_reviewWindow != null)
+                System.Windows.MessageBox.Show("Veuillez confirmer le choix des prises de vues.");
             else
             {
-                _testIndex = CurrentExam.TestList.Count;
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                ShowFinishWindow();
+                if (_currentTestResults.CamSettings == null)
+                    SaveTestResults(new ObservableCollection<bool>(), new List<string>(), new CameraSettings());
+
+                //_currentTestResults = null;
+
+                if (DeviceManager.SelectedCameraDevice is NikonBase)
+                {
+                    try
+                    {
+                        if (_liveViewTimer.Enabled)
+                            StopLiveView(DeviceManager.SelectedCameraDevice);
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine("Can't stop LiveView, infinite loop : {0}", exception.Message);
+                    }
+                    Thread.Sleep(100); // wait for the liveView to stop
+                }
+                else if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
+                {
+                    _liveViewTimer.Stop();
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.PauseLiveview();
+                }
+                CloseCurrentGuideWindow();
+                ++_testIndex;
+                if (_testIndex < CurrentExam.TestList.Count)
+                {
+                    FetchCurrentTest();
+                    // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        foreach (Window window in System.Windows.Application.Current.Windows)
+                        {
+                            if (window.GetType() == typeof(CameraControlWindow))
+                            {
+                                (window as CameraControlWindow).Activate();
+                            }
+                        }
+                    });
+
+                    if (DeviceManager.SelectedCameraDevice is NikonBase)
+                        StartLiveViewInThread();
+
+                    _liveViewTimer.Start();
+                }
+                else
+                {
+                    _testIndex = CurrentExam.TestList.Count;
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    ShowFinishWindow();
+                }
             }
         }
 

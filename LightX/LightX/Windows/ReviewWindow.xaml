@@ -10,7 +10,7 @@
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         Icon="../LightXLogo.ico"
         Closing="PhotoReviewWindow_Closing"
-        Title="Photo Review" Height="1000" Width="1200" MinHeight="500" MinWidth="780" Topmost="False"
+        Title="Photo Review" Height="1387" Width="2544" MinHeight="500" MinWidth="780" Topmost="False"
         Keyboard.KeyDown="PhotoReviewWindow_KeyDown">
 
     <Window.Resources>

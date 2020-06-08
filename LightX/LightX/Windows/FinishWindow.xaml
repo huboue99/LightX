@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:LightX.Classes"
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
-        Title="Exam Review" Height="1000" Width="1200" MinHeight="500" MinWidth="730"
+        Title="Exam Review" Height="1387" Width="2544" MinHeight="500" MinWidth="730"
         Closing="Window_Closing">
 
     <Window.Style>
@@ -91,7 +91,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments}"/>
+                                <TextBox Grid.Column="0" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments, Mode=TwoWay}" TextChanged="TextBox_TextChanged"/>
                                 <Button Grid.Column="1" Content="Finish" FontSize="15" Width="90" Height="30" Click="Button_Click" Margin="15 0"/>
                             </Grid>
                         </Grid>

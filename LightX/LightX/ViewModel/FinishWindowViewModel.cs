@@ -97,8 +97,16 @@ namespace LightX.ViewModel
         {
             CurrentExam = exam;
             ReviewImages = new ObservableCollection<ReviewImage>();
+
+
             if (CurrentExam.Results.Last().Id != Tests.NewTest)
-                CurrentExam.Results.Add(new TestResults() { TestTitle = "New test", Id = Tests.NewTest });
+                CurrentExam.Results.Add(new TestResults()
+                    {
+                        TestTitle = "New test",
+                        Id = Tests.NewTest,
+                        PathToImages = string.Format("{0}\\{1}", CurrentExam.ResultsPath, "New test")
+                    });
+
             foreach (TestResults result in exam.Results)
             {
                 if (result.ResultsImages != null)

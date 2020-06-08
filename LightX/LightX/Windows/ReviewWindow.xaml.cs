@@ -59,7 +59,7 @@ namespace LightX
 
             //this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.Left = 5;
-            this.Top = 1000;
+            this.Top = 15;
         }
 
         private void Border_Loaded(object sender, RoutedEventArgs e)

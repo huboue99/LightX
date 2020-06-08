@@ -196,6 +196,17 @@ namespace LightX.ViewModel
                 Exam.Patient = CurrentPatient;
                 Exam.TestList = testList;
 
+                Exam.ResultsPath = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5,2:D2}_{6,2:D2}_{7,2:D2}h{8,2:D2}",
+                Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                "LightX",
+                Exam.Patient.LastName,
+                Exam.Patient.FirstName,
+                Exam.ExamDate.Year,
+                Exam.ExamDate.Month,
+                Exam.ExamDate.Day,
+                Exam.ExamDate.Hour,
+                Exam.ExamDate.Minute);
+
                 // Open control and guide windows; close the patient info windows
                 //CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
                 //this.CloseWindow(window);

@@ -87,7 +87,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <Button Grid.Row="2" Content="Skip Test" Foreground="OrangeRed" FontWeight="Bold" Click="Button_Click" Width="100" Margin="15 0 0 15"/>
+                <Button Grid.Row="2" Content="Skip Test" Foreground="OrangeRed" FontWeight="Bold" Click="Button_Click" Width="100" VerticalContentAlignment="Center" Height="30" Margin="15 0 0 15"/>
             </Grid>
         </Grid>
     </Grid>
