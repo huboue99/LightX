@@ -31,5 +31,11 @@ namespace LightX
             this.Title = "LightX - Nouvel Examen";
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
+
+        private void KeywordButton_Click(object sender, RoutedEventArgs e)
+        {
+            string keyword = (sender as System.Windows.Controls.Button).Content.ToString();
+            _patientInfosWindowViewModel.RemoveKeyword(keyword);
+        }
     }
 }

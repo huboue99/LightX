@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:LightX"
         xmlns:Sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
@@ -75,11 +76,11 @@
 
             <TextBlock Grid.Row="0" Text="Keywords :"/>
 
-            <ItemsControl x:Name="WrapPanel" Grid.Row="1" ItemsSource="{Binding Keywords}" HorizontalAlignment="Stretch">
+            <ItemsControl x:Name="WrapPanel" Grid.Row="1" ItemsSource="{Binding Keywords, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Button Content="{Binding}" Margin="0 0 3 3"/>
+                                <Button Content="{Binding UpdateSourceTrigger=PropertyChanged}" Click="KeywordButton_Click" Margin="0 0 3 3"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -89,7 +90,7 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
-
+            <xctk:AutoSelectTextBox />
             <TextBox Grid.Row="2"/>
         </Grid>
         

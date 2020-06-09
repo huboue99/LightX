@@ -16,7 +16,7 @@ namespace LightX.ViewModel
         private Patient _currentPatient;
         private Exam _exam;
         private bool[] _genders;
-        private List<string> _keywords;
+        private ObservableCollection<string> _keywords;
         private ObservableCollection<BoolStringClass> _currentTestListChoices;
         private bool _allSelectedChecked = true;
 
@@ -42,6 +42,12 @@ namespace LightX.ViewModel
                     RaisePropertyChanged(() => CurrentPatient);
                 }
             }
+        }
+
+        internal void RemoveKeyword(string keyword)
+        {
+            Keywords.Remove(keyword);
+            RaisePropertyChanged(() => Keywords);
         }
 
         public Exam Exam
@@ -83,7 +89,7 @@ namespace LightX.ViewModel
             }
         }
 
-        public List<string> Keywords
+        public ObservableCollection<string> Keywords
         {
             get { return _keywords; }
             set
@@ -223,6 +229,7 @@ namespace LightX.ViewModel
 
                 Exam.Patient = CurrentPatient;
                 Exam.TestList = testList;
+                Exam.Keywords = new List<string>(Keywords);
 
                 Exam.ResultsPath = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5,2:D2}_{6,2:D2}_{7,2:D2}h{8,2:D2}",
                 Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
@@ -234,11 +241,6 @@ namespace LightX.ViewModel
                 Exam.ExamDate.Day,
                 Exam.ExamDate.Hour,
                 Exam.ExamDate.Minute);
-
-                // Open control and guide windows; close the patient info windows
-                //CameraControlWindow objCamControlWindow = new CameraControlWindow(exam);
-                //this.CloseWindow(window);
-                //objCamControlWindow.Show();
             }
         }
 
@@ -295,8 +297,7 @@ namespace LightX.ViewModel
         public PatientInfosWindowViewModel()
         {
             CreateCheckBoxList();
-            Keywords = new List<string>() { "Aaaaaa", "Bbbbb", "Cccccc", "Dddddd", "Eeeeee", "Ffffff", "Ggggggg", "Hhhhhhh", "Iiiiiii", "Jjjjjjj", "Kkkkkkkk", "Lllllll", "Mmmmmm", "Nnnnnnn" };
-            //Genders = new ObservableCollection<string>() { "Homme", "Femme" };
+            Keywords = new ObservableCollection<string>() { "Aaaaaa", "Bbbbb", "Cccccc", "Dddddd", "Eeeeee", "Ffffff", "Ggggggg", "Hhhhhhh", "Iiiiiii", "Jjjjjjj", "Kkkkkkkk", "Lllllll", "Mmmmmm", "Nnnnnnn" };
             _currentPatient = new Patient();
         }
     }
