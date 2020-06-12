@@ -68,6 +68,9 @@
     <Reference Include="CommonServiceLocator, Version=2.0.2.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
       <HintPath>..\packages\CommonServiceLocator.2.0.2\lib\net45\CommonServiceLocator.dll</HintPath>
     </Reference>
+    <Reference Include="DotNetProjects.Input.Toolkit, Version=6.0.84.0, Culture=neutral, PublicKeyToken=79778c5f2eed289b, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetProjects.WpfToolkit.Input.6.0.84\lib\net40\DotNetProjects.Input.Toolkit.dll</HintPath>
+    </Reference>
     <Reference Include="GalaSoft.MvvmLight, Version=5.4.1.0, Culture=neutral, PublicKeyToken=e7570ab207bcb616, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1.1\lib\net45\GalaSoft.MvvmLight.dll</HintPath>
     </Reference>
@@ -135,6 +138,7 @@
     <Compile Include="Classes\ReviewImage.cs" />
     <Compile Include="Classes\TestResults.cs" />
     <Compile Include="Classes\Converters.cs" />
+    <Compile Include="Controls\AutoCompleteTextBox.cs" />
     <Compile Include="ViewModel\FinishWindowViewModel.cs" />
     <Compile Include="Windows\FinishWindow.xaml.cs">
       <DependentUpon>FinishWindow.xaml</DependentUpon>
@@ -147,6 +151,10 @@
       <DependentUpon>CameraControlWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\CameraControlWindowViewModel.cs" />
+    <Page Include="Resources\AutoCompleteTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\FinishWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -217,7 +225,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Images\" />
-    <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="LightXLogo.ico" />

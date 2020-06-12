@@ -245,7 +245,7 @@ namespace JsonFileWriter
             jsonData.Add(IrisTransillumination);
 
             WriteJsonFiles(@"..\..\..\LightX\Resources\", jsonData);
-            WriteJsonFiles(@"..\..\..\LightX\Resources\", keywords);
+            //WriteJsonFiles(@"..\..\..\LightX\Resources\", keywords);
         }
 
         static void WriteJsonFiles(string path, List<TestInstructions> jsonData)

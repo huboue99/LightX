@@ -6,14 +6,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:local="clr-namespace:LightX"
+        xmlns:dnpt="clr-namespace:System.Windows.Controls;assembly=DotNetProjects.Input.Toolkit"
+        xmlns:local="clr-namespace:LightX;assembly=LightX"
         xmlns:Sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:controls="clr-namespace:LightX.Controls"
         mc:Ignorable="d"
         Icon="../LightXLogo.ico"
         Title="LightX - Nouvel Examen" Height="600" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
 
-    
-    
+   
+
     <!--<Window.InputBindings>
         --><!--<KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>--><!--
         <KeyBinding Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Return"/>
@@ -53,7 +55,8 @@
             <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Date de naissance :"/>
                 <!--<TextBox Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>-->
-                <DatePicker Height="22" Width="190" Text="" xml:lang="fr-CA" SelectedDate="{Binding CurrentPatient.BirthDate}" HorizontalAlignment="Left"/>
+                <!--<DatePicker Height="22" Width="190" Text="" xml:lang="fr-CA" SelectedDate="{Binding CurrentPatient.BirthDate}" HorizontalAlignment="Left"/>-->
+                <xctk:DateTimePicker Width="190" AutoCloseCalendar="True" ShowButtonSpinner="False" TimePickerVisibility="Hidden" Value="{Binding CurrentPatient.BirthDate, Mode=TwoWay}" Format="ShortDate"/>
             </StackPanel>
             <StackPanel Width="190" Orientation="Vertical" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Genre :"/>
@@ -90,8 +93,15 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
-            <xctk:AutoSelectTextBox />
-            <TextBox Grid.Row="2"/>
+            <!--<TextBox Grid.Row="2"/>-->
+
+            <!-- AutoComplete Placement At Bottom Of Input Control-->
+            <controls:AutoCompleteTextBox Grid.Row="2" x:Name="txt" AutoCompleteItemSource="{Binding KeyordsList}" AutoCompleteWidth="{Binding ElementName=txt, Path=ActualWidth}" AutoCompleteHeight="150" AutoCompletePlacementTarget="{Binding ElementName=txt}" AutoCompletePlacement="Bottom" OnTextChange="Txt_OnTextChange" OnSelectedItemChange="Txt_OnSelectedItemChange" >
+                <controls:AutoCompleteTextBox.AutoCompleteColumns>
+                    <DataGridTextColumn MinWidth="60" Binding="{Binding}" />
+                </controls:AutoCompleteTextBox.AutoCompleteColumns>
+            </controls:AutoCompleteTextBox>
+
         </Grid>
         
         <StackPanel Margin="0 15">
@@ -114,3 +124,6 @@
         </StackPanel>
     </StackPanel>
 </Window>
+
+    
+    

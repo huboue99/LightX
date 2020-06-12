@@ -6,6 +6,8 @@ using System.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace LightX.ViewModel
 {
@@ -19,6 +21,9 @@ namespace LightX.ViewModel
         private ObservableCollection<string> _keywords;
         private ObservableCollection<BoolStringClass> _currentTestListChoices;
         private bool _allSelectedChecked = true;
+
+        public ObservableCollection<string> KeywordsList { get; set; }
+        public string SelectedItem { get; set; } = "";
 
         // Commands definition
         private ICommand _closeWindowCommand;
@@ -86,6 +91,41 @@ namespace LightX.ViewModel
                     _currentTestListChoices = value;
                     RaisePropertyChanged(() => CurrentTestListChoices);
                 }
+            }
+        }
+
+        private ObservableCollection<string> ReadKeywordsList()
+        {
+            ObservableCollection<string> list;
+            string path = $@"..\..\Resources\Keywords.json";
+            if (File.Exists(path))
+            {
+                using (StreamReader file = File.OpenText(path))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    list = (ObservableCollection<string>)serializer.Deserialize(file, typeof(ObservableCollection<string>));
+                }
+            }
+            else
+                list = new ObservableCollection<string>();
+            return list;
+        }
+
+        internal void SaveKeywordList(ObservableCollection<string> list)
+        {
+            string path = @"..\..\Resources\";
+            SaveKeywordList(list, path);
+        }
+
+        internal void SaveKeywordList(ObservableCollection<string> list, string path)
+        {
+            if (!path.EndsWith(@"\"))
+                path += @"\";
+            using (StreamWriter file = File.CreateText($"{path}Keywords.json"))
+            {
+                Console.WriteLine("Writing Keywords.json to disk...");
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, list);
             }
         }
 
@@ -241,6 +281,13 @@ namespace LightX.ViewModel
                 Exam.ExamDate.Day,
                 Exam.ExamDate.Hour,
                 Exam.ExamDate.Minute);
+
+                if (Exam.Keywords.Count > 0)
+                {
+                    if (!Directory.Exists(Exam.ResultsPath))
+                        Directory.CreateDirectory(Exam.ResultsPath);
+                    SaveKeywordList(Keywords, Exam.ResultsPath);
+                }
             }
         }
 
@@ -296,9 +343,10 @@ namespace LightX.ViewModel
 
         public PatientInfosWindowViewModel()
         {
+            KeywordsList = ReadKeywordsList();
             CreateCheckBoxList();
-            Keywords = new ObservableCollection<string>() { "Aaaaaa", "Bbbbb", "Cccccc", "Dddddd", "Eeeeee", "Ffffff", "Ggggggg", "Hhhhhhh", "Iiiiiii", "Jjjjjjj", "Kkkkkkkk", "Lllllll", "Mmmmmm", "Nnnnnnn" };
-            _currentPatient = new Patient();
+            Keywords = new ObservableCollection<string>();
+            _currentPatient = new Patient() { BirthDate = DateTime.Today };
         }
     }
 }
