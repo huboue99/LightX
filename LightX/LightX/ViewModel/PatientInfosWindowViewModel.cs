@@ -18,11 +18,11 @@ namespace LightX.ViewModel
         private Patient _currentPatient;
         private Exam _exam;
         private bool[] _genders;
-        private ObservableCollection<string> _keywords;
+        private ObservableCollection<Disease> _keywords;
         private ObservableCollection<BoolStringClass> _currentTestListChoices;
         private bool _allSelectedChecked = true;
 
-        public ObservableCollection<string> KeywordsList { get; set; }
+        public ObservableCollection<Disease> KeywordsList { get; set; }
         public string SelectedItem { get; set; } = "";
 
         // Commands definition
@@ -49,7 +49,7 @@ namespace LightX.ViewModel
             }
         }
 
-        internal void RemoveKeyword(string keyword)
+        internal void RemoveKeyword(Disease keyword)
         {
             Keywords.Remove(keyword);
             RaisePropertyChanged(() => Keywords);
@@ -94,30 +94,30 @@ namespace LightX.ViewModel
             }
         }
 
-        private ObservableCollection<string> ReadKeywordsList()
+        private ObservableCollection<Disease> ReadKeywordsList()
         {
-            ObservableCollection<string> list;
+            ObservableCollection<Disease> list;
             string path = $@"..\..\Resources\Keywords.json";
             if (File.Exists(path))
             {
                 using (StreamReader file = File.OpenText(path))
                 {
                     JsonSerializer serializer = new JsonSerializer();
-                    list = (ObservableCollection<string>)serializer.Deserialize(file, typeof(ObservableCollection<string>));
+                    list = (ObservableCollection<Disease>)serializer.Deserialize(file, typeof(ObservableCollection<Disease>));
                 }
             }
             else
-                list = new ObservableCollection<string>();
+                list = new ObservableCollection<Disease>();
             return list;
         }
 
-        internal void SaveKeywordList(ObservableCollection<string> list)
+        internal void SaveKeywordList(ObservableCollection<Disease> list)
         {
             string path = @"..\..\Resources\";
             SaveKeywordList(list, path);
         }
 
-        internal void SaveKeywordList(ObservableCollection<string> list, string path)
+        internal void SaveKeywordList(ObservableCollection<Disease> list, string path)
         {
             if (!path.EndsWith(@"\"))
                 path += @"\";
@@ -129,7 +129,19 @@ namespace LightX.ViewModel
             }
         }
 
-        public ObservableCollection<string> Keywords
+        internal void SaveKeywordAsList(List<string> list, string path)
+        {
+            if (!path.EndsWith(@"\"))
+                path += @"\";
+            using (StreamWriter file = File.CreateText($"{path}Keywords.json"))
+            {
+                Console.WriteLine("Writing Keywords.json to disk...");
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, list);
+            }
+        }
+
+        public ObservableCollection<Disease> Keywords
         {
             get { return _keywords; }
             set
@@ -269,7 +281,11 @@ namespace LightX.ViewModel
 
                 Exam.Patient = CurrentPatient;
                 Exam.TestList = testList;
-                Exam.Keywords = new List<string>(Keywords);
+                Exam.Keywords = new List<string>();
+                foreach (Disease keywrd in Keywords)
+                {
+                    Exam.Keywords.Add(keywrd.DisplayName);
+                }
 
                 Exam.ResultsPath = string.Format("{0}\\{1}\\{2}_{3}_{4}_{5,2:D2}_{6,2:D2}_{7,2:D2}h{8,2:D2}",
                 Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
@@ -286,7 +302,7 @@ namespace LightX.ViewModel
                 {
                     if (!Directory.Exists(Exam.ResultsPath))
                         Directory.CreateDirectory(Exam.ResultsPath);
-                    SaveKeywordList(Keywords, Exam.ResultsPath);
+                    SaveKeywordAsList(Exam.Keywords, Exam.ResultsPath);
                 }
             }
         }
@@ -345,7 +361,7 @@ namespace LightX.ViewModel
         {
             KeywordsList = ReadKeywordsList();
             CreateCheckBoxList();
-            Keywords = new ObservableCollection<string>();
+            Keywords = new ObservableCollection<Disease>();
             _currentPatient = new Patient() { BirthDate = DateTime.Today };
         }
     }

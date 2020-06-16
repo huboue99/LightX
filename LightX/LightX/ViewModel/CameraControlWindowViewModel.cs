@@ -1565,7 +1565,8 @@ namespace LightX.ViewModel
             {
                 case true:
                     SaveTestResults(_reviewWindow.SelectedImages, CapturedImages, cameraSettings);
-                    if (!NextInstructionGuideWindow() || _testIndex >= CurrentExam.TestList.Count)
+                    //if (!NextInstructionGuideWindow() || _testIndex >= CurrentExam.TestList.Count)
+                    if (true)
                     {
                         CloseCurrentGuideWindow();
                         ++_testIndex;

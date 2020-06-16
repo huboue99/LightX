@@ -132,6 +132,7 @@
     </ApplicationDefinition>
     <Compile Include="Classes\BoolStringClass.cs" />
     <Compile Include="Classes\CameraSettings.cs" />
+    <Compile Include="Classes\Disease.cs" />
     <Compile Include="Classes\LibrawClass.cs" />
     <Compile Include="Classes\LowLevelKeyboardListener.cs" />
     <Compile Include="Classes\PanAndZoom.cs" />

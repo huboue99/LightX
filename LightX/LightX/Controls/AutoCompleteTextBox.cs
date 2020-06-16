@@ -176,7 +176,6 @@ namespace LightX.Controls
             }
         }
 
-
         // Navigates through Items using Up/Down keyboard keys and select item on Enter key  
         private void TXT_SEARCHINPUT_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {

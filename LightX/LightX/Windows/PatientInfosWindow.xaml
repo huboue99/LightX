@@ -83,7 +83,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Button Content="{Binding UpdateSourceTrigger=PropertyChanged}" Click="KeywordButton_Click" Margin="0 0 3 3"/>
+                                <Button Content="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" Click="KeywordButton_Click" Margin="0 0 3 3"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -98,15 +98,15 @@
             <!-- AutoComplete Placement At Bottom Of Input Control-->
             <controls:AutoCompleteTextBox Grid.Row="2" x:Name="txt" AutoCompleteItemSource="{Binding KeyordsList}" AutoCompleteWidth="{Binding ElementName=txt, Path=ActualWidth}" AutoCompleteHeight="150" AutoCompletePlacementTarget="{Binding ElementName=txt}" AutoCompletePlacement="Bottom" OnTextChange="Txt_OnTextChange" OnSelectedItemChange="Txt_OnSelectedItemChange" >
                 <controls:AutoCompleteTextBox.AutoCompleteColumns>
-                    <DataGridTextColumn MinWidth="60" Binding="{Binding}" />
+                    <DataGridTextColumn MinWidth="60" Binding="{Binding DisplayName}" />
                 </controls:AutoCompleteTextBox.AutoCompleteColumns>
             </controls:AutoCompleteTextBox>
 
         </Grid>
         
         <StackPanel Margin="0 15">
-            <Button Content="Select All"  Command="{Binding SelectAllClickCommand}" Width="90" HorizontalAlignment="Left" Margin="30 0 0 5"/>
-            <ListBox ItemsSource="{Binding CurrentTestListChoices}" Width="440">
+            <Button Content="Select All" IsTabStop="False" Command="{Binding SelectAllClickCommand}" Width="90" HorizontalAlignment="Left" Margin="30 0 0 5"/>
+            <ListBox IsTabStop="False" ItemsSource="{Binding CurrentTestListChoices}" Width="440">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <CheckBox Content="{Binding Text}" IsChecked="{Binding IsSelected}" Margin="0 0">

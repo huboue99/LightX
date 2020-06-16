@@ -1,6 +1,9 @@
 ﻿using LightX.Classes;
+using LightX.Controls;
 using LightX.ViewModel;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,14 +40,15 @@ namespace LightX
 
         private void KeywordButton_Click(object sender, RoutedEventArgs e)
         {
-            string keyword = (sender as System.Windows.Controls.Button).Content.ToString();
+            Disease keyword = (sender as System.Windows.Controls.Button).DataContext as Disease;
             _patientInfosWindowViewModel.RemoveKeyword(keyword);
         }
 
         private void Txt_OnTextChange(object sender, TextChangedEventArgs e)
         {
             TextBox txtInput = sender as TextBox;
-            var Emps = from emp in _patientInfosWindowViewModel.KeywordsList where emp.ToLowerInvariant().Contains(txtInput.Text.ToLowerInvariant()) select emp;
+            //var Emps = from emp in _patientInfosWindowViewModel.KeywordsList where emp.ToLowerInvariant().Contains(txtInput.Text.ToLowerInvariant()) select emp;
+            var Emps = from emp in _patientInfosWindowViewModel.KeywordsList where (((from keywrds in emp.Keywords where keywrds.ToLowerInvariant().Contains(txtInput.Text.ToLowerInvariant()) select keywrds)).Count<string>() != 0) select emp;
             txt.AutoCompleteItemSource = Emps;
 
         }
@@ -53,12 +57,14 @@ namespace LightX
         {
             if (txt.SelectedItem != null)
             {
-                string keyword = txt.SelectedItem.ToString();
+                Disease keyword = txt.SelectedItem as Disease;
                 if (!_patientInfosWindowViewModel.KeywordsList.Contains(keyword))
                 {
                     var result = System.Windows.MessageBox.Show("The keyword you are trying to add does not exist.\nDo you want to add it to the keyword list?", "", MessageBoxButton.YesNoCancel);
                     if (result == MessageBoxResult.Yes)
                     {
+                        string word = (sender as AutoCompleteTextBox).SelectedItem.ToString();
+                        keyword = new Disease() { DisplayName = word, Keywords = new List<string>() { word } };
                         _patientInfosWindowViewModel.KeywordsList.Add(keyword);
                         _patientInfosWindowViewModel.SaveKeywordList(_patientInfosWindowViewModel.KeywordsList);
                     }
