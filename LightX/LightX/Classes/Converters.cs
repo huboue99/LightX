@@ -11,11 +11,9 @@ namespace LightX.Classes
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            parameter = null;
             if (value == null)
                 return null;
-
-            
-
 
             if (!string.IsNullOrEmpty(value.ToString()))
             {
@@ -29,7 +27,6 @@ namespace LightX.Classes
                         path = Path.ChangeExtension(path, ".jpeg");
                     uri = new Uri(path);
                 }
-                
 
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
@@ -78,7 +75,8 @@ namespace LightX.Classes
                 BitmapImage bi = new BitmapImage();
                 bi.BeginInit();
                 bi.UriSource = new Uri(image);
-                bi.CacheOption = parameter == null ? BitmapCacheOption.OnLoad : BitmapCacheOption.None;
+                //bi.CacheOption = parameter == null ? BitmapCacheOption.OnLoad : BitmapCacheOption.None;
+                bi.CacheOption = BitmapCacheOption.OnLoad;
                 //bi.CreateOptions = parameter == null ? BitmapCreateOptions.None : BitmapCreateOptions.IgnoreImageCache;
                 bi.EndInit();
                 return bi;

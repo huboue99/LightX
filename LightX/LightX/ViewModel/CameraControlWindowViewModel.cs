@@ -50,6 +50,7 @@ namespace LightX.ViewModel
         private int _totalBurstNumber = 0;
         private bool _isAutoBurstControl = false;
         public List<string> CapturedImages { get; set; }
+        private List<string> _filesToDelete { get; set; } = new List<string>();
 
         // System and windows vars
         private List<double> _oldGuideWindowPosition = new List<double>(2);
@@ -1587,27 +1588,29 @@ namespace LightX.ViewModel
                     // deleting temp files
                     foreach (string temp in CapturedImages)
                     {
-                        _lowPriorityTasks.Add(Task.Run(() =>
-                        {
-                            bool retry;
-                            do
-                            {
-                                retry = false;
-                                try
-                                {
-                                    Console.WriteLine("Deleting {0} + .jpeg + {1}...", Path.GetFileName(temp), _fileExtension);
-                                    if (File.Exists(temp + _fileExtension))
-                                        File.Delete(temp + _fileExtension);
-                                    if (File.Exists(temp + ".jpeg"))
-                                        File.Delete(temp + ".jpeg");
-                                }
-                                catch (IOException)
-                                {
-                                    Thread.Sleep(1000);
-                                    retry = true;
-                                }
-                            } while (retry);
-                        }));
+                        _filesToDelete.Add(temp + _fileExtension);
+                        _filesToDelete.Add(temp + ".jpeg");
+                        //_lowPriorityTasks.Add(Task.Run(() =>
+                        //{
+                        //    bool retry;
+                        //    do
+                        //    {
+                        //        retry = false;
+                        //        try
+                        //        {
+                        //            Console.WriteLine("Deleting {0} + .jpeg + {1}...", Path.GetFileName(temp), _fileExtension);
+                        //            if (File.Exists(temp + _fileExtension))
+                        //                File.Delete(temp + _fileExtension);
+                        //            if (File.Exists(temp + ".jpeg"))
+                        //                File.Delete(temp + ".jpeg");
+                        //        }
+                        //        catch (IOException)
+                        //        {
+                        //            Thread.Sleep(1000);
+                        //            retry = true;
+                        //        }
+                        //    } while (retry);
+                        //}));
                     }
                     ZoomOutEvent(true);
                     break;
@@ -1693,6 +1696,7 @@ namespace LightX.ViewModel
             if(CloseApplication(e))
             {
                 _objFinishWindow.FinishWindowClosingEvent -= ObjFinishWindow_FinishWindowClosingEvent;
+
             }
         }
 
@@ -1735,31 +1739,24 @@ namespace LightX.ViewModel
         private bool CloseApplication(CancelEventArgs e)
         {
             if(_objFinishWindow == null)
-            {
-                var result = System.Windows.MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
-                e.Cancel = result != MessageBoxResult.Yes;
-                if (!e.Cancel)
-                {
-                    ClosingRoutine();
-                    return true;
-                }
-                else
-                    return false;
-            }
+            { }
             else if (_objFinishWindow.IsVisible)
+            { }
+            else
             {
-                var result = System.Windows.MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
-                e.Cancel = result != MessageBoxResult.Yes;
-                if (!e.Cancel)
-                {
-                    ClosingRoutine();
-                    return true;
-                }
-                else
-                    return false;
+                _objFinishWindow = null;
+                return false;
             }
-            _objFinishWindow = null;
-            return false;
+
+            var result = System.Windows.MessageBox.Show("Do you want to close?", "", MessageBoxButton.YesNoCancel);
+            e.Cancel = result != MessageBoxResult.Yes;
+            if (!e.Cancel)
+            {
+                ClosingRoutine();
+                return true;
+            }
+            else
+                return false;
         }
 
         public void ClosingRoutine()
@@ -1771,6 +1768,39 @@ namespace LightX.ViewModel
                 SetDepthOfField(false);
                 DeviceManager.CloseAll();
             }
+
+            //if (_objFinishWindow != null)
+            //{
+            //    _objFinishWindow = null;
+            //    Thread.Sleep(100);
+            //}
+
+            // deleting remaining temps files
+            foreach(string file in _filesToDelete)
+            {
+                _lowPriorityTasks.Add(Task.Run(() =>
+                {
+                    bool retry;
+                    do
+                    {
+                        retry = false;
+                        try
+                        {
+                            Console.WriteLine("Deleting {0}...", Path.GetFileName(file));
+                            if (File.Exists(file))
+                                File.Delete(file);
+                        }
+                        catch (IOException)
+                        {
+                            Thread.Sleep(1000);
+                            retry = true;
+                        }
+                    } while (retry);
+                }));
+            }
+
+            Task.WaitAll(_lowPriorityTasks.ToArray());
+
             System.Windows.Application.Current.Shutdown();
         }
 
@@ -1867,6 +1897,7 @@ namespace LightX.ViewModel
                                     Console.WriteLine("Moving {0} to {1}...", Path.GetFileName(temp + _fileExtension), path);
                                     File.Move(temp + _fileExtension, path);
                                     File.Move(temp + ".jpeg", Path.ChangeExtension(path,".jpeg"));
+                                    _filesToDelete.Add(Path.ChangeExtension(path, ".jpeg"));
                                     _currentTestResults.ResultsImages.Add(path);
                                 }
                                 //Console.WriteLine("Deleting {0} + .jpeg...", Path.GetFileName(temp));
@@ -1888,27 +1919,29 @@ namespace LightX.ViewModel
                 else
                 {
                     string temp = imagesPath[i];
-                    _lowPriorityTasks.Add(Task.Run(() =>
-                    {
-                        bool retry;
-                        do
-                        {
-                            retry = false;
-                            try
-                            {
-                                Console.WriteLine("Deleting {0} + .jpeg + {1}...", Path.GetFileName(temp), _fileExtension);
-                                if (File.Exists(temp + _fileExtension))
-                                    File.Delete(temp + _fileExtension);
-                                if (File.Exists(temp + ".jpeg"))
-                                    File.Delete(temp + ".jpeg");
-                            }
-                            catch (IOException)
-                            {
-                                Thread.Sleep(1000);
-                                retry = true;
-                            }
-                        } while (retry);
-                    }));
+                    _filesToDelete.Add(temp + _fileExtension);
+                    _filesToDelete.Add(temp + ".jpeg");
+                    //_lowPriorityTasks.Add(Task.Run(() =>
+                    //{
+                    //    bool retry;
+                    //    do
+                    //    {
+                    //        retry = false;
+                    //        try
+                    //        {
+                    //            Console.WriteLine("Deleting {0} + .jpeg + {1}...", Path.GetFileName(temp), _fileExtension);
+                    //            if (File.Exists(temp + _fileExtension))
+                    //                File.Delete(temp + _fileExtension);
+                    //            if (File.Exists(temp + ".jpeg"))
+                    //                File.Delete(temp + ".jpeg");
+                    //        }
+                    //        catch (IOException)
+                    //        {
+                    //            Thread.Sleep(1000);
+                    //            retry = true;
+                    //        }
+                    //    } while (retry);
+                    //}));
                 }
 
             Task.WaitAll(_lowPriorityTasks.ToArray());

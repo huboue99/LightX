@@ -38,7 +38,7 @@
 
                             <ScrollViewer x:Name="ScrollViewer" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
                                 <StackPanel Orientation="Vertical">
-                                    <ItemsControl x:Name="WrapPanel"  ItemsSource="{Binding ResultsImages, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center">
+                                    <ItemsControl x:Name="WrapPanel" ItemsSource="{Binding ResultsImages, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid>

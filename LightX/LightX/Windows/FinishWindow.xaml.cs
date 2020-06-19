@@ -78,7 +78,15 @@ namespace LightX
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (_sendClosingEvent)
+            {
                 FinishWindowClosingEvent(e);
+                if (!e.Cancel)
+                {
+                    this._finishWindowViewModel.ReviewImages.Clear();
+                    this._finishWindowViewModel.CurrentExam = null;
+                    GC.Collect();
+                }
+            }
             _sendClosingEvent = true;
         }
 

@@ -93,5 +93,10 @@ namespace LightX
                 _reviewWindowViewModel.SelectAllImages();
             }
         }
+
+        private void SelectAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            _reviewWindowViewModel.SelectAllImages();
+        }
     }
 }
