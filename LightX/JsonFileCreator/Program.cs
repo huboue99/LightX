@@ -225,12 +225,10 @@ namespace JsonFileWriter
 
             #region Keywords
             
-            List<string> keywords = new List<string>()
+            List<Disease> keywords = new List<Disease>()
             {
-                "Conjonctivite",
-                "Uveite",
-                "Cataracte",
-                "stuff"
+                new Disease() {DisplayName = "Conjonctivite", Keywords = new List<string>() { "Conjonctivite" } },
+                new Disease() {DisplayName = "Uveite", Keywords = new List<string>() {"Uveite" } }
             };
 
             #endregion Keywords
@@ -261,7 +259,7 @@ namespace JsonFileWriter
             }
         }
 
-        static void WriteJsonFiles(string path, List<string> keywords)
+        static void WriteJsonFiles(string path, List<Disease> keywords)
         {
             using (StreamWriter file = File.CreateText($"{path}Keywords.json"))
             {

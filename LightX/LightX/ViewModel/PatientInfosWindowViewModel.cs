@@ -17,7 +17,6 @@ namespace LightX.ViewModel
 
         private Patient _currentPatient;
         private Exam _exam;
-        private bool[] _genders;
         private ObservableCollection<Disease> _keywords;
         private ObservableCollection<BoolStringClass> _currentTestListChoices;
         private bool _allSelectedChecked = true;
@@ -64,19 +63,6 @@ namespace LightX.ViewModel
                 {
                     _exam = value;
                     RaisePropertyChanged(() => Exam);
-                }
-            }
-        }
-
-        public bool[] Genders
-        {
-            get { return _genders; }
-            set
-            {
-                if (value != _genders)
-                {
-                    _genders = value;
-                    RaisePropertyChanged(() => Genders);
                 }
             }
         }
@@ -183,7 +169,6 @@ namespace LightX.ViewModel
             }
         }
 
-
         public ICommand CreateNewExamCommand
         {
             get
@@ -212,9 +197,9 @@ namespace LightX.ViewModel
 
         private void Confirm(Window window)
         {
-            CreateNewExam();
-            window.DialogResult = true;
-            CloseWindow(window);
+            window.DialogResult = CreateNewExam();
+            if (window.DialogResult == true)
+                CloseWindow(window);
         }
 
         private void Cancel(Window window)
@@ -226,9 +211,7 @@ namespace LightX.ViewModel
         private void CloseWindow(Window window)
         {
             if (window != null)
-            {
                 window.Close();
-            }
         }
 
         private ObservableCollection<Tests> CreateTestList()
@@ -243,7 +226,7 @@ namespace LightX.ViewModel
             return testList;
         }
 
-        private void CreateNewExam()
+        private bool ? CreateNewExam()
         {
             ///////////// TESTINGS /////////////////
             bool TESTING = true;
@@ -253,9 +236,13 @@ namespace LightX.ViewModel
             if ((string.IsNullOrEmpty(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.FirstName) || string.IsNullOrWhiteSpace(CurrentPatient.LastName) || string.IsNullOrEmpty(CurrentPatient.LastName)) && !TESTING)
             {
                 MessageBox.Show("Veuillez préciser le prénom et le nom.");
+                return null;
             }
-            else if (AreAllTrueOrFalse() == 0)
+            else if (AreAllTrueOrFalse() == false)
+            {
                 MessageBox.Show("Aucun test n'a été selectionné. Veuillez en sélectionner au moins un.");
+                return null;
+            }
             else
             {
                 ///////////////////////////////////
@@ -304,6 +291,7 @@ namespace LightX.ViewModel
                         Directory.CreateDirectory(Exam.ResultsPath);
                     SaveKeywordAsList(Exam.Keywords, Exam.ResultsPath);
                 }
+                return true;
             }
         }
 
@@ -322,12 +310,12 @@ namespace LightX.ViewModel
 
         private void SelectAllClick()
         {
-            int a = AreAllTrueOrFalse();
+            bool ? a = AreAllTrueOrFalse();
             foreach (BoolStringClass test in _currentTestListChoices)
             {
                 switch(a)
                 {
-                    case 1:
+                    case true:
                         test.IsSelected = false;
                         break;
                     default:
@@ -339,7 +327,7 @@ namespace LightX.ViewModel
 
         #endregion Actions
 
-        private int AreAllTrueOrFalse()
+        private bool ? AreAllTrueOrFalse()
         {
             bool a = false;
             int i = 0;
@@ -350,11 +338,11 @@ namespace LightX.ViewModel
                     i++;
             }
             if (!a)
-                return 0; // All false
+                return false; // All false
             else if (i != _currentTestListChoices.Count)
-                return 2; // Some true, some false
+                return null; // Some true, some false
             else
-                return 1; // All true
+                return true; // All true
         }
 
         public PatientInfosWindowViewModel()
