@@ -58,7 +58,6 @@ namespace LightX.Classes
             Add(new Parameters() { Name = "Shutter speed", Value = data.CamSettings.ShutterSpeed });
             Add(new Parameters() { Name = "f#", Value = data.CamSettings.FNumber });
             Add(new Parameters() { Name = "ISO", Value = data.CamSettings.Iso });
-            
         }
     }
 
@@ -251,6 +250,7 @@ namespace LightX.Classes
                 }
             }
         }
+
         public BitmapImage Image
         {
             get { return _image; }
@@ -278,7 +278,6 @@ namespace LightX.Classes
         }
 
         #endregion Properties
-
     }
 }
 

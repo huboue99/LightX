@@ -15,8 +15,9 @@ namespace LightX.ViewModel
 
         private List<GuideData> _currentTest;
         private RunList _currentTestsState;
-        private string _testTitle;
         private int _instructionIndex = 0;
+
+        public string TestTitle { get; }
 
         #endregion Fields
 
@@ -32,16 +33,6 @@ namespace LightX.ViewModel
             }
         }
 
-        public string TestTitle
-        {
-            get { return _testTitle; }
-            set
-            {
-                _testTitle = value;
-                RaisePropertyChanged(() => TestTitle);
-            }
-        }
-
         public RunList CurrentTestsState
         {
             get { return _currentTestsState; }
@@ -54,32 +45,6 @@ namespace LightX.ViewModel
                 }
             }
         }
-
-        //public BitmapImage CurrentImage
-        //{
-        //    get { return _currentImage; }
-        //    set
-        //    {
-        //        if (value != _currentImage)
-        //        {
-        //            _currentImage = value;
-        //            RaisePropertyChanged(() => CurrentImage);
-        //        }
-        //    }
-        //}
-
-        //public Instruction CurrentInstruction
-        //{
-        //    get { return _currentInstruction; }
-        //    set
-        //    {
-        //        if (value != _currentInstruction)
-        //        {
-        //            _currentInstruction = value;
-        //            RaisePropertyChanged(() => CurrentInstruction);
-        //        }
-        //    }
-        //}
 
         public int InstructionIndex
         {
@@ -103,7 +68,6 @@ namespace LightX.ViewModel
             if(_instructionIndex < CurrentTest.Count - 1)
             {
                 ++InstructionIndex;
-                //SelectTab(_instructionIndex);
                 return true;
             }
             return false;
@@ -114,7 +78,6 @@ namespace LightX.ViewModel
             if (_instructionIndex > 0)
             {
                 --InstructionIndex;
-                //SelectTab(_instructionIndex);
                 return true;
             }
             return false;
@@ -147,23 +110,16 @@ namespace LightX.ViewModel
             CurrentTestsState[testIndex].FontWeight = FontWeights.Bold;
         }
 
-        //private void FetchAllData()
-        //{
-        //    _currentInstruction = CurrentTest.Instructions[_instructionIndex];
-        //    CurrentList = new ParametersList(_currentInstruction);
-        //    FetchCurrentImage();
-        //}
-
         #endregion DataFetching
 
         public GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
             TestTitle = test.TestTitle;
             CurrentTest = new List<GuideData>();
-            int j = 1;
+            int j = 0;
             foreach (Instruction instruction in test.Instructions)
             {
-                CurrentTest.Add(new GuideData() { ParamList = new ParametersList(instruction), InstructionsNotes = instruction.InstructionsNotes, Image = FetchImage(instruction.ImagesPath), Id = j++ });
+                CurrentTest.Add(new GuideData() { ParamList = new ParametersList(instruction), InstructionsNotes = instruction.InstructionsNotes, Image = FetchImage(instruction.ImagesPath), Id = ++j });
             }
 
             FetchCurrentTestList(testList, i);

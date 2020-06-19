@@ -242,30 +242,36 @@ namespace JsonFileWriter
             jsonData.Add(PupillaryMargin);
             jsonData.Add(IrisTransillumination);
 
-            WriteJsonFiles(@"..\..\..\LightX\Resources\", jsonData);
-            //WriteJsonFiles(@"..\..\..\LightX\Resources\", keywords);
+            WriteJsonObjs(@"..\..\..\LightX\Resources\", jsonData);
+            //WriteJsonObj(@"..\..\..\LightX\Resources\Keywords.json", keywords);
         }
 
-        static void WriteJsonFiles(string path, List<TestInstructions> jsonData)
+        static void WriteJsonObjs<T>(string path, List<T> objList)
         {
-            foreach (TestInstructions data in jsonData)
+            if (!path.EndsWith(@"\") && !Path.HasExtension(path))
+                path = path + @"\";
+
+            int i = 0;
+
+            foreach (T obj in objList)
             {
-                using (StreamWriter file = File.CreateText($"{path}{data.Id.ToString()}.json"))
-                {
-                    Console.WriteLine("Writing {0}.json to disk...", data.Id.ToString());
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(file, data);
-                }
+                string objPath = "" ;
+                if (obj is TestInstructions)
+                    objPath = $"{path}{(obj as TestInstructions).Id.ToString()}.json";
+                else
+                    objPath = $"{path}object{i++}.json";
+
+                WriteJsonObj(objPath, obj);
             }
         }
 
-        static void WriteJsonFiles(string path, List<Disease> keywords)
+        static void WriteJsonObj<T>(string path, T obj)
         {
-            using (StreamWriter file = File.CreateText($"{path}Keywords.json"))
+            using (StreamWriter file = File.CreateText(path))
             {
-                Console.WriteLine("Writing Keywords.json to disk...");
+                Console.WriteLine("Writing {0} to disk...", Path.GetFileName(path));
                 JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, keywords);
+                serializer.Serialize(file, obj);
             }
         }
     }

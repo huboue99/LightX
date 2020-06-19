@@ -19,9 +19,6 @@ namespace LightX.ViewModel
         private Exam _currentExam;
         private ObservableCollection<ReviewImage> _reviewImages;
 
-        // Command definitions
-        //private RelayCommand _newPhotoCommand;
-
         #endregion Fields
 
         #region Properties
@@ -54,11 +51,7 @@ namespace LightX.ViewModel
 
         #endregion Properties
 
-        #region RelayCommands
-
-        #endregion RelayCommands
-
-        #region Actions
+        #region Events
 
         internal bool ActiveImageEvent(Image image)
         {
@@ -90,6 +83,10 @@ namespace LightX.ViewModel
             GC.Collect();
             return imageHasChanged;
         }
+
+        #endregion Events
+
+        #region Actions
 
         #endregion Actions
 

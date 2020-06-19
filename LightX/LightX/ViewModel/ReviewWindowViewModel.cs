@@ -18,9 +18,6 @@ namespace LightX.ViewModel
         private ObservableCollection<ReviewImage> _reviewImages;
         private string _currentComment;
 
-        // General purpose vars
-        public bool ImageIsSelectable { get; set; } = true;
-        
         // Command definitions
         private ICommand _confirmCommand;
         private ICommand _cancelCommand;
@@ -28,6 +25,7 @@ namespace LightX.ViewModel
         #endregion Fields
 
         #region Properties
+
         public string CurrentComment
         {
             get { return _currentComment; }
@@ -53,6 +51,60 @@ namespace LightX.ViewModel
             }
             RaisePropertyChanged(() => ReviewImages);
         }
+
+        public ObservableCollection<ReviewImage> ReviewImages
+        {
+            get { return _reviewImages; }
+            set
+            {
+                if (value != _reviewImages)
+                {
+                    _reviewImages = value;
+                    RaisePropertyChanged(() => ReviewImages);
+                }
+            }
+        }
+
+        private bool AreAllImagesSelected()
+        {
+            bool b = true;
+            foreach (ReviewImage reviewImage in ReviewImages)
+            {
+                b &= reviewImage.IsSelected;
+            }
+            return b;
+        }
+
+        #endregion Properties
+
+        #region RelayCommands
+        public ICommand ConfirmCommand
+        {
+            get
+            {
+                if (_confirmCommand == null)
+                    _confirmCommand = new RelayCommand<Window>(
+                        param => ConfirmImage(param)
+                        );
+                return _confirmCommand;
+            }
+        }
+
+        public ICommand CancelCommand
+        {
+            get
+            {
+                if (_cancelCommand == null)
+                    _cancelCommand = new RelayCommand<Window>(
+                        param => CancelImage(param)
+                        );
+                return _cancelCommand;
+            }
+        }
+
+        #endregion RelayCommands
+
+        #region Events
 
         internal bool ActiveImageEvent(Image image)
         {
@@ -85,33 +137,20 @@ namespace LightX.ViewModel
             return imageHasChanged;
         }
 
-        public ObservableCollection<ReviewImage> ReviewImages
+        private void CancelImage(Window currentWindow)
         {
-            get { return _reviewImages; }
-            set
-            {
-                if (value != _reviewImages)
-                {
-                    _reviewImages = value;
-                    RaisePropertyChanged(() => ReviewImages);
-                }
-            }
+            currentWindow.DialogResult = false;
+            CloseWindow(currentWindow);
         }
 
-        #endregion Properties
-
-        #region RelayCommands
-        public ICommand ConfirmCommand
+        private void CloseWindow(Window currentWindow)
         {
-            get
-            {
-                if (_confirmCommand == null)
-                    _confirmCommand = new RelayCommand<Window>(
-                        param => ConfirmImage(param)
-                        );
-                return _confirmCommand;
-            }
+            currentWindow.Close();
         }
+
+        #endregion Events
+
+        #region Actions
 
         internal void SelectAllImages()
         {
@@ -126,32 +165,6 @@ namespace LightX.ViewModel
             RaisePropertyChanged(() => ReviewImages);
         }
 
-        private bool AreAllImagesSelected()
-        {
-            bool b = true;
-            foreach (ReviewImage reviewImage in ReviewImages)
-            {
-                b &= reviewImage.IsSelected;
-            }
-            return b;
-        }
-
-        public ICommand CancelCommand
-        {
-            get
-            {
-                if (_cancelCommand == null)
-                    _cancelCommand = new RelayCommand<Window>(
-                        param => CancelImage(param)
-                        );
-                return _cancelCommand;
-            }
-        }
-
-        #endregion RelayCommands
-
-        #region Actions
-
         private void ConfirmImage(Window currentWindow)
         {
             bool oneIsSelected = false;
@@ -159,6 +172,7 @@ namespace LightX.ViewModel
             {
                 oneIsSelected |= reviewImage.IsSelected;
             }
+
             if(!oneIsSelected)
                 MessageBox.Show("Veuillez selectionner au moins une photo.");
             else
@@ -168,26 +182,13 @@ namespace LightX.ViewModel
             }
         }
 
-        private void CancelImage(Window currentWindow)
-        {
-            currentWindow.DialogResult = false;
-            CloseWindow(currentWindow);
-        }
-
-        private void CloseWindow(Window currentWindow)
-        {
-            currentWindow.Close();
-        }
-
         public void RefreshReviewImages(List<string> images, int activeIndex)
         {
             images = SanitizeImagePathList(images);
 
             ObservableCollection<ReviewImage> reviewImg = new ObservableCollection<ReviewImage>();
             foreach (string image in images)
-            {
                 reviewImg.Add(new ReviewImage() { Image = image });
-            }
 
             if (activeIndex < 0 || activeIndex >= reviewImg.Count)
             {
@@ -213,9 +214,7 @@ namespace LightX.ViewModel
             int activeIndex = 0;
 
             while (!ReviewImages[activeIndex].IsActive && activeIndex < ReviewImages.Count - 1)
-            {
                 ++activeIndex;
-            }
 
             RefreshReviewImages(images, activeIndex);
         }
@@ -239,13 +238,7 @@ namespace LightX.ViewModel
         public ReviewWindowViewModel(List<string> images, string comment)
         {
             RefreshReviewImages(images, 0);
-            
             _currentComment = comment;
-
-            ImageIsSelectable = images.Count > 1;
-
-            //if (!ImageIsSelectable)
-            //    ReviewImages[0].IsSelected = true;
         }
     }
 }
