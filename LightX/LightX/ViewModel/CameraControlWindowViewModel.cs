@@ -500,7 +500,14 @@ namespace LightX.ViewModel
             GC.KeepAlive(eventArgs);
             GC.KeepAlive(sender);
 
-            _tasks.Add(new Task(() => ProcessImageFromFile(fileName)));
+            _tasks.Add(new Task(() =>
+            {
+                if (CapturedImages == null)
+                    CapturedImages = new List<string>();
+                ExtractThumbFromRawImageFile(fileName);
+                CapturedImages.Add(fileName);
+                Console.WriteLine("{0}.jpeg added to the list of thumbnails", Path.GetFileName(fileName));
+            }));
 
             Console.WriteLine($"_remainingBurst = {_remainingBurst}; _totalBurstNumber = {_totalBurstNumber}; _remainingBurst = {_remainingBurst};");
             //if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0) )
@@ -605,7 +612,6 @@ namespace LightX.ViewModel
             GC.WaitForPendingFinalizers();
             _totalBurstNumber = 0; // reset the burstNumber after review
 
-            //_reviewWindow.Close();
             _reviewWindow = null;
 
             if (_testIndex >= CurrentExam.TestList.Count)
@@ -614,17 +620,6 @@ namespace LightX.ViewModel
                 return;
             }
 
-            // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
-            //System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            //{
-            //    foreach (Window window in System.Windows.Application.Current.Windows)
-            //    {
-            //        if (window.GetType() == typeof(CameraControlWindow))
-            //        {
-            //            (window as CameraControlWindow).Activate();
-            //        }
-            //    }
-            //});
             FocusOnWindow<CameraControlWindow>();
         }
 
@@ -638,7 +633,6 @@ namespace LightX.ViewModel
             if (CloseApplication(e))
             {
                 _objFinishWindow.FinishWindowClosingEvent -= ObjFinishWindow_FinishWindowClosingEvent;
-
             }
         }
 
@@ -654,18 +648,7 @@ namespace LightX.ViewModel
             ResetZoom();
             StartLiveViewInThread();
 
-            CameraControlWindow currentWindow;
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                foreach (Window window in System.Windows.Application.Current.Windows)
-                {
-                    if (window.GetType() == typeof(CameraControlWindow))
-                    {
-                        currentWindow = window as CameraControlWindow;
-                        currentWindow.Show();
-                    }
-                }
-            });
+            ShowWindow<CameraControlWindow>();
         }
 
         private void ObjGuideWindow_NextInstructionEvent()
@@ -1130,9 +1113,10 @@ namespace LightX.ViewModel
                 if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = isOn;
             }
-            catch
+            catch (Exception exception)
             {
                 Console.WriteLine("Could not set the DepthOfFieldPreview.");
+                Console.WriteLine(exception.Message);
             }
 
         }
@@ -1152,9 +1136,9 @@ namespace LightX.ViewModel
                             case "Drive Mode":
                                 propertyVal.SetValue(propertyVal.Values[1]); //High-Speed Continuous shooting
                                 break;
-                            case "Flash":
-                                //propertyVal.SetValue(propertyVal.Values[0]);
-                                break;
+                            //case "Flash":
+                            //    //propertyVal.SetValue(propertyVal.Values[0]);
+                            //    break;
                             default:
                                 break;
                         }
@@ -1263,35 +1247,13 @@ namespace LightX.ViewModel
             _reviewWindow.ReviewWindowClosingEvent += _reviewWindow_ReviewWindowClosingEvent;
             _reviewWindow.Show();
 
-            // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
-            //System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            //{
-            //    foreach (Window window in System.Windows.Application.Current.Windows)
-            //    {
-            //        if (window.GetType() == typeof(CameraControlWindow) || window.GetType() == typeof(GuideWindow))
-            //        {
-            //            window.Activate();
-            //        }
-            //    }
-            //});
             FocusOnWindow<CameraControlWindow>();
             FocusOnWindow<GuideWindow>();
         }
         
         private void ShowFinishWindow()
         {
-            CameraControlWindow currentWindow;
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                foreach (Window window in System.Windows.Application.Current.Windows)
-                {
-                    if (window.GetType() == typeof(CameraControlWindow))
-                    {
-                        currentWindow = window as CameraControlWindow;
-                        currentWindow.Hide();
-                    }
-                }
-            });
+            HideWindow<CameraControlWindow>();
 
             if (_objFinishWindow == null)
             {
@@ -1345,7 +1307,7 @@ namespace LightX.ViewModel
                 DeviceManager.CloseAll();
             }
 
-            // adding remaining temps files to the delete list
+            // deleting temps files from the delete list
             foreach(string file in _filesToDelete)
             {
                 _lowPriorityTasks.Add(Task.Run(() =>
@@ -1371,6 +1333,7 @@ namespace LightX.ViewModel
                 }));
             }
 
+            // Wait for all temp files to be deleted
             Task.WaitAll(_lowPriorityTasks.ToArray());
 
             System.Windows.Application.Current.Shutdown();
@@ -1378,50 +1341,52 @@ namespace LightX.ViewModel
 
         private void CloseCurrentGuideWindow()
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                foreach (Window window in System.Windows.Application.Current.Windows)
-                {
-                    if (window.GetType() == typeof(GuideWindow))
-                    {
-                        _oldGuideWindowPosition[0] = (window as GuideWindow).Left;
-                        _oldGuideWindowPosition[1] = (window as GuideWindow).Top;
-                        (window as GuideWindow).NextInstructionEvent -= ObjGuideWindow_NextInstructionEvent;
-                        (window as GuideWindow).Close();
-                    }
-                }
-            });
+            GuideWindow guide = GetCurrentWindow<GuideWindow>();
+            _oldGuideWindowPosition[0] = guide.Left;
+            _oldGuideWindowPosition[1] = guide.Top;
+            guide.NextInstructionEvent -= ObjGuideWindow_NextInstructionEvent;
+            guide.Close();
         }
 
         private bool NextInstructionGuideWindow()
         {
-            bool nextOK = false;
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                foreach (Window window in System.Windows.Application.Current.Windows)
-                {
-                    if (window.GetType() == typeof(GuideWindow))
-                    {
-                        nextOK = (window as GuideWindow).NextInstruction();
-                    }
-                }
-            });
-
-            return nextOK;
+            GuideWindow guideWindow = GetCurrentWindow<GuideWindow>();
+            return guideWindow.NextInstruction();
         }
 
         private void FocusOnWindow<T>() where T : Window
         {
+            T window = GetCurrentWindow<T>();
+            window.Activate();
+        }
+
+        private void HideWindow<T>() where T : Window
+        {
+            T window = GetCurrentWindow<T>();
+            window.Hide();
+        }
+
+        private void ShowWindow<T>() where T : Window
+        {
+            T window = GetCurrentWindow<T>();
+            window.Show();
+        }
+
+        private T GetCurrentWindow<T>() where T : Window
+        {
+            T currentWindow = default(T);
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 foreach (Window window in System.Windows.Application.Current.Windows)
                 {
                     if (window.GetType() == typeof(T))
                     {
-                        (window as T).Activate();
+                        currentWindow = (window as T);
                     }
                 }
             });
+
+            return currentWindow;
         }
 
         #endregion WindowsManagement
@@ -1609,8 +1574,6 @@ namespace LightX.ViewModel
                 return "New test";
         }
 
-        
-
         private void SkipCurrentTest()
         {
             if (_reviewWindow != null)
@@ -1643,17 +1606,6 @@ namespace LightX.ViewModel
                 if (_testIndex < CurrentExam.TestList.Count)
                 {
                     FetchCurrentTest();
-                    // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
-                    //System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    //{
-                    //    foreach (Window window in System.Windows.Application.Current.Windows)
-                    //    {
-                    //        if (window.GetType() == typeof(CameraControlWindow))
-                    //        {
-                    //            (window as CameraControlWindow).Activate();
-                    //        }
-                    //    }
-                    //});
                     FocusOnWindow<CameraControlWindow>();
 
                     if (DeviceManager.SelectedCameraDevice is NikonBase)
@@ -1675,29 +1627,30 @@ namespace LightX.ViewModel
 
         #region ImageManipulation
 
-        private void ProcessImageFromFile(string path)
+        private void ExtractThumbFromRawImageFile(string sourcePath, string destinationPath)
         {
-            if (CapturedImages == null)
-                CapturedImages = new List<string>();
-
             byte[] rawData = new byte[5000000];
             GCHandle rawDataHandle = GCHandle.Alloc(rawData, GCHandleType.Pinned);
             IntPtr address = rawDataHandle.AddrOfPinnedObject();
 
             Console.WriteLine("Extracting thumbnail to {0}", address);
-            int size = LibrawClass.extractThumbFromFile(address, path + _fileExtension);
+            int size = LibrawClass.extractThumbFromFile(address, sourcePath + _fileExtension);
             Console.WriteLine("Thumbnail ({0}) extracted to {1}", size, address);
 
             byte[] result = new byte[size];
             rawDataHandle.Free();
             Marshal.Copy(address, result, 0, size);
 
-            File.WriteAllBytes(path + ".jpeg", result);
-            CapturedImages.Add(path);
-            Console.WriteLine("{0}.jpeg added to the list of thumbnails", Path.GetFileName(path));
+            File.WriteAllBytes(destinationPath + ".jpeg", result);
+            
         }
 
-        private double GetZoomRatio(int displayLenght, int fullLenght)
+        private void ExtractThumbFromRawImageFile(string path)
+        {
+            ExtractThumbFromRawImageFile(path, path);
+        }
+
+            private double GetZoomRatio(int displayLenght, int fullLenght)
         {
             double ratio;
             switch(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value)
