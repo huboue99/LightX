@@ -14,7 +14,6 @@ namespace LightX
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
-    
     public partial class PatientInfosWindow : Window
     {
         public Exam Exam
@@ -50,7 +49,6 @@ namespace LightX
             //var Emps = from emp in _patientInfosWindowViewModel.KeywordsList where emp.ToLowerInvariant().Contains(txtInput.Text.ToLowerInvariant()) select emp;
             var Emps = from emp in _patientInfosWindowViewModel.KeywordsList where (((from keywrds in emp.Keywords where keywrds.ToLowerInvariant().Contains(txtInput.Text.ToLowerInvariant()) select keywrds)).Count<string>() != 0) select emp;
             txt.AutoCompleteItemSource = Emps;
-
         }
 
         private void Txt_OnSelectedItemChange(object sender, EventArgs e)
@@ -75,13 +73,6 @@ namespace LightX
                     _patientInfosWindowViewModel.Keywords.Add(keyword);
                 (sender as LightX.Controls.AutoCompleteTextBox).ClearSearchInput();
             }
-            
-            //if (txt.SelectedItem == null)
-            //    tb.Text = "Selcted Employee :";
-            //else
-            //{
-            //    tb.Text = "Selcted Employee : " + txt.SelectedItem.ToString();
-            //}
         }
     }
 }

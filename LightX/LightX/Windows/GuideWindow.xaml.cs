@@ -14,7 +14,6 @@ namespace LightX
     /// Interaction logic for GuideWindow.xaml
     /// </summary>
     /// 
-    
     public partial class GuideWindow : Window
     {
         private readonly GuideWindowViewModel _guideWindowViewModel;
@@ -61,15 +60,9 @@ namespace LightX
             DataContext = _guideWindowViewModel;
 
             this.Title = $"LightX - {test.TestTitle}";
-            //this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             //this.Left = Screen.AllScreens[0].WorkingArea.Left + this.Width / 4;
             //this.Top = Screen.AllScreens[0].WorkingArea.Height / 2 - this.Height / 2;
             //this.Left = SystemParameters.PrimaryScreenWidth;
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-
         }
 
         protected override void OnSourceInitialized(EventArgs e)

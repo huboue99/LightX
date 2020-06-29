@@ -45,9 +45,7 @@ namespace LightX
                 _reviewWindowViewModel.SelectImageEvent(sender as Image);
             else
             {
-                bool imageHasChanged = _reviewWindowViewModel.ActiveImageEvent(sender as Image);
-                //if (imageHasChanged)
-                //    loadedZoomBorder.Reset();
+                bool _ = _reviewWindowViewModel.ActiveImageEvent(sender as Image);
             }
         }
 
@@ -71,14 +69,12 @@ namespace LightX
         {
             _isAccepted = true;
             this.Close();
-            //ReviewWindowClosingEvent(_isAccepted);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             _isAccepted = false;
             this.Close();
-            //ReviewWindowClosingEvent(_isAccepted);
         }
 
         private void PhotoReviewWindow_Closing(object sender, CancelEventArgs e)
@@ -88,10 +84,12 @@ namespace LightX
 
         private void PhotoReviewWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.Key is Key.F1)
+            switch (e.Key)
             {
-                _reviewWindowViewModel.SelectAllImages();
+                default:
+                    break;
             }
+            e.Handled = true;
         }
 
         private void SelectAllButton_Click(object sender, RoutedEventArgs e)

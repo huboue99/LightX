@@ -14,13 +14,6 @@
         Icon="../LightXLogo.ico"
         Title="LightX - Nouvel Examen" Height="600" Width="525" ResizeMode="NoResize" Topmost="False" WindowState="Normal">
 
-   
-
-    <!--<Window.InputBindings>
-        --><!--<KeyBinding Command="{Binding CloseWindowCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Esc"/>--><!--
-        <KeyBinding Command="{Binding CreateNewExamCommand}" CommandParameter="{Binding ElementName=NewExamWindow}" Key="Return"/>
-    </Window.InputBindings>-->
-
     <StackPanel Orientation="Vertical" Margin="10">
         <Label Content="Entrez les informations du patient :" Margin="25 0 0 0"/>
         <Grid>
@@ -54,8 +47,6 @@
 
             <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Date de naissance :"/>
-                <!--<TextBox Text="{Binding CurrentPatient.FirstName, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalContentAlignment="Center" Height="22" Width="190" HorizontalAlignment="Left"/>-->
-                <!--<DatePicker Height="22" Width="190" Text="" xml:lang="fr-CA" SelectedDate="{Binding CurrentPatient.BirthDate}" HorizontalAlignment="Left"/>-->
                 <xctk:DateTimePicker Width="190" AutoCloseCalendar="True" ShowButtonSpinner="False" TimePickerVisibility="Hidden" Value="{Binding CurrentPatient.BirthDate, Mode=TwoWay}" Format="ShortDate"/>
             </StackPanel>
             <StackPanel Width="190" Orientation="Vertical" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -66,8 +57,6 @@
                 </StackPanel>
                
             </StackPanel>
-            <!--<Label Content="Nom :" Grid.Column="2" HorizontalAlignment="Right"/>-->
-            <!--<TextBox Text="{Binding CurrentPatient.LastName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="3" TextWrapping="NoWrap" VerticalContentAlignment="Center" Width="190" HorizontalAlignment="Left"/>-->
         </Grid>
 
         <Grid Margin="30 15">
@@ -93,7 +82,6 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
-            <!--<TextBox Grid.Row="2"/>-->
 
             <!-- AutoComplete Placement At Bottom Of Input Control-->
             <controls:AutoCompleteTextBox Grid.Row="2" x:Name="txt" AutoCompleteItemSource="{Binding KeyordsList}" AutoCompleteWidth="{Binding ElementName=txt, Path=ActualWidth}" AutoCompleteHeight="150" AutoCompletePlacementTarget="{Binding ElementName=txt}" AutoCompletePlacement="Bottom" OnTextChange="Txt_OnTextChange" OnSelectedItemChange="Txt_OnSelectedItemChange" >
@@ -124,6 +112,3 @@
         </StackPanel>
     </StackPanel>
 </Window>
-
-    
-    

@@ -67,7 +67,6 @@
                 </TabControl.ContentTemplate>
             </TabControl>
 
-
             <Grid Grid.Column="1" Margin="0 32 0 0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
