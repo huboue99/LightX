@@ -47,7 +47,7 @@ namespace LightX
             NewPhotoEvent(this.TabControl01.SelectedContent as TestResults);
         }
 
-        public FinishWindow(Exam exam)
+        internal FinishWindow(Exam exam)
         {
             _finishWindowViewModel = new FinishWindowViewModel(exam);
             InitializeComponent();
@@ -57,7 +57,7 @@ namespace LightX
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 
-        public void CloseWithoutEvent()
+        internal void CloseWithoutEvent()
         {
             _sendClosingEvent = false;
             this.Close();

@@ -35,7 +35,7 @@ namespace LightX
         const int WM_SHOWWINDOW = 0x00000018;
         const int WM_CLOSE = 0x10;
 
-        public bool NextInstruction()
+        internal bool NextInstruction()
         {
             bool b = false;
             if(_guideWindowViewModel.NextInstruction())
@@ -44,7 +44,7 @@ namespace LightX
             return b;
         }
 
-        public bool PreviousInstruction()
+        internal bool PreviousInstruction()
         {
             bool b = false;
             if (_guideWindowViewModel.PreviousInstruction())
@@ -53,7 +53,7 @@ namespace LightX
             return b;
         }
 
-        public GuideWindow(TestInstructions test, ObservableCollection<Tests> testList, int i)
+        internal GuideWindow(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
             _guideWindowViewModel = new GuideWindowViewModel(test, testList, i);
             InitializeComponent();
@@ -76,7 +76,6 @@ namespace LightX
                 hwndSource.AddHook(new HwndSourceHook(this.hwndSourceHook));
             }
         }
-
 
         IntPtr hwndSourceHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {

@@ -84,7 +84,7 @@
                 </ItemsControl>
 
             <!-- AutoComplete Placement At Bottom Of Input Control-->
-            <controls:AutoCompleteTextBox Grid.Row="2" x:Name="txt" AutoCompleteItemSource="{Binding KeyordsList}" AutoCompleteWidth="{Binding ElementName=txt, Path=ActualWidth}" AutoCompleteHeight="150" AutoCompletePlacementTarget="{Binding ElementName=txt}" AutoCompletePlacement="Bottom" OnTextChange="Txt_OnTextChange" OnSelectedItemChange="Txt_OnSelectedItemChange" >
+            <controls:AutoCompleteTextBox Grid.Row="2" x:Name="txt" AutoCompleteItemSource="{Binding KeywordsList}" AutoCompleteWidth="{Binding ElementName=txt, Path=ActualWidth}" AutoCompleteHeight="150" AutoCompletePlacementTarget="{Binding ElementName=txt}" AutoCompletePlacement="Bottom" OnTextChange="Txt_OnTextChange" OnSelectedItemChange="Txt_OnSelectedItemChange" >
                 <controls:AutoCompleteTextBox.AutoCompleteColumns>
                     <DataGridTextColumn MinWidth="60" Binding="{Binding DisplayName}" />
                 </controls:AutoCompleteTextBox.AutoCompleteColumns>

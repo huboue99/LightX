@@ -34,7 +34,7 @@ namespace LightX
             }
         }
 
-        public void RefreshReviewImages(List<string> images)
+        internal void RefreshReviewImages(List<string> images)
         {
             _reviewWindowViewModel.RefreshReviewImages(images);
         }
@@ -49,7 +49,7 @@ namespace LightX
             }
         }
 
-        public ReviewWindow(List<string> images, string comment)
+        internal ReviewWindow(List<string> images, string comment)
         {
             _reviewWindowViewModel = new ReviewWindowViewModel(images, comment);
             InitializeComponent();

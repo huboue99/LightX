@@ -345,7 +345,7 @@ namespace LightX.ViewModel
                 return true; // All true
         }
 
-        public PatientInfosWindowViewModel()
+        internal PatientInfosWindowViewModel()
         {
             KeywordsList = ReadKeywordsList();
             CreateCheckBoxList();

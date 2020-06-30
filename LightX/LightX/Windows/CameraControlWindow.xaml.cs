@@ -28,7 +28,7 @@ namespace LightX
         private bool _shutterIsPressed = false;
         private bool _zoomIsPressed = false;
 
-        public void MouseLeftButtonDownEventHandler(object sender, MouseButtonEventArgs e)
+        internal void MouseLeftButtonDownEventHandler(object sender, MouseButtonEventArgs e)
         {
             try
             {
@@ -112,7 +112,7 @@ namespace LightX
                 _listener.UnHookKeyboard();
         }
 
-        public CameraControlWindow()
+        internal CameraControlWindow()
         {
             this.Hide();
             _cameraControlWindowViewModel = new CameraControlWindowViewModel();

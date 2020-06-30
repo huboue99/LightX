@@ -431,7 +431,7 @@ namespace LightX.ViewModel
             
         }
 
-        public void ZoomOutEvent(bool canZoom)
+        internal void ZoomOutEvent(bool canZoom)
         {
             try
             {
@@ -450,7 +450,7 @@ namespace LightX.ViewModel
             
         }
 
-        void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
+        private void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
         {
             Console.WriteLine("Event CameraInitDone : {0}", cameraDevice.DeviceName);
 
@@ -461,7 +461,7 @@ namespace LightX.ViewModel
                 StartLiveViewInThread(cameraDevice);
         }
 
-        void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
+        private void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
         {
             Console.WriteLine("Event CameraSelected : {0}", newcameraDevice.DeviceName);
 
@@ -472,13 +472,13 @@ namespace LightX.ViewModel
             }
         }
 
-        void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
+        private void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
         {
             Console.WriteLine("Event CameraConnected : {0}", cameraDevice.DeviceName);
             cameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
         }
 
-        void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
+        private void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
         {
             ++_remainingBurst;
             ++_totalBurstNumber;
@@ -543,7 +543,7 @@ namespace LightX.ViewModel
             }
         }
 
-        void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
+        private void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
         {
             Console.WriteLine("Event CameraDisconnected : {0}", cameraDevice.DeviceName);
             cameraDevice.CameraInitDone -= SelectedCamera_CameraInitDone;
@@ -729,7 +729,7 @@ namespace LightX.ViewModel
             }
         }
 
-        public void StartBurstCapture()
+        internal void StartBurstCapture()
         {
             Console.WriteLine("Shutter pressed");
 
@@ -772,7 +772,7 @@ namespace LightX.ViewModel
             }
         }
 
-        public void StopBurstCapture()
+        internal void StopBurstCapture()
         {
             _burstTimer.Stop();
             Console.WriteLine("Shutter released");
@@ -896,7 +896,7 @@ namespace LightX.ViewModel
 
         // LiveView
 
-        public void SetZoom(string desiredZoom = null)
+        internal void SetZoom(string desiredZoom = null)
         {
             if (desiredZoom == null)
             {
@@ -917,7 +917,7 @@ namespace LightX.ViewModel
             _zoomHasChanged = true;
         }
 
-        public void SetRoiXY(int x, int y)
+        private void SetRoiXY(int x, int y)
         {
             bool retry; int tryCount = 0;
             do
@@ -944,7 +944,7 @@ namespace LightX.ViewModel
             } while (retry && tryCount < RetryLimit);
         }
 
-        public void MoveRoiXY(Key key, bool canMove)
+        internal void MoveRoiXY(Key key, bool canMove)
         {
             if (canMove)
             {
@@ -1008,7 +1008,7 @@ namespace LightX.ViewModel
             }
         }
 
-        public void StartLiveViewInThread(ICameraDevice cameraDevice = null)
+        internal void StartLiveViewInThread(ICameraDevice cameraDevice = null)
         {
             if (cameraDevice == null)
                 cameraDevice = DeviceManager.SelectedCameraDevice;
@@ -1297,7 +1297,7 @@ namespace LightX.ViewModel
                 return false;
         }
 
-        public void ClosingRoutine()
+        internal void ClosingRoutine()
         {
             Console.WriteLine("Closing LightX...");
             if (_liveViewTimer.Enabled)
@@ -1515,7 +1515,7 @@ namespace LightX.ViewModel
             return obj;
         }
 
-        public void FetchCurrentTest()
+        internal void FetchCurrentTest()
         {
             
             Tests test = CurrentExam.TestList[_testIndex];
@@ -1536,7 +1536,7 @@ namespace LightX.ViewModel
             };
         }
 
-        public string FetchTest(Tests test, ObservableCollection<Tests> testList, int testIndex)
+        private string FetchTest(Tests test, ObservableCollection<Tests> testList, int testIndex)
         {
             TestInstructions currentTest;
             string path = $@"..\..\Resources\{test}.json";
@@ -1642,7 +1642,6 @@ namespace LightX.ViewModel
             Marshal.Copy(address, result, 0, size);
 
             File.WriteAllBytes(destinationPath + ".jpeg", result);
-            
         }
 
         private void ExtractThumbFromRawImageFile(string path)
@@ -1650,7 +1649,7 @@ namespace LightX.ViewModel
             ExtractThumbFromRawImageFile(path, path);
         }
 
-            private double GetZoomRatio(int displayLenght, int fullLenght)
+        private double GetZoomRatio(int displayLenght, int fullLenght)
         {
             double ratio;
             switch(DeviceManager.SelectedCameraDevice.LiveViewImageZoomRatio.Value)
@@ -1733,7 +1732,7 @@ namespace LightX.ViewModel
 
         #endregion ImageManipulation
 
-        public CameraControlWindowViewModel()
+        internal CameraControlWindowViewModel()
         {
             Thread.CurrentThread.Name = "MainThread";
             SetLiveViewTimer();

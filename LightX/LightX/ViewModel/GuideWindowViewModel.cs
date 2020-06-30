@@ -63,7 +63,7 @@ namespace LightX.ViewModel
 
         #region Actions
 
-        public bool NextInstruction()
+        internal bool NextInstruction()
         {
             if(_instructionIndex < CurrentTest.Count - 1)
             {
@@ -73,7 +73,7 @@ namespace LightX.ViewModel
             return false;
         }
 
-        public bool PreviousInstruction()
+        internal bool PreviousInstruction()
         {
             if (_instructionIndex > 0)
             {
@@ -112,7 +112,7 @@ namespace LightX.ViewModel
 
         #endregion DataFetching
 
-        public GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
+        internal GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
             TestTitle = test.TestTitle;
             CurrentTest = new List<GuideData>();

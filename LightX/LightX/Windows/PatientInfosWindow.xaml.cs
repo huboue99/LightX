@@ -26,7 +26,7 @@ namespace LightX
         }
 
         private readonly PatientInfosWindowViewModel _patientInfosWindowViewModel;
-        public PatientInfosWindow()
+        internal PatientInfosWindow()
         {
             _patientInfosWindowViewModel = new PatientInfosWindowViewModel();
             

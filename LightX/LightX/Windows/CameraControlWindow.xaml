@@ -53,8 +53,8 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <Image Source="{Binding CurrentLiveViewImage}" Stretch="Uniform" IsEnabled="{Binding LiveViewEnabled}"/>
-            <Image Source="{Binding OverlayBitmap, UpdateSourceTrigger=PropertyChanged}" Stretch="Uniform" IsEnabled="{Binding LiveViewEnabled}"/>
+            <Image Source="{Binding CurrentLiveViewImage}" Stretch="Uniform"/>
+            <Image Source="{Binding OverlayBitmap, UpdateSourceTrigger=PropertyChanged}" Stretch="Uniform"/>
         </Grid>
 
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
