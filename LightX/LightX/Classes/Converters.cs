@@ -7,7 +7,7 @@ using System.Windows.Media.Imaging;
 
 namespace LightX.Classes
 {
-    class UriToCachedImageConverter : IValueConverter
+    public class UriToCachedImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -49,7 +49,7 @@ namespace LightX.Classes
         }
     }
 
-    class ReviewImagesToCachedImageConverter : IValueConverter
+    public class ReviewImagesToCachedImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -91,7 +91,7 @@ namespace LightX.Classes
         }
     }
 
-    class TitleConverter : IValueConverter
+    public class TitleConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -112,7 +112,7 @@ namespace LightX.Classes
         }
     }
 
-    class ReviewImageSizeConverter : IMultiValueConverter
+    public class ReviewImageSizeConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -143,7 +143,7 @@ namespace LightX.Classes
         }
     }
 
-    class ImageIsActiveConverter : IMultiValueConverter
+    public class ImageIsActiveConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

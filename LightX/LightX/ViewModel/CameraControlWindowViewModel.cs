@@ -630,6 +630,8 @@ namespace LightX.ViewModel
                 SaveTestResultsToJson(testResult);
             }
 
+            WriteJsonObj(CurrentExam, $"{CurrentExam.ResultsPath}\\exam.json");
+
             if (CloseApplication(e))
             {
                 _objFinishWindow.FinishWindowClosingEvent -= ObjFinishWindow_FinishWindowClosingEvent;
@@ -1498,7 +1500,7 @@ namespace LightX.ViewModel
             using (StreamWriter file = File.CreateText(path))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, path);
+                serializer.Serialize(file, obj);
             }
         }
 

@@ -1,0 +1,104 @@
+﻿<Window x:Class="ExamViewer.ReviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LightX.Classes;assembly=LightX"
+        mc:Ignorable="d"
+        Title="Exam Review" Height="1387" Width="2544" MinHeight="500" MinWidth="730"
+        Closing="Window_Closing">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+
+    <Grid Margin="15">
+        <TabControl x:Name="TabControl01" ItemsSource="{Binding CurrentExam.Results, UpdateSourceTrigger=PropertyChanged}">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <Label Content="{Binding TestTitle}" MouseLeftButtonDown="TabControl01_MouseLeftButtonDown"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <Grid x:Name="Grid01">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="7*"/>
+                            <RowDefinition Height="1*" MinHeight="70"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" x:Name="Grid02">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ScrollViewer x:Name="ScrollViewer" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                                <StackPanel Orientation="Vertical">
+                                    <ItemsControl x:Name="WrapPanel" ItemsSource="{Binding ResultsImages, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Image Margin="5" MinWidth="150" Width="200" MouseLeftButtonDown="Image_MouseLeftButtonDown" Source="{Binding Converter={StaticResource uriToImageConv}, ConverterParameter=1}" Stretch="Uniform"/>
+                                                    <Border IsHitTestVisible="False" BorderBrush="LightGreen" BorderThickness="2" Margin="3">
+                                                        <Border.Visibility>
+                                                            <MultiBinding Converter="{StaticResource imageIsActiveConverter}" UpdateSourceTrigger="PropertyChanged">
+                                                                <Binding Path=""/>
+                                                                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}" Path="DataContext.ReviewImages"/>
+                                                            </MultiBinding>
+                                                        </Border.Visibility>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Vertical"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                    <!--<Button Margin="5" Width="200" Height="133" Click="NewPhotoButton_Click" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="+" FontSize="50" Foreground="Gray"/>-->
+                                    <!--<Grid Width="200" Height="100" Background="LightGray" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="+" FontSize="60" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Grid>-->
+                                </StackPanel>
+
+                            </ScrollViewer>
+
+                            <Grid Margin="5 0 0 0" Grid.Column="1">
+                                <Border Background="WhiteSmoke"/>
+
+                                <local:ZoomBorder x:Name="border" ClipToBounds="True" Background="WhiteSmoke" Loaded="Border_Loaded">
+                                    <Image Margin="15" Stretch="Uniform" Source="{Binding DataContext.ReviewImages, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Converter={StaticResource reviewImagesToImageConv}, ConverterParameter=1, UpdateSourceTrigger=PropertyChanged}"/>
+                                </local:ZoomBorder>
+                            </Grid>
+                        </Grid>
+
+                        <Grid Grid.Row="1" Margin="0 10 0 0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Commentaires supplémentaires :"/>
+
+                            <Grid Grid.Row="1" VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Grid.Column="0" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Text="{Binding Comments, Mode=TwoWay}" TextChanged="TextBox_TextChanged"/>
+                                <Button Grid.Column="1" Content="
+                                        " FontSize="15" Width="90" Height="30" Click="Button_Click" Margin="15 0"/>
+                            </Grid>
+                        </Grid>
+
+                    </Grid>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+    </Grid>
+</Window>

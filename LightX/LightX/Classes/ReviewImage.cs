@@ -8,6 +8,8 @@ namespace LightX.Classes
         private string _image;
         private bool _isSelected = true;
         private bool _isActive = false;
+        private bool _seen = false;
+        private bool _archived = false;
 
         #endregion Fields
 

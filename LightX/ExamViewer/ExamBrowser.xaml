@@ -1,0 +1,63 @@
+﻿<Window x:Class="ExamViewer.ExamBrowser"
+        x:Name="ExamWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExamViewer"
+        mc:Ignorable="d"
+        Title="Exam Browser" Height="450" Width="800" Topmost="False" WindowState="Normal">
+
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+        </Style>
+    </Window.Style>
+    
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" FontSize="18" Content="Exam List"/>
+
+        <Grid Grid.Row="1" Margin="0 5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition  Width="Auto"/>
+                <ColumnDefinition  Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Search :"/>
+            <TextBox Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" TextChanged="SearchBox_TextChanged" Text="{Binding SearchBox, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
+
+
+        <ListView Grid.Row="2" Name="examListObject" ItemsSource="{Binding ExamsFiltered, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="Exam_MouseDoubleClick">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="200"  DisplayMemberBinding="{Binding Patient.LastName}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Tag="LastName" Click="HeaderSort_Click">Nom</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn Width="200" DisplayMemberBinding="{Binding Patient.FirstName}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Tag="FirstName" Click="HeaderSort_Click">Prénom</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn Width="175" DisplayMemberBinding="{Binding Patient.FileNumber}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Tag="FileNumber" Click="HeaderSort_Click"># Dossier</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn Width="175" DisplayMemberBinding="{Binding ExamDate}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Tag="ExamDate" Click="HeaderSort_Click">Date</GridViewColumnHeader>
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>
