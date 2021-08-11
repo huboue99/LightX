@@ -266,7 +266,7 @@ namespace LightX.ViewModel
 
         private void SetLiveViewTimer()
         {
-            _liveViewTimer = new System.Timers.Timer(1000 / 60);
+            _liveViewTimer = new System.Timers.Timer(1000 / 30);
             _liveViewTimer.Elapsed += _liveViewTimer_Tick;
             _liveViewTimer.AutoReset = true;
         }
@@ -1054,7 +1054,6 @@ namespace LightX.ViewModel
                 {
                     if (exception.ErrorCode == ErrorCodes.MTP_Device_Busy || exception.ErrorCode == ErrorCodes.ERROR_BUSY)
                     {
-                        // this may cause infinite loop
                         Thread.Sleep(100);
                         retry = true;
                         if (++tryCount >= RetryLimit)
@@ -1128,7 +1127,8 @@ namespace LightX.ViewModel
             try
             {
                 if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
-                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = isOn;
+                    (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = false;
+                   // (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = isOn;
             }
             catch
             {
@@ -1242,14 +1242,6 @@ namespace LightX.ViewModel
                 // multiple canon cameras block with this settings
                 if (!(cameraDevice is CanonSDKBase))
                     cameraDevice.CaptureInSdRam = true;
-                try
-                {
-                    cameraDevice.DateTime = DateTime.Now;
-                }
-                catch (Exception exception)
-                {
-                    Log.Error("Unable to sysnc date time", exception);
-                }
             }
         }
 
