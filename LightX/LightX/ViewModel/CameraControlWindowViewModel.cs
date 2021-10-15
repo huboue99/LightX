@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
@@ -18,8 +20,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Controls; 
 
 namespace LightX.ViewModel
 {
@@ -31,6 +35,7 @@ namespace LightX.ViewModel
         private CameraDeviceManager _deviceManager;
         private Exam _currentExam;
         private TestResults _currentTestResults;
+        private MotorControl motor = new MotorControl(); 
 
         // Camera settings and results
         private CameraSettings _currentTestCameraSettings;
@@ -60,15 +65,34 @@ namespace LightX.ViewModel
         public bool _shutterGotReleased = false;
         private object _locker = new object();
         private int _testIndex = 0;
+        private int _oldTestIndex = 0;                          // Ajout Oeil
         private List<Task> _tasks = new List<Task>();
         private List<Task> _lowPriorityTasks = new List<Task>();
         private FinishWindow _objFinishWindow;
         private ReviewWindow _reviewWindow;
+        private int _nClick = 0;                                // Ajout Oeil
 
         // Commands definition
         private RelayCommand _captureCommand;
         private ICommand _imageMouseWheelCommand;
         private ICommand _closingCommand;
+        private ICommand _balayageCommand;                      // Ajout Oeil
+        private ICommand _pupilPositioning;                     // Ajout Oeil
+        private ICommand _automatedTest;                        // Ajout Oeil
+        private ICommand _xUp;                                  // Ajout Oeil
+        private ICommand _yUp;                                  // Ajout Oeil
+        private ICommand _zUp;                                  // Ajout Oeil
+        private ICommand _xDown;                                // Ajout Oeil
+        private ICommand _yDown;                                // Ajout Oeil
+        private ICommand _zDown;                                // Ajout Oeil
+        private ICommand _thetaUp;                              // Ajout Oeil
+        private ICommand _thetaDown;                            // Ajout Oeil
+        private ICommand _reset;                                // Ajout Oeil
+
+
+        bool flagAutomatedBlur = false;
+        bool flagAutomatedPupil = false;
+        int frameIterator = 0;
 
         #endregion Fields
 
@@ -260,6 +284,143 @@ namespace LightX.ViewModel
             }
         }
 
+        public ICommand BalayageCommand                  // Ajout Oeil
+        {
+            get
+            {
+                if (_balayageCommand == null)
+                    _balayageCommand = new RelayCommand(Balayage, true);
+
+                return _balayageCommand;
+            }
+        }
+
+
+        public ICommand PupilPositioningCommand     // Ajout Oeil
+        {
+            get
+            {
+                if (_pupilPositioning == null)
+                    _pupilPositioning = new RelayCommand(PupilPositioning, true);
+
+                return _pupilPositioning;
+            }
+        }
+
+
+        public ICommand AutomatedTestCommand        // Ajout Oeil
+        {
+            get
+            {
+                if (_automatedTest == null)
+                    _automatedTest = new RelayCommand(AutomatedTest, true);
+
+                return _automatedTest;
+            }
+        }
+
+
+        public ICommand ResetCommand                // Ajout Oeil
+        {
+            get
+            {
+                if (_reset == null)
+                    _reset = new RelayCommand(Reset, true);
+
+                return _reset;
+            }
+        }
+
+        public ICommand XUpCommand                  // Ajout Oeil
+        {
+            get
+            {
+                if (_xUp == null)
+                    _xUp = new RelayCommand(XUp, true);
+
+                return _xUp;
+            }
+        }
+
+        public ICommand YUpCommand                  // Ajout Oeil
+        {
+            get
+            {
+                if (_yUp == null)
+                    _yUp = new RelayCommand(YUp, true);
+
+                return _yUp;
+            }
+        }
+
+        public ICommand ZUpCommand                  // Ajout Oeil
+        {
+            get
+            {
+                if (_zUp == null)
+                    _zUp = new RelayCommand(ZUp, true);
+
+                return _zUp;
+            }
+        }
+
+        public ICommand ThetaUpCommand              // Ajout Oeil
+        {
+            get
+            {
+                if (_thetaUp == null)
+                    _thetaUp = new RelayCommand(ThetaUp, true);
+
+                return _thetaUp;
+            }
+        }
+
+        public ICommand XDownCommand                // Ajout Oeil
+        {
+            get
+            {
+                if (_xDown == null)
+                    _xDown = new RelayCommand(XDown, true);
+
+                return _xDown;
+            }
+        }
+
+        public ICommand YDownCommand                // Ajout Oeil
+        {
+            get
+            {
+                if (_yDown == null)
+                    _yDown = new RelayCommand(YDown, true);
+
+                return _yDown;
+            }
+        }
+
+        public ICommand ZDownCommand                // Ajout Oeil
+        {
+            get
+            {
+                if (_zDown == null)
+                    _zDown = new RelayCommand(ZDown, true);
+
+                return _zDown;
+            }
+        }
+
+        public ICommand ThetaDownCommand             // Ajout Oeil
+        {
+            get
+            {
+                if (_thetaDown == null)
+                    _thetaDown = new RelayCommand(ThetaDown, true);
+
+                return _thetaDown;
+            }
+        }
+
+
+
         #endregion RelayCommands
 
         #region SystemCommands
@@ -284,6 +445,7 @@ namespace LightX.ViewModel
             
             StopBurstCapture();
         }
+
 
         private void _liveViewTimer_Tick(object sender, EventArgs e)
         {
@@ -350,8 +512,52 @@ namespace LightX.ViewModel
                     image.SourceRect = GetSourceRect(liveViewData); // Crop the image to get smaller zoom steps
                     image.EndInit();
                     image.Freeze();
+
+                    if (frameIterator >= 10)       // Ajout Oeil
+                    {
+                        
+                        string filePath = $@"..\\..\\imgProcessing\\frame.bin";
+                        FileStream frame = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+                        stream.WriteTo(frame);
+                        stream.Close();
+
+                        var psi = new ProcessStartInfo();
+                        psi.FileName = @"C:\Program Files\python39\python.exe";
+                        //psi.FileName = @"C:\python37\python.exe";
+                        //C:\Users\macham\Documents\Programs\userinterface
+                        var imageProcessing = @"C:\\Users\\macham\\Documents\\Programs\\userinterface\\LightX\\LightX\\LightX\\LightX\\imgProcessing\\vision_oeil.py";
+              
+                        string filePathPython = @"C:\\Users\\macham\\Documents\\Programs\\userinterface\\LightX\\LightX\\LightX\\LightX\\imgProcessing\\frame.bin";
+                        psi.Arguments = $"\"{imageProcessing}\" \"{filePathPython}\"";
+                        
+                        psi.UseShellExecute = false;
+                        psi.CreateNoWindow = true;
+                        
+                        psi.WorkingDirectory = $@"..\\..\\imgProcessing\\";
+
+                        var process = Process.Start(psi);
+                        if (flagAutomatedBlur == true)
+                        {
+                            flagAutomatedBlur = motor.dataFocusPositioning();
+                            if (!flagAutomatedBlur)
+                            {
+                                motor.FocusPositioning();
+                            }
+                        }
+                        
+                        if (flagAutomatedPupil == true)
+                        {
+                            motor.PupilPositioning();
+                            flagAutomatedPupil = false;
+                        }
+                        frameIterator = 0;
+                    }
+                    frameIterator++;
+
                 }
+                
                 CurrentLiveViewImage = image;
+
                 image.StreamSource.Close();
                 image.StreamSource.Dispose();
             }
@@ -431,7 +637,7 @@ namespace LightX.ViewModel
             
         }
 
-        internal void ZoomOutEvent(bool canZoom)
+        public void ZoomOutEvent(bool canZoom)
         {
             try
             {
@@ -450,7 +656,7 @@ namespace LightX.ViewModel
             
         }
 
-        private void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
+        void SelectedCamera_CameraInitDone(ICameraDevice cameraDevice)
         {
             Console.WriteLine("Event CameraInitDone : {0}", cameraDevice.DeviceName);
 
@@ -461,7 +667,7 @@ namespace LightX.ViewModel
                 StartLiveViewInThread(cameraDevice);
         }
 
-        private void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
+        void DeviceManager_CameraSelected(ICameraDevice oldcameraDevice, ICameraDevice newcameraDevice)
         {
             Console.WriteLine("Event CameraSelected : {0}", newcameraDevice.DeviceName);
 
@@ -472,13 +678,13 @@ namespace LightX.ViewModel
             }
         }
 
-        private void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
+        void DeviceManager_CameraConnected(ICameraDevice cameraDevice)
         {
             Console.WriteLine("Event CameraConnected : {0}", cameraDevice.DeviceName);
             cameraDevice.CameraInitDone += SelectedCamera_CameraInitDone;
         }
 
-        private void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
+        void DeviceManager_PhotoCaptured(object sender, PhotoCapturedEventArgs eventArgs)
         {
             ++_remainingBurst;
             ++_totalBurstNumber;
@@ -500,14 +706,7 @@ namespace LightX.ViewModel
             GC.KeepAlive(eventArgs);
             GC.KeepAlive(sender);
 
-            _tasks.Add(new Task(() =>
-            {
-                if (CapturedImages == null)
-                    CapturedImages = new List<string>();
-                ExtractThumbFromRawImageFile(fileName);
-                CapturedImages.Add(fileName);
-                Console.WriteLine("{0}.jpeg added to the list of thumbnails", Path.GetFileName(fileName));
-            }));
+            _tasks.Add(new Task(() => ProcessImageFromFile(fileName)));
 
             Console.WriteLine($"_remainingBurst = {_remainingBurst}; _totalBurstNumber = {_totalBurstNumber}; _remainingBurst = {_remainingBurst};");
             //if ( (_remainingBurst == 0 && !_isAutoBurstControl) || (_isAutoBurstControl && _totalBurstNumber == BurstNumber && _remainingBurst == 0) )
@@ -534,7 +733,7 @@ namespace LightX.ViewModel
                     SetZoom(_lastZoom);
                     SetDepthOfField(true);
 
-                    if (_reviewWindow == null)
+                    if (_reviewWindow == null) 
                         ShowReviewWindow();
                     else
                         _reviewWindow.RefreshReviewImages(CapturedImages);
@@ -543,7 +742,7 @@ namespace LightX.ViewModel
             }
         }
 
-        private void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
+        void DeviceManager_CameraDisconnected(ICameraDevice cameraDevice)
         {
             Console.WriteLine("Event CameraDisconnected : {0}", cameraDevice.DeviceName);
             cameraDevice.CameraInitDone -= SelectedCamera_CameraInitDone;
@@ -612,6 +811,7 @@ namespace LightX.ViewModel
             GC.WaitForPendingFinalizers();
             _totalBurstNumber = 0; // reset the burstNumber after review
 
+            //_reviewWindow.Close();
             _reviewWindow = null;
 
             if (_testIndex >= CurrentExam.TestList.Count)
@@ -620,6 +820,17 @@ namespace LightX.ViewModel
                 return;
             }
 
+            // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
+            //System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            //{
+            //    foreach (Window window in System.Windows.Application.Current.Windows)
+            //    {
+            //        if (window.GetType() == typeof(CameraControlWindow))
+            //        {
+            //            (window as CameraControlWindow).Activate();
+            //        }
+            //    }
+            //});
             FocusOnWindow<CameraControlWindow>();
         }
 
@@ -633,6 +844,7 @@ namespace LightX.ViewModel
             if (CloseApplication(e))
             {
                 _objFinishWindow.FinishWindowClosingEvent -= ObjFinishWindow_FinishWindowClosingEvent;
+
             }
         }
 
@@ -648,7 +860,18 @@ namespace LightX.ViewModel
             ResetZoom();
             StartLiveViewInThread();
 
-            ShowWindow<CameraControlWindow>();
+            CameraControlWindow currentWindow;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(CameraControlWindow))
+                    {
+                        currentWindow = window as CameraControlWindow;
+                        currentWindow.Show();
+                    }
+                }
+            });
         }
 
         private void ObjGuideWindow_NextInstructionEvent()
@@ -729,7 +952,7 @@ namespace LightX.ViewModel
             }
         }
 
-        internal void StartBurstCapture()
+        public void StartBurstCapture()
         {
             Console.WriteLine("Shutter pressed");
 
@@ -772,7 +995,7 @@ namespace LightX.ViewModel
             }
         }
 
-        internal void StopBurstCapture()
+        public void StopBurstCapture()
         {
             _burstTimer.Stop();
             Console.WriteLine("Shutter released");
@@ -896,7 +1119,7 @@ namespace LightX.ViewModel
 
         // LiveView
 
-        internal void SetZoom(string desiredZoom = null)
+        public void SetZoom(string desiredZoom = null)
         {
             if (desiredZoom == null)
             {
@@ -917,7 +1140,7 @@ namespace LightX.ViewModel
             _zoomHasChanged = true;
         }
 
-        private void SetRoiXY(int x, int y)
+        public void SetRoiXY(int x, int y)
         {
             bool retry; int tryCount = 0;
             do
@@ -944,7 +1167,7 @@ namespace LightX.ViewModel
             } while (retry && tryCount < RetryLimit);
         }
 
-        internal void MoveRoiXY(Key key, bool canMove)
+        public void MoveRoiXY(Key key, bool canMove)
         {
             if (canMove)
             {
@@ -1008,7 +1231,7 @@ namespace LightX.ViewModel
             }
         }
 
-        internal void StartLiveViewInThread(ICameraDevice cameraDevice = null)
+        public void StartLiveViewInThread(ICameraDevice cameraDevice = null)
         {
             if (cameraDevice == null)
                 cameraDevice = DeviceManager.SelectedCameraDevice;
@@ -1113,10 +1336,9 @@ namespace LightX.ViewModel
                 if (DeviceManager.SelectedCameraDevice is CanonSDKBase)
                     (DeviceManager.SelectedCameraDevice as CanonSDKBase).Camera.DepthOfFieldPreview = isOn;
             }
-            catch (Exception exception)
+            catch
             {
                 Console.WriteLine("Could not set the DepthOfFieldPreview.");
-                Console.WriteLine(exception.Message);
             }
 
         }
@@ -1136,9 +1358,9 @@ namespace LightX.ViewModel
                             case "Drive Mode":
                                 propertyVal.SetValue(propertyVal.Values[1]); //High-Speed Continuous shooting
                                 break;
-                            //case "Flash":
-                            //    //propertyVal.SetValue(propertyVal.Values[0]);
-                            //    break;
+                            case "Flash":
+                                //propertyVal.SetValue(propertyVal.Values[0]);
+                                break;
                             default:
                                 break;
                         }
@@ -1247,13 +1469,35 @@ namespace LightX.ViewModel
             _reviewWindow.ReviewWindowClosingEvent += _reviewWindow_ReviewWindowClosingEvent;
             _reviewWindow.Show();
 
+            // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
+            //System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            //{
+            //    foreach (Window window in System.Windows.Application.Current.Windows)
+            //    {
+            //        if (window.GetType() == typeof(CameraControlWindow) || window.GetType() == typeof(GuideWindow))
+            //        {
+            //            window.Activate();
+            //        }
+            //    }
+            //});
             FocusOnWindow<CameraControlWindow>();
             FocusOnWindow<GuideWindow>();
         }
         
         private void ShowFinishWindow()
         {
-            HideWindow<CameraControlWindow>();
+            CameraControlWindow currentWindow;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(CameraControlWindow))
+                    {
+                        currentWindow = window as CameraControlWindow;
+                        currentWindow.Hide();
+                    }
+                }
+            });
 
             if (_objFinishWindow == null)
             {
@@ -1297,7 +1541,7 @@ namespace LightX.ViewModel
                 return false;
         }
 
-        internal void ClosingRoutine()
+        public void ClosingRoutine()
         {
             Console.WriteLine("Closing LightX...");
             if (_liveViewTimer.Enabled)
@@ -1307,7 +1551,7 @@ namespace LightX.ViewModel
                 DeviceManager.CloseAll();
             }
 
-            // deleting temps files from the delete list
+            // adding remaining temps files to the delete list
             foreach(string file in _filesToDelete)
             {
                 _lowPriorityTasks.Add(Task.Run(() =>
@@ -1333,7 +1577,6 @@ namespace LightX.ViewModel
                 }));
             }
 
-            // Wait for all temp files to be deleted
             Task.WaitAll(_lowPriorityTasks.ToArray());
 
             System.Windows.Application.Current.Shutdown();
@@ -1341,52 +1584,50 @@ namespace LightX.ViewModel
 
         private void CloseCurrentGuideWindow()
         {
-            GuideWindow guide = GetCurrentWindow<GuideWindow>();
-            _oldGuideWindowPosition[0] = guide.Left;
-            _oldGuideWindowPosition[1] = guide.Top;
-            guide.NextInstructionEvent -= ObjGuideWindow_NextInstructionEvent;
-            guide.Close();
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(GuideWindow))
+                    {
+                        _oldGuideWindowPosition[0] = (window as GuideWindow).Left;
+                        _oldGuideWindowPosition[1] = (window as GuideWindow).Top;
+                        (window as GuideWindow).NextInstructionEvent -= ObjGuideWindow_NextInstructionEvent;
+                        (window as GuideWindow).Close();
+                    }
+                }
+            });
         }
 
         private bool NextInstructionGuideWindow()
         {
-            GuideWindow guideWindow = GetCurrentWindow<GuideWindow>();
-            return guideWindow.NextInstruction();
+            bool nextOK = false;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in System.Windows.Application.Current.Windows)
+                {
+                    if (window.GetType() == typeof(GuideWindow))
+                    {
+                        nextOK = (window as GuideWindow).NextInstruction();
+                    }
+                }
+            });
+
+            return nextOK;
         }
 
         private void FocusOnWindow<T>() where T : Window
         {
-            T window = GetCurrentWindow<T>();
-            window.Activate();
-        }
-
-        private void HideWindow<T>() where T : Window
-        {
-            T window = GetCurrentWindow<T>();
-            window.Hide();
-        }
-
-        private void ShowWindow<T>() where T : Window
-        {
-            T window = GetCurrentWindow<T>();
-            window.Show();
-        }
-
-        private T GetCurrentWindow<T>() where T : Window
-        {
-            T currentWindow = default(T);
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 foreach (Window window in System.Windows.Application.Current.Windows)
                 {
                     if (window.GetType() == typeof(T))
                     {
-                        currentWindow = (window as T);
+                        (window as T).Activate();
                     }
                 }
             });
-
-            return currentWindow;
         }
 
         #endregion WindowsManagement
@@ -1515,7 +1756,7 @@ namespace LightX.ViewModel
             return obj;
         }
 
-        internal void FetchCurrentTest()
+        public void FetchCurrentTest()
         {
             
             Tests test = CurrentExam.TestList[_testIndex];
@@ -1536,7 +1777,7 @@ namespace LightX.ViewModel
             };
         }
 
-        private string FetchTest(Tests test, ObservableCollection<Tests> testList, int testIndex)
+        public string FetchTest(Tests test, ObservableCollection<Tests> testList, int testIndex)
         {
             TestInstructions currentTest;
             string path = $@"..\..\Resources\{test}.json";
@@ -1606,6 +1847,17 @@ namespace LightX.ViewModel
                 if (_testIndex < CurrentExam.TestList.Count)
                 {
                     FetchCurrentTest();
+                    // Put the focus back on the CameraControlWindow (to get back the keybinds actions)
+                    //System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    //{
+                    //    foreach (Window window in System.Windows.Application.Current.Windows)
+                    //    {
+                    //        if (window.GetType() == typeof(CameraControlWindow))
+                    //        {
+                    //            (window as CameraControlWindow).Activate();
+                    //        }
+                    //    }
+                    //});
                     FocusOnWindow<CameraControlWindow>();
 
                     if (DeviceManager.SelectedCameraDevice is NikonBase)
@@ -1627,26 +1879,26 @@ namespace LightX.ViewModel
 
         #region ImageManipulation
 
-        private void ExtractThumbFromRawImageFile(string sourcePath, string destinationPath)
+        private void ProcessImageFromFile(string path)
         {
+            if (CapturedImages == null)
+                CapturedImages = new List<string>();
+
             byte[] rawData = new byte[5000000];
             GCHandle rawDataHandle = GCHandle.Alloc(rawData, GCHandleType.Pinned);
             IntPtr address = rawDataHandle.AddrOfPinnedObject();
 
             Console.WriteLine("Extracting thumbnail to {0}", address);
-            int size = LibrawClass.extractThumbFromFile(address, sourcePath + _fileExtension);
+            int size = LibrawClass.extractThumbFromFile(address, path + _fileExtension);
             Console.WriteLine("Thumbnail ({0}) extracted to {1}", size, address);
 
             byte[] result = new byte[size];
             rawDataHandle.Free();
             Marshal.Copy(address, result, 0, size);
 
-            File.WriteAllBytes(destinationPath + ".jpeg", result);
-        }
-
-        private void ExtractThumbFromRawImageFile(string path)
-        {
-            ExtractThumbFromRawImageFile(path, path);
+            File.WriteAllBytes(path + ".jpeg", result);
+            CapturedImages.Add(path);
+            Console.WriteLine("{0}.jpeg added to the list of thumbnails", Path.GetFileName(path));
         }
 
         private double GetZoomRatio(int displayLenght, int fullLenght)
@@ -1732,7 +1984,9 @@ namespace LightX.ViewModel
 
         #endregion ImageManipulation
 
-        internal CameraControlWindowViewModel()
+
+
+        public CameraControlWindowViewModel()
         {
             Thread.CurrentThread.Name = "MainThread";
             SetLiveViewTimer();
@@ -1766,5 +2020,109 @@ namespace LightX.ViewModel
             thread.Name = "Startup";
             thread.Start();
         }
+
+        #region Action
+
+        private void Balayage()                         // Ajout Oeil
+        {
+            flagAutomatedBlur = true;
+            motor.Balayage();
+        }
+
+        private void PupilPositioning()                 // Ajout Oeil
+        {
+            flagAutomatedPupil = true;
+        }
+
+        private void AutomatedTest()                    // Ajout Oeil
+        {
+
+            Tests TestTitle = CurrentExam.TestList[_testIndex];
+            if (_oldTestIndex != _testIndex)
+            {
+                _oldTestIndex = _testIndex;
+                _nClick = 0;
+            }
+
+            _nClick++;
+            
+            switch (TestTitle)
+            {
+                case Tests.Conjonctive:
+                    motor.Conjonctive();
+                    break;
+                case Tests.CobaltFilter:
+                    motor.FiltreCobalt(_nClick);
+                    break;
+                case Tests.VanHerick:
+                    motor.VanHerick(_nClick);
+                    break;
+                case Tests.Cornea:
+                    motor.Cornee(_nClick);
+                    break;
+                case Tests.AnteriorChamber:
+                    motor.ChambresAnterieures(_nClick);
+                    break;
+                case Tests.Lens:
+                    motor.Cristallin(_nClick);
+                    break;
+                case Tests.IrisTransillumination:
+                    motor.TransilluminationIris(_nClick);
+                    break;
+                case Tests.PupillaryMargin:
+                    motor.MargesPupillaires(_nClick);
+                    break;
+                case Tests.NewTest:
+                    break;
+            }
+        }
+
+        private void Reset()                        // Ajout Oeil
+        {
+            motor.Reset();
+        }
+
+        private void XUp()                          // Ajout Oeil
+        {
+            motor.XUp();
+        }
+
+        private void XDown()                        // Ajout Oeil
+        {
+            motor.XDown();
+        }
+
+        private void YUp()                          // Ajout Oeil
+        {
+            motor.YUp();
+        }
+
+        private void YDown()                        // Ajout Oeil
+        {
+            motor.YDown();
+        }
+
+        private void ZUp()                          // Ajout Oeil
+        {
+            motor.ZUp();
+        }
+
+        private void ZDown()                        // Ajout Oeil
+        {
+            motor.ZDown();
+        }
+
+        private void ThetaUp()                       // Ajout Oeil
+        {
+            motor.ThetaUp();
+        }
+
+        private void ThetaDown()                     // Ajout Oeil
+        {
+            motor.ThetaDown();
+        }
+
+        #endregion
+
     }
 }

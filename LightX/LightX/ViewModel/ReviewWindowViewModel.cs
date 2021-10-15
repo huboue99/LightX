@@ -182,7 +182,7 @@ namespace LightX.ViewModel
             }
         }
 
-        internal void RefreshReviewImages(List<string> images, int activeIndex)
+        public void RefreshReviewImages(List<string> images, int activeIndex)
         {
             images = SanitizeImagePathList(images);
 
@@ -208,7 +208,7 @@ namespace LightX.ViewModel
             ReviewImages = reviewImg;
         }
 
-        internal void RefreshReviewImages(List<string> images)
+        public void RefreshReviewImages(List<string> images)
         {
             // keeps the same active image after the refresh
             int activeIndex = 0;
@@ -235,7 +235,7 @@ namespace LightX.ViewModel
 
         #endregion Actions
 
-        internal ReviewWindowViewModel(List<string> images, string comment)
+        public ReviewWindowViewModel(List<string> images, string comment)
         {
             RefreshReviewImages(images, 0);
             _currentComment = comment;

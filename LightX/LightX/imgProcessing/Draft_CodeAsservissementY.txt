@@ -1,0 +1,74 @@
+            float[] lastPos = new float[50];
+            float[] mobileAv = new float[11];
+            float[] derivative = new float[10];
+
+            // GetPosition ou SetVelocity pour faire avancer la LAF dans la direction des Y positifs
+
+            while (!flagFocus && !flagCenter)
+            {
+                // Aller chercher la frame de l'image au temps voulu
+                // Appeler la fonction Python permettant d'effectuer le traitement d'image: score de flou, position de la pupille, position de la fente et un fag indiquant que la photo est prête à être prise. 
+
+                psi.Arguments = $"\"{imageProcessing}\" \"{flagFocus}\" \"{flagCenter}\" \"{frame}\"";
+
+                using (var process = Process.Start(psi))
+                {
+                    results_imageProcessing = process.StandardOutput.ReadToEnd();
+                }
+
+                string[] resultsArray_imageProcessing = results_imageProcessing.Split(' ');
+
+                blurValue = float.Parse(resultsArray_imageProcessing[0]);
+                posX_Pupil_Pixel = int.Parse(resultsArray_imageProcessing[1]);
+                posZ_Pupil_Pixel = int.Parse(resultsArray_imageProcessing[2]);
+                posX_Slit_Pixel = int.Parse(resultsArray_imageProcessing[3]);
+                flagReadyPicture = bool.Parse(resultsArray_imageProcessing[4]);
+
+                if (!flagFocus)
+                {
+                    // Inclure la nouvelle valeur de score de flou dans le vecteur lastPos (la valeur la plus récente étant l'index 0)
+                    for (int i = 49; i > 0; i--)
+                    {
+                        lastPos[i] = lastPos[i - 1];
+                    }
+                    lastPos[0] = blurValue;
+
+                    // Pour calculer et enregistrer dans un array la valeur des moyennes mobiles.
+                    Array.Resize(ref lastPos, 20);
+                    for (int i = 10; i > 0; i--)
+                    {
+                        mobileAv[i] = mobileAv[i - 1];
+                    }
+                    float[] buffer = new float[20];
+                    Array.Copy(lastPos, buffer, 20);
+                    mobileAv[0] = buffer.Average();
+
+                    // Pour créer le vecteur de dérivé.
+                    float bufferDerivative;
+                    for(int i = 0; i < 11; i++)
+                    {
+                        bufferDerivative = mobileAv[i] - mobileAv[i + 1];
+                        if (bufferDerivative < 0)
+                        {
+                            derivative[i] = 1;
+                        }
+                        else
+                        {
+                            derivative[i] = 0;
+                        }
+                    }
+
+                    // Pour déterminer si la LAF a dépasser le point de focus.
+                    if (derivative.Sum() == 10)
+                    {
+                        if(lastPos.Max() >= thresholdBlur)
+                        {
+                            flagFocus = true;
+                            float maxLastPos = blurValues.ToArray().Max();
+                            nFrame = blurValues.IndexOf(maxBlurValue);
+                            comY = nFrame * velocityY / freq;
+                            // Initier un déplacement dans l'axe des Y négatifs selon la variable comY.
+                        }
+                    }
+
+                }

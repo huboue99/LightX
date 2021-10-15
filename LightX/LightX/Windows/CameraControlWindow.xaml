@@ -53,10 +53,11 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <Image Source="{Binding CurrentLiveViewImage}" Stretch="Uniform"/>
-            <Image Source="{Binding OverlayBitmap, UpdateSourceTrigger=PropertyChanged}" Stretch="Uniform"/>
+            <Image Source="{Binding CurrentLiveViewImage}" Stretch="Uniform" IsEnabled="{Binding LiveViewEnabled}"/>
+            <Image Source="{Binding OverlayBitmap, UpdateSourceTrigger=PropertyChanged}" Stretch="Uniform" IsEnabled="{Binding LiveViewEnabled}" Margin="0,0,10,0.5"/>
         </Grid>
 
+        <!--<CheckBox Grid.Row="2" Name="ManualModeCheckBox" Content="Enable manual settings" HorizontalAlignment="Right"/>-->
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
             <CheckBox VerticalAlignment="Center" Content="Auto burst control" IsChecked="{Binding IsAutoBurstControl, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsThreeState="False" Margin="0 0 10 0"/>
             <CheckBox Name="CheckBoxCustomBurst" VerticalAlignment="Center" Content="Custom burst" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" IsThreeState="False" Margin="0 0 10 0"/>
@@ -105,5 +106,34 @@
         </Grid>
 
         <Button Grid.Row="4" IsEnabled="{Binding CaptureEnabled}" Focusable="False" IsDefault="False" HorizontalAlignment="Right" Content="Capture" Width="90" Height="20" Command="{Binding CaptureCommand}"/>
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0 5 0 0">
+
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="Focus Positioning" Width="120" Height="20" Command="{Binding BalayageCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="Pupil positioning" Width="120" Height="20" Command="{Binding PupilPositioningCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="Automated Test" Width="120" Height="20" Command="{Binding AutomatedTestCommand}"/>
+
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="&#x25c0;" Width="30" Height="20" Command="{Binding XUpCommand}"/>
+            <Button Margin="15 0" HorizontalAlignment="Left" Content="▲" Width="30" Height="20" Command="{Binding YUpCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="&#x25bc;" Width="30" Height="20" Command="{Binding YDownCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="&#x25b6;" Width="30" Height="20" Command="{Binding XDownCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="&#x261d;" Width="30" Height="20" Command="{Binding ZUpCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="&#x261f;" Width="30" Height="20" Command="{Binding ZDownCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="&#x27f3;" Width="30" Height="20" Command="{Binding ThetaDownCommand}"/>
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="&#x27f2;" Width="30" Height="20" Command="{Binding ThetaUpCommand}"/>
+
+
+            <Button Grid.Row="4" Margin="15 0" HorizontalAlignment="Left" Content="Reset" Width="50" Height="20" Command="{Binding ResetCommand}"/>
+        </StackPanel>
+
+        <UIElement.InputBindings>
+            <KeyBinding Key="Right" Command="{Binding XDownCommand}" />
+            <KeyBinding Key="Left" Command="{Binding XUpCommand}" />
+            <KeyBinding Key="Up" Command="{Binding YUpCommand}" />
+            <KeyBinding Key="Down" Command="{Binding YDownCommand}" />
+            <KeyBinding Key="U" Command="{Binding ZUpCommand}" />
+            <KeyBinding Key="D" Command="{Binding ZDownCommand}" />
+        </UIElement.InputBindings>
+
+
     </Grid>
 </Window>

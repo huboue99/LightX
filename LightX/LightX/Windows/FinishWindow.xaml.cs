@@ -28,16 +28,23 @@ namespace LightX
 
         private void Image_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            //_finishWindowViewModel.ActiveImageEvent(sender as Image);
+
             bool imageHasChanged = _finishWindowViewModel.ActiveImageEvent(sender as Image);
             if (TestHasChanged)
             {
                 loadedZoomBorder.Reset();
                 TestHasChanged = false;
             }
+                //(TabControl01.Template.FindName("border", TabControl01) as ZoomBorder).Reset();
+                //(TabControl01.SelectedContentTemplate.FindName("border", TabControl01) as ZoomBorder).Reset();
+                
+                //((TabControl01.SelectedContent as TabControl).ContentTemplate.FindName("border", TabControl01.SelectedContent as TabControl) as ZoomBorder);
         }
 
         private void TabControl01_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+
             TestHasChanged = true;
             GC.Collect();
         }
@@ -47,7 +54,7 @@ namespace LightX
             NewPhotoEvent(this.TabControl01.SelectedContent as TestResults);
         }
 
-        internal FinishWindow(Exam exam)
+        public FinishWindow(Exam exam)
         {
             _finishWindowViewModel = new FinishWindowViewModel(exam);
             InitializeComponent();
@@ -57,7 +64,7 @@ namespace LightX
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 
-        internal void CloseWithoutEvent()
+        public void CloseWithoutEvent()
         {
             _sendClosingEvent = false;
             this.Close();

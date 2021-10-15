@@ -14,6 +14,7 @@ namespace LightX
     /// Interaction logic for GuideWindow.xaml
     /// </summary>
     /// 
+    
     public partial class GuideWindow : Window
     {
         private readonly GuideWindowViewModel _guideWindowViewModel;
@@ -35,7 +36,7 @@ namespace LightX
         const int WM_SHOWWINDOW = 0x00000018;
         const int WM_CLOSE = 0x10;
 
-        internal bool NextInstruction()
+        public bool NextInstruction()
         {
             bool b = false;
             if(_guideWindowViewModel.NextInstruction())
@@ -44,7 +45,7 @@ namespace LightX
             return b;
         }
 
-        internal bool PreviousInstruction()
+        public bool PreviousInstruction()
         {
             bool b = false;
             if (_guideWindowViewModel.PreviousInstruction())
@@ -53,16 +54,22 @@ namespace LightX
             return b;
         }
 
-        internal GuideWindow(TestInstructions test, ObservableCollection<Tests> testList, int i)
+        public GuideWindow(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
             _guideWindowViewModel = new GuideWindowViewModel(test, testList, i);
             InitializeComponent();
             DataContext = _guideWindowViewModel;
 
             this.Title = $"LightX - {test.TestTitle}";
+            //this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             //this.Left = Screen.AllScreens[0].WorkingArea.Left + this.Width / 4;
             //this.Top = Screen.AllScreens[0].WorkingArea.Height / 2 - this.Height / 2;
             //this.Left = SystemParameters.PrimaryScreenWidth;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -76,6 +83,7 @@ namespace LightX
                 hwndSource.AddHook(new HwndSourceHook(this.hwndSourceHook));
             }
         }
+
 
         IntPtr hwndSourceHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {

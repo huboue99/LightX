@@ -1,0 +1,294 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="LightX.App" Collapsed="true">
+    <Position X="25.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>App.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.CameraControlWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="29" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAACIAAAAAAAACIgACAAIAAIABAAAAAAAAA=</HashCode>
+      <FileName>Windows\CameraControlWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.FinishWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="34.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAQAAggBAABEAAAEAAAAAAgIAAAIAAAgAABg=</HashCode>
+      <FileName>Windows\FinishWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.GuideWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="27.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAEAAAAQAAAAAQAABBglAAgQgBAAAAAAAIAAAAIA=</HashCode>
+      <FileName>Windows\GuideWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.PatientInfosWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="30.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAEAAEAAAAAAAAAAAACABAAAAABAAAAAA=</HashCode>
+      <FileName>Windows\PatientInfosWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.ReviewWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="29" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABBAACAEAQAAACAAAAEAAgEAAEAAAAAAAAAEgAAAEBA=</HashCode>
+      <FileName>Windows\ReviewWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.Classes.BaseClass" Collapsed="true">
+    <Position X="11.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAIAAAAQAQgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\BaseClass.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="LightX.Classes.BoolStringClass" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAEAAAAAAAAACAAAAAAAAIAAAgCAAAAAA=</HashCode>
+      <FileName>Classes\BoolStringClass.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.CameraSettings" Collapsed="true">
+    <Position X="7.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAQACAACAAAAAAAAAAAABAAAAAAQICAQAIAAA=</HashCode>
+      <FileName>Classes\CameraSettings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.UriToCachedImageConverter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="27.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\Converters.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.Classes.ReviewImagesToCachedImageConverter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="27.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\Converters.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.Classes.TitleConverter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="25.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\Converters.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.Classes.ReviewImageSizeConverter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="25.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\Converters.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.Classes.ImageIsActiveConverter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="30.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\Converters.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.Classes.NegateBooleanConverter" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="27.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\Converters.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="LightX.Classes.Disease" Collapsed="true">
+    <Position X="32.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAQAAAgAA=</HashCode>
+      <FileName>Classes\Disease.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.Exam" Collapsed="true">
+    <Position X="11.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAACAAAAAAEAAAAAAAAQCAAAAgQAAEgAQABBiAA=</HashCode>
+      <FileName>Classes\Exam.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.Parameters" Collapsed="true">
+    <Position X="14" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAIAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Classes\GuideData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.ParametersList" Collapsed="true">
+    <Position X="29" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\GuideData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.Instruction" Collapsed="true">
+    <Position X="18.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAICABAggACIAAAAAAIAIAQAAAAQAAAAA=</HashCode>
+      <FileName>Classes\GuideData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.TestInstructions" Collapsed="true">
+    <Position X="20.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAgAAAAAAEAABAAAAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\GuideData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.GuideData" Collapsed="true">
+    <Position X="2.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgACAAAAAAAAAAAAAABAAAAAAAAAYBAAQgAAAAAAAAA=</HashCode>
+      <FileName>Classes\GuideData.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.HelloWorld" Collapsed="true">
+    <Position X="9.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\HelloWorld.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.LibrawClass" Collapsed="true">
+    <Position X="34.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAAAAAAAAAAABAAAAAAAgAAAAA=</HashCode>
+      <FileName>Classes\LibrawClass.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.LowLevelKeyboardListener" Collapsed="true">
+    <Position X="25.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CIAAAAAAAAEAAAAAECAADAACAQAAAAAACCBAAgEgASA=</HashCode>
+      <FileName>Classes\LowLevelKeyboardListener.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.KeyPressedArgs" Collapsed="true">
+    <Position X="32.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Classes\LowLevelKeyboardListener.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.ZoomBorder" Collapsed="true">
+    <Position X="29" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAgAAAABYQgCADAAAAAAAAAAAAQCAAAAAAAQAA=</HashCode>
+      <FileName>Classes\PanAndZoom.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.Patient" Collapsed="true">
+    <Position X="23" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAEgAAAIAAAAAAAEgAEQAAAAIgAAAAAAAAAAACAg=</HashCode>
+      <FileName>Classes\Patient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.ReviewImage" Collapsed="true">
+    <Position X="5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAEAAAEIAAAACAAAAAQBAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\ReviewImage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.RunList" Collapsed="true">
+    <Position X="32.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Classes\RunList.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Classes.TestResults" Collapsed="true">
+    <Position X="16.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAGAAAAkAAAIAAEAAhgAAAAABAAAAgAAAAAAAAAIAA=</HashCode>
+      <FileName>Classes\TestResults.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Controls.AutoCompleteTextBox" Collapsed="true">
+    <Position X="27.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAIAAIBBEBAAAQACkCAACAABCwCBAAQAJAAKBAAAAg=</HashCode>
+      <FileName>Controls\AutoCompleteTextBox.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Properties.Resources" Collapsed="true">
+    <Position X="34.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAABEAAAAQAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.Properties.Settings" Collapsed="true">
+    <Position X="34.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.ViewModel.CameraControlWindowViewModel" Collapsed="true">
+    <Position X="30.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>eJ2OIAEJwGcyRDBMwkAEUQF4yPtRnJQhCDAMdUAwQRI=</HashCode>
+      <FileName>ViewModel\CameraControlWindowViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.ViewModel.FinishWindowViewModel" Collapsed="true">
+    <Position X="25.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAGAgAAAAA=</HashCode>
+      <FileName>ViewModel\FinishWindowViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.ViewModel.GuideWindowViewModel" Collapsed="true">
+    <Position X="29" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAoAAAAAAAAAAABAAAAAAgAAAAAAAhACQBACA=</HashCode>
+      <FileName>ViewModel\GuideWindowViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.ViewModel.PatientInfosWindowViewModel" Collapsed="true">
+    <Position X="32.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAEgIABAUAAQAAACABAAIBAAIBAARohAExAARAAYgBQ=</HashCode>
+      <FileName>ViewModel\PatientInfosWindowViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightX.ViewModel.ReviewWindowViewModel" Collapsed="true">
+    <Position X="30.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>UAAAAQAAAAgAQAAEIGgAAAAACAAAAAAAAAAGCgAAAIA=</HashCode>
+      <FileName>ViewModel\ReviewWindowViewModel.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="LightX.Classes.Tests" Collapsed="true">
+    <Position X="25.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAAAAAIAAABAAKACQAAAgQAAAAAAAAAA=</HashCode>
+      <FileName>Classes\TestResults.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

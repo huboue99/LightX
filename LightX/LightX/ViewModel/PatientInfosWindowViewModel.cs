@@ -185,11 +185,12 @@ namespace LightX.ViewModel
         {
             get
             {
-                if(_selectAllClickCommand == null)
+                if (_selectAllClickCommand == null)
                     _selectAllClickCommand = new RelayCommand(SelectAllClick, true);
                 return _selectAllClickCommand;
             }
         }
+
 
         #endregion RelayCommands
 
@@ -217,7 +218,7 @@ namespace LightX.ViewModel
         private ObservableCollection<Tests> CreateTestList()
         {
             ObservableCollection<Tests> testList = new ObservableCollection<Tests>();
-            foreach(BoolStringClass test in CurrentTestListChoices)
+            foreach (BoolStringClass test in CurrentTestListChoices)
             {
                 if (test.IsSelected)
                     testList.Add(test.Value);
@@ -226,7 +227,7 @@ namespace LightX.ViewModel
             return testList;
         }
 
-        private bool ? CreateNewExam()
+        private bool? CreateNewExam()
         {
             ///////////// TESTINGS /////////////////
             bool TESTING = true;
@@ -310,10 +311,10 @@ namespace LightX.ViewModel
 
         private void SelectAllClick()
         {
-            bool ? a = AreAllTrueOrFalse();
+            bool? a = AreAllTrueOrFalse();
             foreach (BoolStringClass test in _currentTestListChoices)
             {
-                switch(a)
+                switch (a)
                 {
                     case true:
                         test.IsSelected = false;
@@ -327,11 +328,11 @@ namespace LightX.ViewModel
 
         #endregion Actions
 
-        private bool ? AreAllTrueOrFalse()
+        private bool? AreAllTrueOrFalse()
         {
             bool a = false;
             int i = 0;
-            foreach(BoolStringClass test in _currentTestListChoices)
+            foreach (BoolStringClass test in _currentTestListChoices)
             {
                 a = a || test.IsSelected;
                 if (test.IsSelected)
@@ -345,7 +346,8 @@ namespace LightX.ViewModel
                 return true; // All true
         }
 
-        internal PatientInfosWindowViewModel()
+
+        public PatientInfosWindowViewModel()
         {
             KeywordsList = ReadKeywordsList();
             CreateCheckBoxList();

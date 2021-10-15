@@ -1,9 +1,13 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using LightX.Classes;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace LightX.ViewModel
@@ -86,7 +90,7 @@ namespace LightX.ViewModel
 
         #endregion Actions
 
-        internal FinishWindowViewModel(Exam exam)
+        public FinishWindowViewModel(Exam exam)
         {
             CurrentExam = exam;
             ReviewImages = new ObservableCollection<ReviewImage>();

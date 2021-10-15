@@ -196,6 +196,8 @@ namespace LightX.Classes
             }
         }
 
+
+
         public List<Instruction> Instructions
         {
             get { return _instructions; }

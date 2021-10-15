@@ -28,7 +28,23 @@ namespace LightX
         private bool _shutterIsPressed = false;
         private bool _zoomIsPressed = false;
 
-        internal void MouseLeftButtonDownEventHandler(object sender, MouseButtonEventArgs e)
+        //public void KeyDownEventHandler(object sender, System.Windows.Input.KeyEventArgs e)
+        //{
+        //    switch (e.Key)
+        //    {
+        //    }
+        //    e.Handled = true;
+        //}
+
+        //public void KeyUpEventHandler(object sender, System.Windows.Input.KeyEventArgs e)
+        //{
+        //    switch(e.Key)
+        //    {
+        //    }
+        //    e.Handled = true;
+        //}
+
+        public void MouseLeftButtonDownEventHandler(object sender, MouseButtonEventArgs e)
         {
             try
             {
@@ -38,9 +54,11 @@ namespace LightX
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception.Message);
+                string ayylmao = exception.ToString();
             }
         }
+
+        
 
         private void LiveViewWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -112,7 +130,7 @@ namespace LightX
                 _listener.UnHookKeyboard();
         }
 
-        internal CameraControlWindow()
+        public CameraControlWindow()
         {
             this.Hide();
             _cameraControlWindowViewModel = new CameraControlWindowViewModel();
@@ -121,6 +139,7 @@ namespace LightX
             CheckBoxCustomBurst.IsChecked = true;
             BurstUpDownControl.IsEnabled = true;
 
+            //this.Title = $"LightX - {exam.Patient.FirstName} {exam.Patient.LastName} - {exam.ExamDate.Day:D2}/{exam.ExamDate.Month:D2}/{exam.ExamDate.Year} - {exam.ExamDate.Hour:D2}:{exam.ExamDate.Minute:D2}:{exam.ExamDate.Second:D2}";
             //this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             //this.Left = Screen.PrimaryScreen.WorkingArea.Right - this.Width - this.Width / 4;
             //this.Top = Screen.PrimaryScreen.WorkingArea.Height / 2 - this.Height / 2;

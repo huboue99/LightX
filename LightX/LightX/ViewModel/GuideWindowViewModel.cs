@@ -1,11 +1,16 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using LightX.Classes;
 using System;
+using System.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows;
+using System.Windows.Input;
+using System.IO;
+using Newtonsoft.Json;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 
 namespace LightX.ViewModel
 {
@@ -16,6 +21,8 @@ namespace LightX.ViewModel
         private List<GuideData> _currentTest;
         private RunList _currentTestsState;
         private int _instructionIndex = 0;
+
+
 
         public string TestTitle { get; }
 
@@ -63,7 +70,7 @@ namespace LightX.ViewModel
 
         #region Actions
 
-        internal bool NextInstruction()
+        public bool NextInstruction()
         {
             if(_instructionIndex < CurrentTest.Count - 1)
             {
@@ -73,7 +80,7 @@ namespace LightX.ViewModel
             return false;
         }
 
-        internal bool PreviousInstruction()
+        public bool PreviousInstruction()
         {
             if (_instructionIndex > 0)
             {
@@ -83,6 +90,7 @@ namespace LightX.ViewModel
             return false;
         }
 
+        
         #endregion Actions
 
         #region DataFetching
@@ -112,7 +120,7 @@ namespace LightX.ViewModel
 
         #endregion DataFetching
 
-        internal GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
+        public GuideWindowViewModel(TestInstructions test, ObservableCollection<Tests> testList, int i)
         {
             TestTitle = test.TestTitle;
             CurrentTest = new List<GuideData>();
